@@ -12,6 +12,40 @@
 		Hi, Sean. <small>here's what's happening with your store today.</small>
 	</h1>
 	
+
+
+
+
+	<div id="location" class="py-5 position-relative" data-bs-theme="dark">
+  <div class="container-xxl p-3 p-lg-5 z-2 position-relative">
+    <div class="text-center mb-5">
+      <h1 class="mb-3">Nos Destinations</h1>
+      <p class="fs-16px text-body text-opacity-50 mb-5">
+        Découvrez nos opportunités d'emploi classées par pays et par ville.<br>
+        Trouvez votre prochain emploi en toute simplicité grâce à notre réseau mondial.
+      </p>
+    </div>
+    <div class="row g-3 g-lg-5 justify-content-center">
+      <!-- Section Pays -->
+      <div class="col-xl-3 col-lg-4 col-sm-6">
+        <a href="{{ route('pays.index') }}" class="shadow d-block rounded overflow-hidden">
+          <img src="/assets/img/landing/mockup-1-thumb.jpg" alt="Gestion des Pays" class="mw-100">
+        </a>
+        <div class="text-center my-3 text-body fw-bold">Gestion des Pays</div>
+      </div>
+      <!-- Section Villes -->
+      <div class="col-xl-3 col-lg-4 col-sm-6">
+        <a href="{{ route('villes.index') }}" class="shadow d-block rounded overflow-hidden">
+          <img src="/assets/img/landing/mockup-2-thumb.jpg" alt="Gestion des Villes" class="mw-100">
+        </a>
+        <div class="text-center my-3 text-body fw-bold">Gestion des Villes</div>
+      </div>
+    </div>
+  </div>
+  <div class="position-absolute bg-size-cover bg-position-center bg-no-repeat top-0 start-0 w-100 h-100" style="background-image: url('/assets/img/landing/content-cover.jpg');"></div>
+  <div class="position-absolute bg-gray-900 bg-opacity-80 top-0 start-0 w-100 h-100"></div>
+</div>
+
 	<!-- BEGIN row -->
 	<div class="row">
 		<!-- BEGIN col-6 -->

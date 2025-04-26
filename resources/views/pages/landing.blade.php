@@ -218,8 +218,96 @@
 		</div>
 		<!-- END #about -->
 
-		<!-- BEGIN #features -->
+
+
+
+
+
 		<div id="features" class="py-5 position-relative" data-bs-theme="dark">
+    <div class="container-xxl p-3 p-lg-5 z-2 position-relative">
+        <div class="text-center mb-5">
+            <h1 class="mb-3">Gestion des Villes et Pays</h1>
+            <p class="fs-16px text-body text-opacity-50 mb-5">
+                Gérez efficacement les informations liées aux villes et aux pays dans votre application. <br>
+                Avec une interface claire et une gestion simplifiée, vous pouvez ajouter, modifier ou supprimer des pays et des villes en toute simplicité.
+            </p>
+        </div>
+        <div class="row g-3 g-lg-5">
+            <!-- Section Pays -->
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="{{ route('pays.index') }}" class="shadow d-block">
+                    <img src="/assets/img/landing/mockup-1-thumb.jpg" alt="Gestion des Pays" class="mw-100">
+                </a>
+                <div class="text-center my-3 text-body fw-bold">Gestion des Pays</div>
+            </div>
+            <!-- Section Villes -->
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="{{ route('villes.index') }}" class="shadow d-block">
+                    <img src="/assets/img/landing/mockup-2-thumb.jpg" alt="Gestion des Villes" class="mw-100">
+                </a>
+                <div class="text-center my-3 text-body fw-bold">Gestion des Villes</div>
+            </div>
+            <!-- Autres sections
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-3.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-3-thumb.jpg" alt="Email Inbox" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Email Inbox</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-4.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-4-thumb.jpg" alt="Pricing Page" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Pricing Page</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-5.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-5-thumb.jpg" alt="User Profile" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">User Profile</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-6.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-6-thumb.jpg" alt="Analytics Page" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Analytics Page</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-7.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-7-thumb.jpg" alt="Studio Widgets" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Studio Widgets</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-8.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-8-thumb.jpg" alt="Kitchen Order Page" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Kitchen Order Page</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-9.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-9-thumb.jpg" alt="Order Details Page" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Order Details Page</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-10.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-10-thumb.jpg" alt="Messenger" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Messenger</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-11.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-11-thumb.jpg" alt="Table Control Page" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Table Control Page</div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <a href="/assets/img/landing/mockup-12.jpg" data-lity class="shadow d-block"><img src="/assets/img/landing/mockup-12-thumb.jpg" alt="Customer Order Page" class="mw-100"></a>
+                <div class="text-center my-3 text-body fw-bold">Customer Order Page</div>
+            </div> -->
+        </div>
+    </div>
+    <div class="position-absolute bg-size-cover bg-position-center bg-no-repeat top-0 start-0 w-100 h-100" style="background-image: url(assets/img/landing/content-cover.jpg);"></div>
+    <div class="position-absolute bg-gray-900 bg-opacity-80 top-0 start-0 w-100 h-100"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<!-- BEGIN #features -->
+		<!-- <div id="features" class="py-5 position-relative" data-bs-theme="dark">
 			<div class="container-xxl p-3 p-lg-5 z-2 position-relative">
 				<div class="text-center mb-5">
 					<h1 class="mb-3">Our Unique Features</h1>
@@ -282,9 +370,12 @@
 			</div>
 			<div class="position-absolute bg-size-cover bg-position-center bg-no-repeat top-0 start-0 w-100 h-100" style="background-image: url(assets/img/landing/content-cover.jpg);"></div>
 			<div class="position-absolute bg-gray-900 bg-opacity-80 top-0 start-0 w-100 h-100"></div>
-		</div>
+		</div> -->
 		<!-- END #features -->
 
+
+
+		
 		<!-- BEGIN #pricing -->
 		<div id="pricing" class="py-5 bg-component">
 			<div class="container-xxl p-3 p-lg-5">

@@ -14,6 +14,83 @@ use Illuminate\Support\Facades\Route;
 */
 
 
+
+
+
+
+
+
+
+use App\Http\Controllers\PaysController;
+
+// Lister tous les pays
+Route::get('admin/pays', [PaysController::class, 'index'])->name('pays.index');
+
+// Afficher le formulaire pour ajouter un pays
+Route::get('admin/pays/create', [PaysController::class, 'create'])->name('pays.create');
+
+// Enregistrer un nouveau pays
+Route::post('admin/pays', [PaysController::class, 'store'])->name('pays.store');
+
+// Afficher le formulaire pour modifier un pays
+Route::get('admin/pays/{pays}/edit', [PaysController::class, 'edit'])->name('pays.edit');
+
+// Mettre à jour un pays
+Route::put('admin/pays/{pays}', [PaysController::class, 'update'])->name('pays.update');
+
+// Supprimer un pays
+Route::delete('admin/pays/{pays}', [PaysController::class, 'destroy'])->name('pays.destroy');
+
+
+
+
+
+
+
+
+
+use App\Http\Controllers\VilleController;
+
+// Lister toutes les villes
+Route::get('admin/villes', [VilleController::class, 'index'])->name('villes.index');
+
+// Afficher le formulaire pour ajouter une ville
+Route::get('admin/villes/create', [VilleController::class, 'create'])->name('villes.create');
+
+// Enregistrer une nouvelle ville
+Route::post('admin/villes', [VilleController::class, 'store'])->name('villes.store');
+
+// Afficher le formulaire pour modifier une ville
+Route::get('admin/villes/{ville}/edit', [VilleController::class, 'edit'])->name('villes.edit');
+
+// Mettre à jour une ville
+Route::put('admin/villes/{ville}', [VilleController::class, 'update'])->name('villes.update');
+
+// Supprimer une ville
+Route::delete('admin/villes/{ville}', [VilleController::class, 'destroy'])->name('villes.destroy');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Route::get('/', function () {
 	return view('/pages/index');
 });
