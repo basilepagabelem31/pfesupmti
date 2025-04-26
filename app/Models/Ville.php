@@ -9,9 +9,9 @@ class Ville extends Model
 
     protected $fillable = ["code",'nom', 'pays_id'];
 
-    public function utilisateurs()
+    public function users()
 {
-    return $this->hasMany(Utilisateur::class);
+    return $this->hasMany(User::class);
 }
 
 
