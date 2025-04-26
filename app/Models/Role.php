@@ -11,9 +11,9 @@ class Role extends Model
     protected $fillable = ['code','nom','description']; // ou les champs que tu as définis
 
 
-    public function utilisateurs()
+    public function users()
 {
-    return $this->hasMany(Utilisateur::class);
+    return $this->hasMany(User::class);
 }
 
 }

@@ -9,9 +9,9 @@ class Email_log extends Model
 
     protected $fillable = ['subject','content','statut','date','email_template_id']; // ou les champs que tu as définis
 
-    public function utilisateurs()
+    public function users()
 {
-    return $this->hasMany(Utilisateur::class);
+    return $this->hasMany(User::class);
 }
 
 

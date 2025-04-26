@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('absences', function (Blueprint $table) {
             $table->id();
             $table -> boolean("status")->default(false);
-            $table ->foreignId("stagiaire_id")->constrained("utilisateurs")->onDelete("cascade");
+            $table ->foreignId("stagiaire_id")->constrained("users")->onDelete("cascade");
             $table ->foreignId("reunion_id")->constrained("reunions")->onDelete("cascade");
 
             $table->timestamps();
