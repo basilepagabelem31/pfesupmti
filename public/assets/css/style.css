@@ -1,0 +1,5 @@
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+    max-height: calc(100vh - 200px); /* Bootstrap fixe une hauteur max pour que l’on puisse scroller */
+  }
+  
