@@ -7,10 +7,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Str;
+
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use  HasFactory, Notifiable;
+
+
+    protected static function booted()
+    {
+        static::creating(function ($admin){
+            //generation d'un code aleatoire 
+            $admin->code= Str::upper(Str::random(10));
+        });
+    }
 
     /**
      * The attributes that are mass assignable.

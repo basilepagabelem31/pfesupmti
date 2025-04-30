@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +15,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 
+//Administrateur
+
+Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::get('/admin/index',[AdminController::class,'create'])->name('admin.create');
+Route::post('/admin/index',[AdminController::class,'store'])->name('admin.store');
+Route::get('/admin/edit/{id}',[AdminController::class,'edit'])->name('admin.edit');
+Route::put('/admin/update/{id}',[AdminController::class,'update'])->name('admin.update');
+Route::delete('/admin/delete/{id}',[AdminController::class,'delete'])->name('admin.delete');
 
 
 
@@ -42,13 +51,6 @@ Route::put('admin/pays/{pays}', [PaysController::class, 'update'])->name('pays.u
 Route::delete('admin/pays/{pays}', [PaysController::class, 'destroy'])->name('pays.destroy');
 
 
-
-
-
-
-
-
-
 use App\Http\Controllers\VilleController;
 
 // Lister toutes les villes
@@ -68,19 +70,6 @@ Route::put('admin/villes/{ville}', [VilleController::class, 'update'])->name('vi
 
 // Supprimer une ville
 Route::delete('admin/villes/{ville}', [VilleController::class, 'destroy'])->name('villes.destroy');
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
