@@ -8,6 +8,17 @@ use Illuminate\Http\Request;
 
 class VilleController extends Controller
 {
+
+
+
+    public function getVilles($pays_id)
+    
+    {
+    $villes = Ville::where('pays_id', $pays_id)->get();
+
+    return response()->json($villes);
+    }
+
     // Afficher toutes les villes
     public function index()
     {
