@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -19,12 +18,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
 Route::get('/admin/index',[AdminController::class,'create'])->name('admin.create');
-Route::post('/admin/index',[AdminController::class,'store'])->name('admin.store');
+Route::post('/admin/store',[AdminController::class,'store'])->name('admin.store');
 Route::get('/admin/edit/{id}',[AdminController::class,'edit'])->name('admin.edit');
 Route::put('/admin/update/{id}',[AdminController::class,'update'])->name('admin.update');
 Route::delete('/admin/delete/{id}',[AdminController::class,'delete'])->name('admin.delete');
 
 
+// Pour récupérer les villes d’un pays donné
+Route::get('/villes/{pays_id}', [App\Http\Controllers\VilleController::class, 'getVilles']);
 
 
 
