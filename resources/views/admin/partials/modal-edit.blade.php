@@ -52,32 +52,34 @@
                    value="{{ old('adresse',$editAdmin->adresse) }}" required>
           </div>
 
-          {{-- Sélecteurs --}}
-          <div class="mb-3">
-            <label class="form-label">Pays</label>
-            <select name="pays_id" class="form-select" required>
-             <option value="">Sélectionner un pays </option>
-              @foreach($pays as $p)
-                <option value="{{ $p->id }}"
-                  {{ old('pays_id', $isEditing ? $editAdmin->pays_id : '') == $p->id   ? 'selected' : '' }}>
-                  {{ $p->nom }}
-                </option>
-              @endforeach
-            </select>
-          </div>
+              <!-- Pays -->
+      <div class="mb-3">
+        <label class="form-label">Pays</label>
+        <select name="pays_id" id="pays_id_edit" class="form-select" required>
+          <option value="">Sélectionner un pays </option>
+          @foreach($pays as $p)
+            <option value="{{ $p->id }}"
+              {{ old('pays_id', $isEditing ? $editAdmin->pays_id : '') == $p->id ? 'selected' : '' }}>
+              {{ $p->nom }}
+            </option>
+          @endforeach
+        </select>
+      </div>
 
-          <div class="mb-3">
-            <label class="form-label">Ville</label>
-            <select name="ville_id" class="form-select" required>
-            <option value="">Sélectionner une ville </option>
-              @foreach($villes as $v)
-                <option value="{{ $v->id }}"
-                  {{ old('ville_id', $isEditing ? $editAdmin->ville_id : '') == $v->id   ? 'selected' : ''  }}>
-                  {{ $v->nom }}
-                </option>
-              @endforeach
-            </select>
-          </div>
+      <!-- Ville -->
+      <div class="mb-3">
+        <label class="form-label">Ville</label>
+        <select name="ville_id" id="ville_id_edit" class="form-select" required>
+          <option value="">Sélectionner une ville </option>
+          @foreach($villes as $v)
+            <option value="{{ $v->id }}"
+              {{ old('ville_id', $isEditing ? $editAdmin->ville_id : '') == $v->id ? 'selected' : '' }}>
+              {{ $v->nom }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+
 
           <div class="mb-3">
             <label class="form-label">Rôle</label>

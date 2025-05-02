@@ -91,7 +91,8 @@
 
 <script>
 $(document).ready(function () {
-    // Changement de pays -> chargement des villes
+
+    // ---------- FORMULAIRE DE CREATION ----------
     $('#pays_id_create').on('change', function () {
         var paysId = $(this).val();
         $('#ville_id_create').empty().append('<option value="">Chargement...</option>');
@@ -116,7 +117,7 @@ $(document).ready(function () {
         }
     });
 
-    // Soumission AJAX du formulaire
+    // Soumission AJAX du formulaire de création
     $('#adminForm').on('submit', function (e) {
         e.preventDefault();
 
@@ -153,6 +154,34 @@ $(document).ready(function () {
             }
         });
     });
+
+    // ---------- FORMULAIRE DE MODIFICATION ----------
+    $('#pays_id_edit').on('change', function () {
+        let paysId = $(this).val();
+        let villeSelect = $('#ville_id_edit');
+        villeSelect.empty().append('<option value="">Chargement...</option>');
+
+        if (paysId) {
+            $.ajax({
+                url: '/villes/' + paysId,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    villeSelect.empty().append('<option value="">Sélectionner une ville</option>');
+                    $.each(data, function (index, ville) {
+                        let isSelected = ville.id == "{{ old('ville_id', $editAdmin->ville_id ?? '') }}" ? 'selected' : '';
+                        villeSelect.append('<option value="' + ville.id + '" ' + isSelected + '>' + ville.nom + '</option>');
+                    });
+                },
+                error: function () {
+                    villeSelect.empty().append('<option value="">Erreur de chargement</option>');
+                }
+            });
+        } else {
+            villeSelect.empty().append('<option value="">Sélectionner un pays d’abord</option>');
+        }
+    });
+
 });
 </script>
 @endsection
