@@ -37,9 +37,6 @@
 
     @stack('scripts') <!-- Pour ajouter des scripts spécifiques par page -->
     
-    @include('layouts.partials.navbar')
-
-
-
+    
 </body>
 </html>
