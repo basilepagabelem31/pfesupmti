@@ -36,5 +36,8 @@
     <script src="{{ asset('js/app.js') }}"></script>
 
     @stack('scripts') <!-- Pour ajouter des scripts spécifiques par page -->
+    
+    @include('layouts.partials.navbar')
+
 </body>
 </html>
