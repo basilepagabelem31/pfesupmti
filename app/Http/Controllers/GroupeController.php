@@ -2,64 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\groupe;
+use App\Models\Groupe;
 use Illuminate\Http\Request;
 
 class GroupeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $groupes = Groupe::all();
+        return view('groupes.index', compact('groupes'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('groupes.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'code' => 'required|unique:groupes',
+            'nom' => 'required',
+            'date' => 'required|date'
+        ]);
+
+        Groupe::create($request->all());
+        return redirect()->route('groupes.index')->with('success', 'Groupe ajouté.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(groupe $groupe)
+    public function edit(Groupe $groupe)
     {
-        //
+        return view('groupes.edit', compact('groupe'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(groupe $groupe)
+    public function update(Request $request, Groupe $groupe)
     {
-        //
+        $request->validate([
+            'code' => 'required|unique:groupes,code,' . $groupe->id,
+            'nom' => 'required',
+            'date' => 'required|date'
+        ]);
+
+        $groupe->update($request->all());
+        return redirect()->route('groupes.index')->with('success', 'Groupe mis à jour.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, groupe $groupe)
+    public function destroy(Groupe $groupe)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(groupe $groupe)
-    {
-        //
+        $groupe->delete();
+        return redirect()->route('groupes.index')->with('success', 'Groupe supprimé.');
     }
 }
+
