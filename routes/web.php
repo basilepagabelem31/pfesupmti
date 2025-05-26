@@ -293,3 +293,6 @@ Route::get('/settings', function () {
 Route::get('/helper', function () {
 	return view('/pages/helper');
 });
+
+//Groupe
+Route::resource('groupes', GroupeController::class);
