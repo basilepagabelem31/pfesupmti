@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GroupeController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -71,14 +72,6 @@ Route::put('admin/villes/{ville}', [VilleController::class, 'update'])->name('vi
 
 // Supprimer une ville
 Route::delete('admin/villes/{ville}', [VilleController::class, 'destroy'])->name('villes.destroy');
-
-
-
-
-
-
-
-
 
 
 Route::get('/', function () {
