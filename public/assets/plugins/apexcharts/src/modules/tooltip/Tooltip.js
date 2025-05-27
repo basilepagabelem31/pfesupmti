@@ -71,7 +71,7 @@ export default class Tooltip {
     if (w.config.tooltip.cssClass) {
       tooltipEl.classList.add(w.config.tooltip.cssClass)
     }
-    tooltipEl.classList.add(`apexcharts-theme-${this.tConfig.theme}`)
+    tooltipEl.classList.add(`apexcharts-theme-${this.tConfig.theme || 'light'}`)
     w.globals.dom.elWrap.appendChild(tooltipEl)
 
     if (w.globals.axisCharts) {
@@ -147,7 +147,20 @@ export default class Tooltip {
 
       let point = document.createElement('span')
       point.classList.add('apexcharts-tooltip-marker')
-      point.style.backgroundColor = w.globals.colors[i]
+
+      if (w.config.tooltip.fillSeriesColor) {
+        point.style.backgroundColor = w.globals.colors[i]
+      } else {
+        point.style.color = w.globals.colors[i]
+      }
+
+      let mShape = w.config.markers.shape
+      let shape = mShape
+      if (Array.isArray(mShape)) {
+        shape = mShape[i]
+      }
+
+      point.setAttribute('shape', shape)
       gTxt.appendChild(point)
 
       const gYZ = document.createElement('div')
@@ -457,10 +470,6 @@ export default class Tooltip {
       }
     }
 
-    if (ttCtx.fixedTooltip) {
-      ttCtx.drawFixedTooltipRect()
-    }
-
     if (w.globals.axisCharts) {
       ttCtx.axisChartsTooltips({
         e,
@@ -474,6 +483,10 @@ export default class Tooltip {
         opt,
         tooltipRect: ttCtx.tooltipRect,
       })
+    }
+
+    if (ttCtx.fixedTooltip) {
+      ttCtx.drawFixedTooltipRect()
     }
   }
 
@@ -807,6 +820,14 @@ export default class Tooltip {
 
     const bars = this.tooltipUtil.getElBars()
 
+    const handlePoints = () => {
+      if (w.globals.markers.largestSize > 0) {
+        ttCtx.marker.enlargePoints(j)
+      } else {
+        ttCtx.tooltipPosition.moveDynamicPointsOnHover(j)
+      }
+    }
+
     if (w.config.legend.tooltipHoverFormatter) {
       let legendFormatter = w.config.legend.tooltipHoverFormatter
 
@@ -866,11 +887,7 @@ export default class Tooltip {
       })
 
       if (hasMarkers) {
-        if (w.globals.markers.largestSize > 0) {
-          ttCtx.marker.enlargePoints(j)
-        } else {
-          ttCtx.tooltipPosition.moveDynamicPointsOnHover(j)
-        }
+        handlePoints()
       } else if (this.tooltipUtil.hasBars()) {
         this.barSeriesHeight = this.tooltipUtil.getBarsHeight(bars)
         if (this.barSeriesHeight > 0) {
@@ -880,8 +897,13 @@ export default class Tooltip {
 
           // de-activate first
           this.deactivateHoverFilter()
+          let points = ttCtx.tooltipUtil.getAllMarkers(true)
 
-          this.tooltipPosition.moveStickyTooltipOverBars(j, capturedSeries)
+          if (points.length && !this.barSeriesHeight) {
+            handlePoints()
+          }
+
+          ttCtx.tooltipPosition.moveStickyTooltipOverBars(j, capturedSeries)
 
           for (let b = 0; b < paths.length; b++) {
             graphics.pathMouseEnter(paths[b])

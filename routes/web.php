@@ -1,89 +1,41 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StagiaireConrtoller;
+use App\Http\Controllers\SuperviseurController;
 use Illuminate\Support\Facades\Route;
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+
+Route::get('/', function () {
+    return redirect()->route('login');//rediriger directement vers la page login 
+});
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
 
+Route::middleware(['auth','role:Administrateur'])->group(function(){
 //Administrateur
-
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
-Route::get('/admin/index',[AdminController::class,'create'])->name('admin.create');
+Route::get('/admin/create',[AdminController::class,'create'])->name('admin.create');
 Route::post('/admin/store',[AdminController::class,'store'])->name('admin.store');
 Route::get('/admin/edit/{id}',[AdminController::class,'edit'])->name('admin.edit');
 Route::put('/admin/update/{id}',[AdminController::class,'update'])->name('admin.update');
 Route::delete('/admin/delete/{id}',[AdminController::class,'delete'])->name('admin.delete');
 
 
-// Pour récupérer les villes d’un pays donné
-Route::get('/villes/{pays_id}', [App\Http\Controllers\VilleController::class, 'getVilles']);
+//route publique pour le moment 
 
-
-
-
-
-use App\Http\Controllers\PaysController;
-
-// Lister tous les pays
-Route::get('admin/pays', [PaysController::class, 'index'])->name('pays.index');
-
-// Afficher le formulaire pour ajouter un pays
-Route::get('admin/pays/create', [PaysController::class, 'create'])->name('pays.create');
-
-// Enregistrer un nouveau pays
-Route::post('admin/pays', [PaysController::class, 'store'])->name('pays.store');
-
-// Afficher le formulaire pour modifier un pays
-Route::get('admin/pays/{pays}/edit', [PaysController::class, 'edit'])->name('pays.edit');
-
-// Mettre à jour un pays
-Route::put('admin/pays/{pays}', [PaysController::class, 'update'])->name('pays.update');
-
-// Supprimer un pays
-Route::delete('admin/pays/{pays}', [PaysController::class, 'destroy'])->name('pays.destroy');
-
-
-use App\Http\Controllers\VilleController;
-
-// Lister toutes les villes
-Route::get('admin/villes', [VilleController::class, 'index'])->name('villes.index');
-
-// Afficher le formulaire pour ajouter une ville
-Route::get('admin/villes/create', [VilleController::class, 'create'])->name('villes.create');
-
-// Enregistrer une nouvelle ville
-Route::post('admin/villes', [VilleController::class, 'store'])->name('villes.store');
-
-// Afficher le formulaire pour modifier une ville
-Route::get('admin/villes/{ville}/edit', [VilleController::class, 'edit'])->name('villes.edit');
-
-// Mettre à jour une ville
-Route::put('admin/villes/{ville}', [VilleController::class, 'update'])->name('villes.update');
-
-// Supprimer une ville
-Route::delete('admin/villes/{ville}', [VilleController::class, 'destroy'])->name('villes.destroy');
-
-
-
-
-
-
-
-
-
-
-Route::get('/', function () {
-	return view('/pages/index');
-});
+//Route::get('/', function () {
+//	return view('/pages/index');
+//});
 
 Route::get('/analytics', function () {
 	return view('/pages/analytics');
@@ -300,3 +252,73 @@ Route::get('/settings', function () {
 Route::get('/helper', function () {
 	return view('/pages/helper');
 });
+
+});
+
+//route pour le superviseur 
+Route::middleware(['auth','role:Superviseur'])->group(function(){
+Route::get('/test-dashboard-Supervisseur',[SuperviseurController::class,'index'])->name('superviseur.dashboard');
+});
+//route pour le stagiaire 
+Route::middleware(['auth','role:Stagiaire'])->group(function(){
+Route::get('/test-dashboard-Stagiaire',[StagiaireConrtoller::class,'index'])->name('stagiaire.dashboard');
+
+});
+
+
+
+
+
+
+
+
+use App\Http\Controllers\PaysController;
+
+// Lister tous les pays
+Route::get('admin/pays', [PaysController::class, 'index'])->name('pays.index');
+
+// Afficher le formulaire pour ajouter un pays
+Route::get('admin/pays/create', [PaysController::class, 'create'])->name('pays.create');
+
+// Enregistrer un nouveau pays
+Route::post('admin/pays', [PaysController::class, 'store'])->name('pays.store');
+
+// Afficher le formulaire pour modifier un pays
+Route::get('admin/pays/{pays}/edit', [PaysController::class, 'edit'])->name('pays.edit');
+
+// Mettre à jour un pays
+Route::put('admin/pays/{pays}', [PaysController::class, 'update'])->name('pays.update');
+
+// Supprimer un pays
+Route::delete('admin/pays/{pays}', [PaysController::class, 'destroy'])->name('pays.destroy');
+
+
+use App\Http\Controllers\VilleController;
+
+// Lister toutes les villes
+Route::get('admin/villes', [VilleController::class, 'index'])->name('villes.index');
+
+// Afficher le formulaire pour ajouter une ville
+Route::get('admin/villes/create', [VilleController::class, 'create'])->name('villes.create');
+
+// Enregistrer une nouvelle ville
+Route::post('admin/villes', [VilleController::class, 'store'])->name('villes.store');
+
+// Afficher le formulaire pour modifier une ville
+Route::get('admin/villes/{ville}/edit', [VilleController::class, 'edit'])->name('villes.edit');
+
+// Mettre à jour une ville
+Route::put('admin/villes/{ville}', [VilleController::class, 'update'])->name('villes.update');
+
+// Supprimer une ville
+Route::delete('admin/villes/{ville}', [VilleController::class, 'destroy'])->name('villes.destroy');
+
+// Pour récupérer les villes d’un pays donné
+Route::get('/villes/{pays_id}', [App\Http\Controllers\VilleController::class, 'getVilles']);
+
+
+
+
+
+
+require __DIR__.'/auth.php';

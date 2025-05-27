@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ville;
 use App\Models\Pays;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class VilleController extends Controller
 {
@@ -14,7 +15,14 @@ class VilleController extends Controller
     public function getVilles($pays_id)
     
     {
-    $villes = Ville::where('pays_id', $pays_id)->get();
+    //cache pendant 24H
+    
+    $cacheKey = "villes.pays.{$pays_id}";
+    $villes = Cache::remember($cacheKey, 1440, function() use ($pays_id) {
+        return Ville::where('pays_id', $pays_id)
+                   ->orderBy('nom')
+                   ->get(['id', 'nom']);
+    });
 
     return response()->json($villes);
     }

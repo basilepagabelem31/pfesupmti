@@ -4,6 +4,8 @@
 	@include('partial.head')
 </head>
 <body class="{{ (!empty($bodyClass)) ? $bodyClass : '' }}">
+
+
 	<!-- BEGIN #app -->
 	<div id="app" class="app {{ (!empty($appClass)) ? $appClass : '' }}">
 	  @includeWhen(empty($appHeaderHide), 'partial.header')
@@ -18,6 +20,10 @@
 			<!-- END #content -->
 		@else
     	@yield('content')
+			 {{-- Injection du JSON pré-calculé --}}
+			<script>
+				window._paysVilles = @json($paysVilles ?? []) ;
+			</script>
 		@endif
 
 		@includeWhen(!empty($appFooter), 'partial.footer')
@@ -30,4 +36,5 @@
 	@include('partial.scripts')
 </body>
 @yield('my_js')
+
 </html>

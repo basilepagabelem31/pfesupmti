@@ -21,7 +21,7 @@
     }
   }
   function _createClass(e, r, t) {
-    return r && _defineProperties(e.prototype, r), Object.defineProperty(e, "prototype", {
+    return _defineProperties(e.prototype, r), Object.defineProperty(e, "prototype", {
       writable: !1
     }), e;
   }
@@ -73,11 +73,11 @@
     for (; !{}.hasOwnProperty.call(t, o) && null !== (t = _getPrototypeOf(t)););
     return t;
   }
-  function _superPropGet(t, e, r, o) {
-    var p = _get(_getPrototypeOf(t.prototype ), e, r);
-    return function (t) {
-      return p.apply(r, t);
-    } ;
+  function _superPropGet(t, o, e, r) {
+    var p = _get(_getPrototypeOf(t.prototype ), o, e);
+    return "function" == typeof p ? function (t) {
+      return p.apply(e, t);
+    } : p;
   }
   function _toPrimitive(t, r) {
     if ("object" != typeof t || !t) return t;
@@ -500,9 +500,9 @@
   	/* eslint-disable es/no-symbol -- required for testing */
   	var NATIVE_SYMBOL = requireSymbolConstructorDetection();
 
-  	useSymbolAsUid = NATIVE_SYMBOL
-  	  && !Symbol.sham
-  	  && typeof Symbol.iterator == 'symbol';
+  	useSymbolAsUid = NATIVE_SYMBOL &&
+  	  !Symbol.sham &&
+  	  typeof Symbol.iterator == 'symbol';
   	return useSymbolAsUid;
   }
 
@@ -653,10 +653,10 @@
   	var store = sharedStore.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
   	(store.versions || (store.versions = [])).push({
-  	  version: '3.38.1',
+  	  version: '3.39.0',
   	  mode: IS_PURE ? 'pure' : 'global',
   	  copyright: '© 2014-2024 Denis Pushkarev (zloirock.ru)',
-  	  license: 'https://github.com/zloirock/core-js/blob/v3.38.1/LICENSE',
+  	  license: 'https://github.com/zloirock/core-js/blob/v3.39.0/LICENSE',
   	  source: 'https://github.com/zloirock/core-js'
   	});
   	return sharedStore.exports;
@@ -2958,17 +2958,17 @@
     });
     return tmpGroups;
   };
-  Object.assign($.fn.bootstrapTable.defaults.icons, {
-    collapseGroup: {
-      bootstrap3: 'glyphicon-chevron-up',
-      bootstrap5: 'bi-chevron-up',
-      materialize: 'arrow_drop_down'
-    }[$.fn.bootstrapTable.theme] || 'fa-angle-up',
-    expandGroup: {
-      bootstrap3: 'glyphicon-chevron-down',
-      bootstrap5: 'bi-chevron-down',
-      materialize: 'arrow_drop_up'
-    }[$.fn.bootstrapTable.theme] || 'fa-angle-down'
+  Utils.assignIcons($.fn.bootstrapTable.icons, 'collapseGroup', {
+    glyphicon: 'glyphicon-chevron-up',
+    fa: 'fa-angle-up',
+    bi: 'bi-chevron-up',
+    'material-icons': 'arrow_drop_down'
+  });
+  Utils.assignIcons($.fn.bootstrapTable.icons, 'expandGroup', {
+    glyphicon: 'glyphicon-chevron-down',
+    fa: 'fa-angle-down',
+    bi: 'bi-chevron-down',
+    'material-icons': 'arrow_drop_up'
   });
   Object.assign($.fn.bootstrapTable.defaults, {
     groupBy: false,

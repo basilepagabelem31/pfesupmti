@@ -1,4 +1,4 @@
-//Summernote WYSIWYG  editor ucun Azerbaycan dili fayli
+﻿//Summernote WYSIWYG  editor ucun Azerbaycan dili fayli
 //Tercume etdi: RAMIL ALIYEV
 //Tarix: 20.07.2019
 //Baki Azerbaycan
