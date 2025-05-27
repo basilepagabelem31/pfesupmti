@@ -23,7 +23,9 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth','role:Administrateur'])->group(function(){
 //Administrateur
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::get('/admin/Administrateur-Superviseur', [AdminController::class, 'index'])->name('admin.index');
+Route::get('/admin/Stagiaire', [AdminController::class, 'indexStagiaire'])->name('admin.index_stagiaire');
+
 Route::get('/admin/create',[AdminController::class,'create'])->name('admin.create');
 Route::post('/admin/store',[AdminController::class,'store'])->name('admin.store');
 Route::get('/admin/edit/{id}',[AdminController::class,'edit'])->name('admin.edit');

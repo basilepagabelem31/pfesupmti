@@ -22,7 +22,7 @@ class AdminController extends Controller
         //filtre les utilisateurs par role au lieu de charger tous les utilisateurs $admins= User::all();
         $admins= User::with(['pays','ville','role','statut'])
         ->whereHas('role',function($q){
-            $q->whereIn('nom',['Administrateur','Superviseur','Stagiaire']);
+            $q->whereIn('nom',['Administrateur','Superviseur']);
         })->paginate(10);
         $roles=Role::all();//recupere les roles
         $statuts=Statut::all();//recupere les statuts
@@ -31,9 +31,27 @@ class AdminController extends Controller
         $paysVilles=Pays::with([
             'villes' => fn($q) =>$q->select('id','nom','pays_id')->orderBy('nom')
         ])->orderBy('nom')->get(['id','nom']);
-        $stagiaireId=Role::where('nom','Stagiaire')->value('id');
+        $stagiaireId = Role::where('nom','Stagiaire')->value('id');
         return view('admin.index',compact('admins','roles','statuts','pays','paysVilles','stagiaireId'));
     }
+        public function indexStagiaire()
+        {
+            // on ne récupère que les utilisateurs ayant le rôle "Stagiaire"
+            $admins = User::with(['pays','ville','role','statut'])
+                ->whereHas('role', function($q){
+                    $q->where('nom', 'Stagiaire');
+                })->paginate(10);
+
+            $roles = Role::all();
+            $statuts = Statut::all();
+            $pays = Pays::all();
+            $paysVilles = Pays::with([
+                'villes' => fn($q) =>$q->select('id','nom','pays_id')->orderBy('nom')
+            ])->orderBy('nom')->get(['id','nom']);
+            $stagiaireId = Role::where('nom','Stagiaire')->value('id');
+
+            return view('admin.index_stagiaire', compact('admins', 'roles', 'statuts', 'pays', 'paysVilles', 'stagiaireId'));
+        }
 
     public function store(Request $request)
     {
@@ -56,8 +74,18 @@ class AdminController extends Controller
 
         $validated['password'] = Hash::make($validated['password']);
         $admin = User::create($validated);
+
+        //redirection en fonction du role pour l'affichage 
+
+        $role = $admin->role ? $admin->role->nom : null ;
+        if ($role === 'Administrateur'|| $role === 'Superviseur'){
+             return redirect()->route('admin.index')->with('success', 'Admin/Superviseur a été bien creer.');
+
+        }else {
+         return redirect()->route('admin.index_stagiaire')->with('success', 'Stagiaire a été bien creer.');
+
+        }
         
-        return redirect()->route('admin.index')->with('success', 'Admin a été bien creer.');
 
        
     }
@@ -108,9 +136,15 @@ class AdminController extends Controller
     
         $admin->update($data);
 
-       
-    
-        return redirect()->route('admin.index')->with('success', 'Admin mis à jour.');
+        $role = $admin->role ? $admin->role->nom : null ;
+        if ($role === 'Administrateur'|| $role === 'Superviseur'){
+             return redirect()->route('admin.index')->with('success', 'Admin/Superviseur a été bien creer.');
+
+        }else {
+         return redirect()->route('admin.index_stagiaire')->with('success', 'Stagiaire a été bien creer.');
+
+        }
+        
     }
 
     public function delete($id)
