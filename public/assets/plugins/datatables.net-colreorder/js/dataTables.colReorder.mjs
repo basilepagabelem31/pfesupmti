@@ -1,4 +1,4 @@
-/*! ColReorder 2.0.4
+/*! ColReorder 2.1.0
  * © SpryMedia Ltd - datatables.net/license
  */
 
@@ -413,6 +413,7 @@ var ColReorder = /** @class */ (function () {
         this.c = {
             columns: null,
             enable: null,
+            headerRows: null,
             order: null
         };
         this.s = {
@@ -463,10 +464,13 @@ var ColReorder = /** @class */ (function () {
         }
         dt.table()
             .header.structure()
-            .forEach(function (row) {
+            .forEach(function (row, rowIdx) {
+            var headerRows = opts.headerRows;
             for (var i = 0; i < row.length; i++) {
-                if (row[i] && row[i].cell) {
-                    that._addListener(row[i].cell);
+                if (!headerRows || headerRows.includes(rowIdx)) {
+                    if (row[i] && row[i].cell) {
+                        that._addListener(row[i].cell);
+                    }
                 }
             }
         });
@@ -501,6 +505,12 @@ var ColReorder = /** @class */ (function () {
             }
             // Ignore if disabled
             if (!that.c.enable) {
+                return;
+            }
+            // ColumnControl integration - if there is a CC reorder button in the header
+            // then the mousedown is limited to that
+            var btn = $('button.dtcc-button_reorder', this);
+            if (btn.length && e.target !== btn[0] && btn.find(e.target).length === 0) {
                 return;
             }
             that._mouseDown(e, this);
@@ -615,10 +625,19 @@ var ColReorder = /** @class */ (function () {
             top: this._cursorPosition(e, 'pageY') - this.s.mouse.offset.y
         });
         // Find cursor's left position relative to the table
-        var tableOffset = $(this.dt.table().node()).offset().left;
+        var tableNode = this.dt.table().node();
+        var tableOffset = $(tableNode).offset().left;
         var cursorMouseLeft = this._cursorPosition(e, 'pageX') - tableOffset;
+        var cursorInlineStart;
+        if (this._isRtl()) {
+            var tableWidth = tableNode.clientWidth;
+            cursorInlineStart = tableWidth - cursorMouseLeft;
+        }
+        else {
+            cursorInlineStart = cursorMouseLeft;
+        }
         var dropZone = this.s.dropZones.find(function (zone) {
-            if (zone.left <= cursorMouseLeft && cursorMouseLeft <= zone.left + zone.width) {
+            if (zone.inlineStart <= cursorInlineStart && cursorInlineStart <= zone.inlineStart + zone.width) {
                 return true;
             }
             return false;
@@ -628,15 +647,29 @@ var ColReorder = /** @class */ (function () {
             return;
         }
         if (!dropZone.self) {
-            this._move(dropZone, cursorMouseLeft);
+            this._move(dropZone, cursorInlineStart);
         }
     };
     ColReorder.prototype._mouseUp = function (e) {
+        var _this = this;
         $(document).off('.colReorder');
         $(document.body).removeClass('dtcr-dragging');
         if (this.dom.drag) {
             this.dom.drag.remove();
             this.dom.drag = null;
+            // Once the element is removed, Firefox will then complete the mouse event
+            // sequence by firing a click event on the element that the mouse is now
+            // over. This means that a click event happens on the header cell triggering
+            // a sort. A setTimeout on the remove doesn't appear to work around this.
+            //
+            // Therefore, we need to add a click event listener that will kill the
+            // bubbling of the event, and then _almost_ immediately remove it.
+            this.s.mouse.target.on('click.dtcr', function (e) {
+                return false;
+            });
+            setTimeout(function () {
+                _this.s.mouse.target.off('.dtcr');
+            }, 10);
         }
         if (this.s.scrollInterval) {
             clearInterval(this.s.scrollInterval);
@@ -647,9 +680,9 @@ var ColReorder = /** @class */ (function () {
      * Shift columns around
      *
      * @param dropZone Where to move to
-     * @param cursorMouseLeft Cursor position, relative to the left of the table
+     * @param cursorInlineStart Cursor position, relative to the inline start (left or right) of the table
      */
-    ColReorder.prototype._move = function (dropZone, cursorMouseLeft) {
+    ColReorder.prototype._move = function (dropZone, cursorInlineStart) {
         var that = this;
         this.dt.colReorder.move(this.s.mouse.targets, dropZone.colIdx);
         // Update the targets
@@ -672,10 +705,10 @@ var ColReorder = /** @class */ (function () {
             return zone.colIdx === visibleTargets[0];
         });
         var dzIdx = this.s.dropZones.indexOf(dz);
-        if (dz.left > cursorMouseLeft) {
-            var previousDiff = dz.left - cursorMouseLeft;
+        if (dz.inlineStart > cursorInlineStart) {
+            var previousDiff = dz.inlineStart - cursorInlineStart;
             var previousDz = this.s.dropZones[dzIdx - 1];
-            dz.left -= previousDiff;
+            dz.inlineStart -= previousDiff;
             dz.width += previousDiff;
             if (previousDz) {
                 previousDz.width -= previousDiff;
@@ -685,12 +718,12 @@ var ColReorder = /** @class */ (function () {
         dz = this.s.dropZones.find(function (zone) {
             return zone.colIdx === visibleTargets[visibleTargets.length - 1];
         });
-        if (dz.left + dz.width < cursorMouseLeft) {
-            var nextDiff = cursorMouseLeft - (dz.left + dz.width);
+        if (dz.inlineStart + dz.width < cursorInlineStart) {
+            var nextDiff = cursorInlineStart - (dz.inlineStart + dz.width);
             var nextDz = this.s.dropZones[dzIdx + 1];
             dz.width += nextDiff;
             if (nextDz) {
-                nextDz.left += nextDiff;
+                nextDz.inlineStart += nextDiff;
                 nextDz.width -= nextDiff;
             }
         }
@@ -724,7 +757,7 @@ var ColReorder = /** @class */ (function () {
                 // by the final condition in this logic set
                 dropZones.push({
                     colIdx: colIdx,
-                    left: totalWidth - negativeCorrect,
+                    inlineStart: totalWidth - negativeCorrect,
                     self: moveColumns[0] <= colIdx && colIdx <= moveColumns[moveColumns.length - 1],
                     width: columnWidth + negativeCorrect
                 });
@@ -765,12 +798,16 @@ var ColReorder = /** @class */ (function () {
             return;
         }
         var that = this;
-        var tableLeft = $(this.dt.table().container()).position().left;
+        var tableLeft = $(this.dt.table().container()).offset().left;
         var tableWidth = $(this.dt.table().container()).outerWidth();
         var mouseBuffer = 75;
         var scrollContainer = this.dt.table().body().parentElement.parentElement;
         this.s.scrollInterval = setInterval(function () {
             var mouseLeft = that.s.mouse.absLeft;
+            // On initial mouse down the mouse position can be -1, which we want to ignore
+            if (mouseLeft === -1) {
+                return;
+            }
             if (mouseLeft < tableLeft + mouseBuffer && scrollContainer.scrollLeft) {
                 scrollContainer.scrollLeft -= 5;
             }
@@ -800,22 +837,26 @@ var ColReorder = /** @class */ (function () {
     // 		);
     // 	}
     // }
+    ColReorder.prototype._isRtl = function () {
+        return $(this.dt.table()).css('direction') === 'rtl';
+    };
     ColReorder.defaults = {
         columns: '',
         enable: true,
+        headerRows: null,
         order: null
     };
-    ColReorder.version = '2.0.4';
+    ColReorder.version = '2.1.0';
     return ColReorder;
 }());
 
-/*! ColReorder 2.0.4
+/*! ColReorder 2.1.0
  * © SpryMedia Ltd - datatables.net/license
  */
 /**
  * @summary     ColReorder
  * @description Provide the ability to reorder columns in a DataTable
- * @version     2.0.4
+ * @version     2.1.0
  * @author      SpryMedia Ltd
  * @contact     datatables.net
  * @copyright   SpryMedia Ltd.

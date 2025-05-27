@@ -32,7 +32,7 @@ class PaysController extends Controller
     // Afficher tous les pays
     public function index()
     {
-        $pays = Pays::all();
+       $pays = Pays::with('villes')->get();
         return view('pays.index', compact('pays'));
     }
 

@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.2.20 - 2025-05-09
+
+- Fixed text overflow with some non-wrappable texts
+
+## 0.2.19 - 2025-04-26
+
+- Update Roboto font (version 3.011)
+
+## 0.2.18 - 2025-01-01
+
+- Update pdfkit
+- Fixed a potential issue in the minimized library when detecting the orientation of JPEG images
+
+## 0.2.17 - 2024-12-23
+
+- Fixed big size pdfmake bundle for browser
+
+## 0.2.16 - 2024-12-15
+
+- Update pdfkit to 0.15.2
+- Fixed aspect ratio for image with exif orientation tag
+- Fixed font size calculation for watermark if is page orientation is changed
+
 ## 0.2.15 - 2024-11-02
 
 - Added support PDF/A and PDF/UA (see [documentation](https://pdfmake.github.io/docs/0.1/document-definition-object/pdfa/))

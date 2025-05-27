@@ -1,4 +1,4 @@
-QUnit.module( "data" );
+﻿QUnit.module( "data" );
 
 QUnit.test( "jQuery.data() camelCased names", function( assert ) {
 
