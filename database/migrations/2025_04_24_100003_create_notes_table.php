@@ -24,8 +24,8 @@ return new class extends Migration
             $table ->datetime("date_note");
            
 
-            $table->foreignId("stagiaire_id")->constrained("utilisateurs")->onDelete("cascade");
-            $table->foreignId("donneur_id")->constrained("utilisateurs")->onDelete("cascade");
+            $table->foreignId("stagiaire_id")->constrained("users")->onDelete("cascade");
+            $table->foreignId("donneur_id")->constrained("users")->onDelete("cascade");
 
             $table->timestamps();
         });

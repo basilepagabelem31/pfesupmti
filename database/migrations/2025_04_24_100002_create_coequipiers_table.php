@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('code_team')->unique();
             $table->dateTime('join_date');
             $table->boolean('is_creator')->default(false);
-            $table->foreignId('stagiaire_id')->constrained('utilisateurs')->onDelete('cascade'); // Déclaration avant timestamps
+            $table->foreignId('stagiaire_id')->constrained('users')->onDelete('cascade'); // Déclaration avant timestamps
             $table->timestamps();
 
         });

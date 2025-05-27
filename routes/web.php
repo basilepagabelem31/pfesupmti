@@ -1,7 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,8 +14,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 
+//Administrateur
+
+Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::get('/admin/index',[AdminController::class,'create'])->name('admin.create');
+Route::post('/admin/store',[AdminController::class,'store'])->name('admin.store');
+Route::get('/admin/edit/{id}',[AdminController::class,'edit'])->name('admin.edit');
+Route::put('/admin/update/{id}',[AdminController::class,'update'])->name('admin.update');
+Route::delete('/admin/delete/{id}',[AdminController::class,'delete'])->name('admin.delete');
 
 
+// Pour récupérer les villes d’un pays donné
+Route::get('/villes/{pays_id}', [App\Http\Controllers\VilleController::class, 'getVilles']);
 
 
 use App\Http\Controllers\UtilisateurController;
@@ -98,25 +108,6 @@ Route::delete('admin/villes/{ville}', [VilleController::class, 'destroy'])->name
 
 
 
-
-
-// Route pour afficher tous les utilisateurs
-Route::get('/utilisateurs', [UtilisateurController::class, 'index'])->name('utilisateurs.index');
-
-// Route pour afficher le formulaire de création d'un superviseur
-Route::get('/utilisateurs/create', [UtilisateurController::class, 'create'])->name('utilisateurs.create');
-
-// Route pour stocker un nouvel utilisateur (superviseur)
-Route::post('/utilisateurs', [UtilisateurController::class, 'store'])->name('utilisateurs.store');
-
-// Route pour afficher le formulaire d'édition d'un utilisateur
-Route::get('/utilisateurs/{id}/edit', [UtilisateurController::class, 'edit'])->name('utilisateurs.edit');
-
-// Route pour mettre à jour un utilisateur existant
-Route::put('/utilisateurs/{id}', [UtilisateurController::class, 'update'])->name('utilisateurs.update');
-
-// Route pour supprimer un utilisateur
-Route::delete('/utilisateurs/{id}', [UtilisateurController::class, 'destroy'])->name('utilisateurs.destroy');
 
 
 

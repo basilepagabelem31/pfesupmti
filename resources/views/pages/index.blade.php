@@ -11,6 +11,12 @@
 	<h1 class="page-header mb-3">
 		Hi, Sean. <small>here's what's happening with your store today.</small>
 	</h1>
+
+	<!-- BOUTON Ajouter -->
+    <a href="{{ route('admin.index') }}" class="btn btn-primary mb-3">
+       Liste des Administrateurs
+    </a>
+
 	
 
 

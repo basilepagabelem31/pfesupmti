@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
            
 
-            $table -> foreignId("intern_id")->constrained("utilisateurs")->onDelete("cascade");
+            $table -> foreignId("intern_id")->constrained("users")->onDelete("cascade");
             $table -> foreignId("sujet_id")->constrained("sujets")->onDelete("cascade");
 
 

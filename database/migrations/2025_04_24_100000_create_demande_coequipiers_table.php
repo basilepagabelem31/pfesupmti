@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('demande_coequipiers', function (Blueprint $table) {
-            $table->foreignId("stagiaire_id")->constrained("utilisateurs")->onDelete("cascade");
-            $table->foreignId("destinateur_id")->constrained("utilisateurs")->onDelete("cascade");
+            $table->foreignId("stagiaire_id")->constrained("users")->onDelete("cascade");
+            $table->foreignId("destinateur_id")->constrained("users")->onDelete("cascade");
             $table->timestamps();
         });
     }

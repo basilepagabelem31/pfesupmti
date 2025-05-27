@@ -14,26 +14,16 @@ return new class extends Migration
     {
         Schema::create('statuts', function (Blueprint $table) {
             $table->id();
-            $table->string('nom')->unique();
+            $table->enum("nom",[
+                'active',
+                'desactive',
+                'archive'
+            ])->default('active');
             $table->text("description");
             $table->timestamps();
         });
 
-        // Insertion des données par défaut
-        DB::table('statuts')->insert([
-            [
-                'nom' => 'active',
-                'description' => 'Ce statut signifie que l\'élément est actif.'
-            ],
-            [
-                'nom' => 'desactive',
-                'description' => 'Ce statut signifie que l\'élément est désactivé temporairement.'
-            ],
-            [
-                'nom' => 'archive',
-                'description' => 'Ce statut signifie que l\'élément est archivé ou obsolète.'
-            ],
-        ]);
+    
     }
 
     /**

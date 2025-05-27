@@ -1,107 +1,106 @@
+@php
+    // URL courante (avec leading slash)
+    $currentUrl = '/'.trim(request()->path(), '/');
+
+    // Closure récursive UNIQUE pour les sous-menus
+    $renderSubMenu = function(array $items) use (&$renderSubMenu, $currentUrl) {
+        $html = '';
+
+        foreach ($items as $menu) {
+            $hasSub  = ! empty($menu['children']) ? 'has-sub' : '';
+            $url     = $menu['url']   ?? '#';
+            $text    = '<span class="menu-text">'. ($menu['text'] ?? '') .'</span>';
+            $caret   = $hasSub ? '<span class="menu-caret"><b class="caret"></b></span>' : '';
+            $submenu = '';
+
+            // Rendu récursif des enfants
+            if (! empty($menu['children'])) {
+                $submenu = '<div class="menu-submenu">'
+                         . $renderSubMenu($menu['children'])
+                         . '</div>';
+            }
+
+            // Détection de l'état actif
+            $active = ($currentUrl === $url) ? 'active' : '';
+
+            $html .= '<div class="menu-item '. $hasSub .' '. $active .'">'
+                   . '<a href="'. $url .'" class="menu-link">'. $text . $caret .'</a>'
+                   . $submenu
+                   . '</div>';
+        }
+
+        return $html;
+    };
+@endphp
+
 <!-- BEGIN #sidebar -->
 <div id="sidebar" class="app-sidebar">
-	<!-- BEGIN scrollbar -->
-	<div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
-		<!-- BEGIN menu -->
-		<div class="menu">
-            @php
-            $currentUrl = (Request::path() != '/') ? '/'. Request::path() : '/';
+  <!-- BEGIN scrollbar -->
+  <div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
+    <!-- BEGIN menu -->
+    <div class="menu">
 
-            function renderSubMenu($value, $currentUrl) {
-                $subMenu = '';
-                $GLOBALS['sub_level'] += 1 ;
-                $GLOBALS['active'][$GLOBALS['sub_level']] = '';
-                $currentLevel = $GLOBALS['sub_level'];
-                foreach ($value as $key => $menu) {
-                    $GLOBALS['childparent_level'] = '';
+      @foreach(config('sidebar.menu') as $menu)
+        @php
+            // Paramètres du menu principal
+            $hasSub  = ! empty($menu['children']) ? 'has-sub' : '';
+            $url     = $menu['url']   ?? '#';
+            $icon    = '';
+            if (! empty($menu['icon'])) {
+                $icon = '<span class="menu-icon"><i class="'. $menu['icon'] .'"></i>'
+                      . (! empty($menu['label'])
+                         ? '<span class="menu-icon-label">'. $menu['label'] .'</span>'
+                         : '')
+                      . '</span>';
+            }
+            $text    = ! empty($menu['text'])
+                      ? '<span class="menu-text">'. $menu['text'] .'</span>'
+                      : '';
+            $caret   = $hasSub ? '<span class="menu-caret"><b class="caret"></b></span>' : '';
+            $submenu = '';
 
-                    $subSubMenu = '';
-                    $hasSub = (!empty($menu['children'])) ? 'has-sub' : '';
-                    $menuUrl = (!empty($menu['url'])) ? $menu['url'] : '';
-                    $menuCaret = (!empty($hasSub)) ? '<span class="menu-caret"><b class="caret"></b></span>' : '';
-                    $menuText = (!empty($menu['text'])) ? '<span class="menu-text">'. $menu['text'] .'</span>' : '';
-
-                    if (!empty($menu['children'])) {
-                        $subSubMenu .= '<div class="menu-submenu">';
-                        $subSubMenu .= renderSubMenu($menu['children'], $currentUrl);
-                        $subSubMenu .= '</div>';
-                    }
-
-                    $active = ($currentUrl == $menuUrl) ? 'active' : '';
-                    if (!empty(config('sidebar.activeUrl'))) {
-                        $active = (config('sidebar.activeUrl') == $menuUrl) ? 'active' : '';
-                    }
-                    if ($active) {
-                        $GLOBALS['parent_active'] = true;
-                        $GLOBALS['active'][$GLOBALS['sub_level'] - 1] = true;
-                    }
-                    if (!empty($GLOBALS['active'][$currentLevel])) {
-                        $active = 'active';
-                    }
-
-                    $subMenu .= '
-                        <div class="menu-item '. $hasSub .' '. $active .'">
-                            <a href="'. $menuUrl .'" class="menu-link">'. $menuText . $menuCaret .'</a>
-                            '. $subSubMenu .'
-                        </div>
-                    ';
-                }
-                return $subMenu;
+            // Rendu des sous-menus si présents
+            if (! empty($menu['children'])) {
+                $submenu = '<div class="menu-submenu">'
+                         . $renderSubMenu($menu['children'])
+                         . '</div>';
             }
 
-            foreach (config('sidebar.menu') as $key => $menu) {
-                $GLOBALS['parent_active'] = '';
-
-                $hasSub = (!empty($menu['children'])) ? 'has-sub' : '';
-                $menuUrl = (!empty($menu['url'])) ? $menu['url'] : '';
-                $menuLabel = (!empty($menu['label'])) ? '<span class="menu-icon-label">'. $menu['label'] .'</span>' : '';
-                $menuIcon = (!empty($menu['icon'])) ? '<span class="menu-icon"><i class="'. $menu['icon'] .'"></i>'. $menuLabel .'</span>' : '';
-                $menuText = (!empty($menu['text'])) ? '<span class="menu-text">'. $menu['text'] .'</span>' : '';
-                $menuCaret = (!empty($hasSub)) ? '<span class="menu-caret"><b class="caret"></b></span>' : '';
-                $menuSubMenu = '';
-
-                if (!empty($menu['children'])) {
-                    $GLOBALS['sub_level'] = 0;
-                    $menuSubMenu .= '<div class="menu-submenu">';
-                    $menuSubMenu .= renderSubMenu($menu['children'], $currentUrl);
-                    $menuSubMenu .= '</div>';
-                }
-                $active = (!empty($menu['url']) && $currentUrl == $menu['url']) ? 'active' : '';
-                $active = (empty($active) && !empty($GLOBALS['parent_active'])) ? 'active' : $active;
-
-                if (!empty(config('sidebar.activeUrl'))) {
-                    $active = (!empty($menu['url']) && config('sidebar.activeUrl') == $menu['url']) ? 'active' : '';
-                    $active = (empty($active) && !empty($GLOBALS['parent_active'])) ? 'active' : $active;
-                }
-                if (!empty($menu['is_header'])) {
-                  echo '<div class="menu-header">'. $menu['text'] .'</div>';
-                } else if (!empty($menu['is_divider'])) {
-                  echo '<div class="menu-divider"></div>';
-                } else {
-                    echo '
-                        <div class="menu-item '. $hasSub .' '. $active .'">
-                            <a href="'. $menuUrl .'" class="menu-link">
-                                '. $menuIcon .'
-                                '. $menuText .'
-                                '. $menuCaret .'
-                            </a>
-                            '. $menuSubMenu .'
-                        </div>
-                    ';
-                }
-            }
+            // Actif au niveau principal
+            $active = ($currentUrl === $url) ? 'active' : '';
         @endphp
-        <div class="p-3 px-4 mt-auto hide-on-minified">
-            <a href="https://seantheme.com/studio/documentation/index.html" class="btn btn-secondary d-block w-100 fw-600 rounded-pill">
-                <i class="fa fa-code-branch me-1 ms-n1 opacity-5"></i> Documentation
+
+        @if(! empty($menu['is_header']))
+          <div class="menu-header">{!! $menu['text'] !!}</div>
+
+        @elseif(! empty($menu['is_divider']))
+          <div class="menu-divider"></div>
+
+        @else
+          <div class="menu-item {{ $hasSub }} {{ $active }}">
+            <a href="{{ $url }}" class="menu-link">
+              {!! $icon !!}
+              {!! $text !!}
+              {!! $caret !!}
             </a>
-        </div>
+            {!! $submenu !!}
+          </div>
+        @endif
+
+      @endforeach
+
+      <div class="p-3 px-4 mt-auto hide-on-minified">
+        <a href="https://seantheme.com/studio/documentation/index.html"
+           class="btn btn-secondary d-block w-100 fw-600 rounded-pill">
+          <i class="fa fa-code-branch me-1 ms-n1 opacity-5"></i> Documentation
+        </a>
+      </div>
     </div>
     <!-- END menu -->
   </div>
   <!-- END scrollbar -->
-	<!-- BEGIN mobile-sidebar-backdrop -->
-	<button class="app-sidebar-mobile-backdrop" data-dismiss="sidebar-mobile"></button>
-	<!-- END mobile-sidebar-backdrop -->
+  <!-- BEGIN mobile-sidebar-backdrop -->
+  <button class="app-sidebar-mobile-backdrop" data-dismiss="sidebar-mobile"></button>
+  <!-- END mobile-sidebar-backdrop -->
 </div>
 <!-- END #sidebar -->
