@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 
 
+use App\Http\Controllers\UtilisateurController;
 
 
 
@@ -42,6 +43,29 @@ Route::put('admin/pays/{pays}', [PaysController::class, 'update'])->name('pays.u
 Route::delete('admin/pays/{pays}', [PaysController::class, 'destroy'])->name('pays.destroy');
 
 
+
+
+
+
+use App\Http\Controllers\RoleController;
+
+// Lister tous les rôles
+Route::get('admin/roles', [RoleController::class, 'index'])->name('roles.index');
+
+// Afficher le formulaire pour ajouter un rôle
+Route::get('admin/roles/create', [RoleController::class, 'create'])->name('roles.create');
+
+// Enregistrer un nouveau rôle
+Route::post('admin/roles', [RoleController::class, 'store'])->name('roles.store');
+
+// Afficher le formulaire pour modifier un rôle
+Route::get('admin/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+
+// Mettre à jour un rôle
+Route::put('admin/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+
+// Supprimer un rôle
+Route::delete('admin/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
 
 
 
@@ -76,8 +100,23 @@ Route::delete('admin/villes/{ville}', [VilleController::class, 'destroy'])->name
 
 
 
+// Route pour afficher tous les utilisateurs
+Route::get('/utilisateurs', [UtilisateurController::class, 'index'])->name('utilisateurs.index');
 
+// Route pour afficher le formulaire de création d'un superviseur
+Route::get('/utilisateurs/create', [UtilisateurController::class, 'create'])->name('utilisateurs.create');
 
+// Route pour stocker un nouvel utilisateur (superviseur)
+Route::post('/utilisateurs', [UtilisateurController::class, 'store'])->name('utilisateurs.store');
+
+// Route pour afficher le formulaire d'édition d'un utilisateur
+Route::get('/utilisateurs/{id}/edit', [UtilisateurController::class, 'edit'])->name('utilisateurs.edit');
+
+// Route pour mettre à jour un utilisateur existant
+Route::put('/utilisateurs/{id}', [UtilisateurController::class, 'update'])->name('utilisateurs.update');
+
+// Route pour supprimer un utilisateur
+Route::delete('/utilisateurs/{id}', [UtilisateurController::class, 'destroy'])->name('utilisateurs.destroy');
 
 
 

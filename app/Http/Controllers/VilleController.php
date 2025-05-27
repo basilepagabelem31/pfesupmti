@@ -9,11 +9,26 @@ use Illuminate\Http\Request;
 class VilleController extends Controller
 {
     // Afficher toutes les villes
-    public function index()
-    {
-        $villes = Ville::with('pays')->get();
-        return view('villes.index', compact('villes'));
+   
+
+public function index(Request $request)
+{
+    $query = Ville::with('pays');
+
+    if ($search = $request->input('search')) {
+        $query->where('nom', 'like', "%$search%");
     }
+
+    if ($pays_id = $request->input('pays_id')) {
+        $query->where('pays_id', $pays_id);
+    }
+
+    $villes = $query->paginate(10)->withQueryString(); // garde les filtres pendant la pagination
+    $pays = Pays::orderBy('nom')->get();
+
+    return view('villes.index', compact('villes', 'pays'));
+}
+
 
     // Afficher le formulaire d'ajout d'une ville
     public function create()

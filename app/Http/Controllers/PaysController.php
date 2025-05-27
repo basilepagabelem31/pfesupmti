@@ -29,12 +29,22 @@ class PaysController extends Controller
         return redirect()->route('pays.index')->with('success', 'Pays ajouté avec succès!');
     }
 
-    // Afficher tous les pays
-    public function index()
+    public function index(Request $request)
     {
-        $pays = Pays::all();
-        return view('pays.index', compact('pays'));
+        $search = $request->input('search');
+    
+        $pays = Pays::when($search, function ($query, $search) {
+                return $query->where('nom', 'like', "%$search%")
+                             ->orWhere('code', 'like', "%$search%");
+            })
+            ->orderBy('nom')
+            ->paginate(10)
+            ->withQueryString(); // conserve la recherche en changeant de page
+    
+        return view('pays.index', compact('pays', 'search'));
     }
+    
+
 
 
     public function destroy($id)
