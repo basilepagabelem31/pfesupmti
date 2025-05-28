@@ -12,6 +12,9 @@ return new class extends Migration
     public function up(): void
 {
     Schema::table('groupes', function (Blueprint $table) {
+     $table->id();
+     $table->string('description')->nullable();
+     $table->string('nom')->nullable();
     $table->string('jour')->nullable();
     $table->time('heure_debut')->nullable();
     $table->time('heure_fin')->nullable();
