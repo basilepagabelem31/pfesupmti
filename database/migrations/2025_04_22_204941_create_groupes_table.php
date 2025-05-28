@@ -10,22 +10,23 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('groupes', function (Blueprint $table) {
-            $table->id();
-            $table->string("code") ;
-            $table->string("nom") ;
-            $table->text("description") ;
-            $table->date("date") ;
-            $table->timestamps();
-        });
-    }
+{
+    Schema::table('groupes', function (Blueprint $table) {
+    $table->string('jour')->nullable();
+    $table->time('heure_debut')->nullable();
+    $table->time('heure_fin')->nullable();
+    $table->string('code')->unique();
+});
+
+}
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
+       
         Schema::dropIfExists('groupes');
     }
 };

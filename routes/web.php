@@ -296,3 +296,7 @@ Route::get('/helper', function () {
 
 //Groupe
 Route::resource('groupes', GroupeController::class);
+Route::post('/groupes/store', [GroupeController::class, 'store'])->name('groupes.store');
+Route::put('/groupes/{id}', [GroupeController::class, 'update'])->name('groupes.update');
+
+

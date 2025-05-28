@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Groupe extends Model
 {
 
-    protected $fillable = ['code','nom','description','date']; // ou les champs que tu as définis
+   protected $fillable = ['code', 'nom', 'jour', 'heure_debut', 'heure_fin', 'description'];
+
 
     public function users()
 {
