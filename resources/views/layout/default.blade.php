@@ -29,5 +29,5 @@
 	@include('partial.theme-panel')
 	@include('partial.scripts')
 </body>
-@yield('my_js')
+
 </html>
