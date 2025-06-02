@@ -3,9 +3,8 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<!-- BOUTON Ajouter -->
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-add">
-  Ajouter un Administrateur/Superviseur
+  Ajouter un Stagiaire
 </button>
 <form action="{{ route('logout') }}" method="POST">
     @csrf
@@ -53,9 +52,9 @@
             <td>{{ $admin->pays?->nom  }}</td>
             <td>{{ $admin->ville?->nom }}</td>
             <td>{{ $admin->role?->nom }}</td>
-            <td>{{ $admin->universite ??'Non-defini' }}</td>
-            <td>{{ $admin->faculte ?? 'Non-defini' }}</td>
-            <td>{{ $admin->titre_formation ?? 'Non-defini' }}</td>
+            <td>{{ $admin->universite  }}</td>
+            <td>{{ $admin->faculte }}</td>
+            <td>{{ $admin->titre_formation  }}</td>
             <td>{{ $admin->statut?->nom  }}</td>
             <td>
                 <div class="d-flex gap-2">
@@ -74,7 +73,7 @@
         </tr>
         @empty
         <tr>
-            <td class="text-center" colspan="12">Aucun administrateur trouvé.</td>
+            <td class="text-center" colspan="16">Aucun stagiaire trouvé.</td>
         </tr>
 
         @endforelse
