@@ -19,17 +19,25 @@ class AdminController extends Controller
         return view("admin.create");
     }
     public function index(){
-        $admins= User::all();
+        //filtre les utilisateurs par role au lieu de charger tous les utilisateurs $admins= User::all();
+        $admins= User::with(['pays','ville','role','statut'])
+        ->whereHas('role',function($q){
+            $q->whereIn('nom',['Administrateur','Superviseur','Stagiaire']);
+        })->paginate(10);
         $roles=Role::all();//recupere les roles
         $statuts=Statut::all();//recupere les statuts
-        $villes=Ville::all();
         $pays=Pays::all();
-        return view('admin.index',compact('admins','roles','statuts','pays','villes'));
+        //charger pays et ville 
+        $paysVilles=Pays::with([
+            'villes' => fn($q) =>$q->select('id','nom','pays_id')->orderBy('nom')
+        ])->orderBy('nom')->get(['id','nom']);
+        $stagiaireId=Role::where('nom','Stagiaire')->value('id');
+        return view('admin.index',compact('admins','roles','statuts','pays','paysVilles','stagiaireId'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             "nom"=> "required|string",
             "prenom" => "required|string",
             "password" => "required",
@@ -40,22 +48,15 @@ class AdminController extends Controller
             "pays_id" =>"required|exists:pays,id",
             "ville_id" =>"required|exists:villes,id",
             "role_id" => "required|exists:roles,id",
-            "statut_id" =>"required|exists:statuts,id"
+            "statut_id" =>"required|exists:statuts,id",
+            'universite' => 'required_if:role_id,3',
+            'faculte' => 'required_if:role_id,3',
+            'titre_formation' => 'required_if:role_id,3',
         ]);
 
-        $admin= User::create([
-            "nom" =>$request->nom ,
-            "prenom" =>$request->prenom ,
-            "password" =>$request->password ,
-            "email" =>$request->email ,
-            "telephone" =>$request->telephone ,
-            "cin" =>$request->cin ,
-            "adresse" =>$request->adresse ,
-            "pays_id" =>$request->pays_id ,
-            "ville_id" =>$request->ville_id ,
-            "role_id" =>$request->role_id ,
-            "statut_id" =>$request->statut_id         
-        ]);
+        $validated['password'] = Hash::make($validated['password']);
+        $admin = User::create($validated);
+        
         return redirect()->route('admin.index')->with('success', 'Admin a été bien creer.');
 
        
@@ -64,17 +65,23 @@ class AdminController extends Controller
     public function edit($id)
     {
         $editAdmin =User::findorFail($id);
-        $admins= User::all();
+        $admins= User::with(['pays','ville','role','statut'])
+        ->whereHas('role',function($q){
+            $q->whereIn('nom',['Administrateur','Superviseur','Stagiaire']);
+        })->paginate(10);
         $roles=Role::all();
         $pays=Pays::all();
         $villes=Ville::all();
         $statuts=Statut::all();
+
         return view("admin.index",compact(['editAdmin','admins','roles','pays','villes','statuts']));
         
     }
 
     public function update(Request $request, $id){
-       
+
+        $admin = User::findOrFail($id);
+
         $data=$request->validate([
             "nom"=> "required|string",
             "prenom" => "required|string",
@@ -86,13 +93,22 @@ class AdminController extends Controller
             "pays_id" =>"required|exists:pays,id",
             "ville_id" =>"required|exists:villes,id",
             "role_id" => "required|exists:roles,id",
-            "statut_id" =>"required|exists:statuts,id"
+            "statut_id" =>"required|exists:statuts,id",
+            'universite' => 'required_if:role_id,3',
+            'faculte' => 'required_if:role_id,3',
+            'titre_formation' => 'required_if:role_id,3',
 
         ]);
         
-        $admin = User::findOrFail($id);
+       if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
     
         $admin->update($data);
+
+       
     
         return redirect()->route('admin.index')->with('success', 'Admin mis à jour.');
     }
@@ -101,9 +117,13 @@ class AdminController extends Controller
     {
         $admin=User::findorFail($id);
         $admin->delete();
-        return redirect()->route('admin.index')->with('success', 'Admin supprimer avec succès.');
-
-      
+        return redirect()->route('admin.index')->with('success', 'Admin supprimer avec succès.'); 
     }
+   
 
+    public function getStagiaireRoleId()
+{
+    // Si tu veux le premier id du rôle "Stagiaire"
+    return Role::where('nom', 'Stagiaire')->value('id');
+}
 }

@@ -411,9 +411,9 @@
   	/* eslint-disable es/no-symbol -- required for testing */
   	var NATIVE_SYMBOL = requireSymbolConstructorDetection();
 
-  	useSymbolAsUid = NATIVE_SYMBOL
-  	  && !Symbol.sham
-  	  && typeof Symbol.iterator == 'symbol';
+  	useSymbolAsUid = NATIVE_SYMBOL &&
+  	  !Symbol.sham &&
+  	  typeof Symbol.iterator == 'symbol';
   	return useSymbolAsUid;
   }
 
@@ -564,10 +564,10 @@
   	var store = sharedStore.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
   	(store.versions || (store.versions = [])).push({
-  	  version: '3.38.1',
+  	  version: '3.39.0',
   	  mode: IS_PURE ? 'pure' : 'global',
   	  copyright: '© 2014-2024 Denis Pushkarev (zloirock.ru)',
-  	  license: 'https://github.com/zloirock/core-js/blob/v3.38.1/LICENSE',
+  	  license: 'https://github.com/zloirock/core-js/blob/v3.39.0/LICENSE',
   	  source: 'https://github.com/zloirock/core-js'
   	});
   	return sharedStore.exports;
@@ -3029,37 +3029,26 @@
 
   var isSingleSort = false;
   var Utils = $.fn.bootstrapTable.utils;
-  Object.assign($.fn.bootstrapTable.defaults.icons, {
-    plus: {
-      bootstrap3: 'glyphicon-plus',
-      bootstrap4: 'fa-plus',
-      bootstrap5: 'bi-plus',
-      semantic: 'fa-plus',
-      materialize: 'plus',
-      foundation: 'fa-plus',
-      bulma: 'fa-plus',
-      'bootstrap-table': 'icon-plus'
-    }[$.fn.bootstrapTable.theme] || 'fa-clock',
-    minus: {
-      bootstrap3: 'glyphicon-minus',
-      bootstrap4: 'fa-minus',
-      bootstrap5: 'bi-dash',
-      semantic: 'fa-minus',
-      materialize: 'minus',
-      foundation: 'fa-minus',
-      bulma: 'fa-minus',
-      'bootstrap-table': 'icon-minus'
-    }[$.fn.bootstrapTable.theme] || 'fa-clock',
-    sort: {
-      bootstrap3: 'glyphicon-sort',
-      bootstrap4: 'fa-sort',
-      bootstrap5: 'bi-arrow-down-up',
-      semantic: 'fa-sort',
-      materialize: 'sort',
-      foundation: 'fa-sort',
-      bulma: 'fa-sort',
-      'bootstrap-table': 'icon-sort-amount-asc'
-    }[$.fn.bootstrapTable.theme] || 'fa-clock'
+  Utils.assignIcons($.fn.bootstrapTable.icons, 'plus', {
+    glyphicon: 'glyphicon-plus',
+    fa: 'fa-plus',
+    bi: 'bi-plus',
+    icon: 'icon-plus',
+    'material-icons': 'plus'
+  });
+  Utils.assignIcons($.fn.bootstrapTable.icons, 'minus', {
+    glyphicon: 'glyphicon-minus',
+    fa: 'fa-minus',
+    bi: 'bi-dash',
+    icon: 'icon-minus',
+    'material-icons': 'minus'
+  });
+  Utils.assignIcons($.fn.bootstrapTable.icons, 'sort', {
+    glyphicon: 'glyphicon-sort',
+    fa: 'fa-sort',
+    bi: 'bi-arrow-down-up',
+    icon: 'icon-sort-amount-asc',
+    'material-icons': 'sort'
   });
   var theme = {
     bootstrap3: {

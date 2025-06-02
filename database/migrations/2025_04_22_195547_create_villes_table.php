@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('villes', function (Blueprint $table) {
             $table->id();
-            $table->string("code") ;
-            $table->string("nom") ;
+            $table->string("code")->unique();
+            $table->string("nom");
 
             $table->unsignedBigInteger('pays_id');
             $table->foreign('pays_id')->references('id')->on('pays')->onDelete('cascade');
 
-            $table->timestamps();
+            // Contrainte d'unicité sur 'nom' et 'pays_id'
+            $table->unique(['nom', 'pays_id']);
 
+            $table->timestamps();
         });
     }
 

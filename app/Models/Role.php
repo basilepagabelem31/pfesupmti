@@ -8,7 +8,7 @@ class Role extends Model
 {
 
 
-    protected $fillable = ['code','nom','description']; // ou les champs que tu as définis
+    protected $fillable = ['nom','description']; // ou les champs que tu as définis
 
 
     public function users()

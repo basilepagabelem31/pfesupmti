@@ -1,4 +1,4 @@
-/*! Buttons for DataTables 3.2.0
+/*! Buttons for DataTables 3.2.3
  * © SpryMedia Ltd - datatables.net/license
  */
 
@@ -454,6 +454,10 @@ $.extend(Buttons.prototype, {
 
 		$(button.node).remove();
 
+		if (button.inserter) {
+			$(button.inserter).remove();
+		}
+
 		var idx = $.inArray(button, host);
 		host.splice(idx, 1);
 
@@ -769,6 +773,7 @@ $.extend(Buttons.prototype, {
 			return {
 				conf: config,
 				node: spacer,
+				nodeChild: null,
 				inserter: spacer,
 				buttons: [],
 				inCollection: inCollection,
@@ -815,7 +820,7 @@ $.extend(Buttons.prototype, {
 				else {
 					run(e, dt, button, config, function () {});
 				}
-			}
+			};
 
 			var tag = config.tag || dom.tag;
 			var clickBlurs =
@@ -1001,9 +1006,12 @@ $.extend(Buttons.prototype, {
 			splitDiv.append(dropButton).attr(dropButtonConfig.attr);
 		}
 
+		var node = isSplit ? splitDiv.get(0) : button.get(0);
+
 		return {
 			conf: config,
-			node: isSplit ? splitDiv.get(0) : button.get(0),
+			node: node,
+			nodeChild: node && node.children && node.children.length ? node.children[0] : null,
 			inserter: isSplit ? splitDiv : inserter,
 			buttons: [],
 			inCollection: inCollection,
@@ -1078,7 +1086,7 @@ $.extend(Buttons.prototype, {
 		}
 
 		for (var i = 0, ien = buttons.length; i < ien; i++) {
-			if (buttons[i].node === node || $(buttons[i].node).children().eq(0).get(0) === node) {
+			if (buttons[i].node === node || buttons[i].nodeChild === node) {
 				return buttons[i];
 			}
 
@@ -1449,7 +1457,7 @@ $.extend(Buttons.prototype, {
 		hostButtonNode.attr('aria-expanded', 'true');
 
 		if (hostNode.parents('body')[0] !== document.body) {
-			hostNode = document.body.lastChild;
+			hostNode = $(document.body).children('div, section, p').last();
 		}
 
 		if (options.popoverTitle) {
@@ -1946,6 +1954,11 @@ Buttons.buttonSelector = function (insts, selector) {
  * @param {*} str Data to strip
  */
 Buttons.stripData = function (str, config) {
+	// If the input is an HTML element, we can use the HTML from it (HTML might be stripped below).
+	if (str !== null && typeof str === 'object' && str.nodeName && str.nodeType) {
+		str = str.innerHTML;
+	}
+
 	if (typeof str !== 'string') {
 		return str;
 	}
@@ -2104,7 +2117,7 @@ Buttons.defaults = {
  * @type {string}
  * @static
  */
-Buttons.version = '3.2.0';
+Buttons.version = '3.2.3';
 
 $.extend(_dtButtons, {
 	collection: {

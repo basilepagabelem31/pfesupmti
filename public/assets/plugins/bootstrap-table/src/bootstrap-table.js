@@ -1,6 +1,6 @@
 /**
  * @author zhixin wen <wenzhixin2010@gmail.com>
- * version: 1.23.5
+ * version: 1.24.1
  * https://github.com/wenzhixin/bootstrap-table/
  */
 
@@ -47,7 +47,8 @@ class BootstrapTable {
     }
 
     opts.iconsPrefix = opts.iconsPrefix || $.fn.bootstrapTable.defaults.iconsPrefix || iconsPrefix
-    opts.icons = Object.assign(Utils.getIcons(opts.iconsPrefix), $.fn.bootstrapTable.defaults.icons, opts.icons)
+    opts.icons = Object.assign(Utils.getIcons(Constants.ICONS, opts.iconsPrefix),
+      $.fn.bootstrapTable.defaults.icons, opts.icons)
 
     // init buttons class
     const buttonsPrefix = opts.buttonsPrefix ? `${opts.buttonsPrefix}-` : ''
@@ -219,7 +220,9 @@ class BootstrapTable {
     this.columns = []
     this.fieldsColumnsIndex = []
 
-    Utils.setFieldIndex(this.options.columns)
+    if (this.optionsColumnsChanged !== false) {
+      Utils.setFieldIndex(this.options.columns)
+    }
 
     this.options.columns.forEach((columns, i) => {
       columns.forEach((_column, j) => {
@@ -1116,51 +1119,54 @@ class BootstrapTable {
           }
 
           if (typeof value === 'string' || typeof value === 'number') {
-            if (
-              this.options.strictSearch && `${value}`.toLowerCase() === searchText ||
-              this.options.regexSearch && Utils.regexCompare(value, rawSearchText)
-            ) {
-              return true
-            }
-
-            const largerSmallerEqualsRegex = /(?:(<=|=>|=<|>=|>|<)(?:\s+)?(-?\d+)?|(-?\d+)?(\s+)?(<=|=>|=<|>=|>|<))/gm
-            const matches = largerSmallerEqualsRegex.exec(this.searchText)
-            let comparisonCheck = false
-
-            if (matches) {
-              const operator = matches[1] || `${matches[5]}l`
-              const comparisonValue = matches[2] || matches[3]
-              const int = parseInt(value, 10)
-              const comparisonInt = parseInt(comparisonValue, 10)
-
-              switch (operator) {
-                case '>':
-                case '<l':
-                  comparisonCheck = int > comparisonInt
-                  break
-                case '<':
-                case '>l':
-                  comparisonCheck = int < comparisonInt
-                  break
-                case '<=':
-                case '=<':
-                case '>=l':
-                case '=>l':
-                  comparisonCheck = int <= comparisonInt
-                  break
-                case '>=':
-                case '=>':
-                case '<=l':
-                case '=<l':
-                  comparisonCheck = int >= comparisonInt
-                  break
-                default:
-                  break
+            if (this.options.strictSearch) {
+              if (`${value}`.toLowerCase() === searchText) {
+                return true
               }
-            }
+            } else if (this.options.regexSearch) {
+              if (Utils.regexCompare(value, rawSearchText)) {
+                return true
+              }
+            } else {
+              const largerSmallerEqualsRegex = /(?:(<=|=>|=<|>=|>|<)(?:\s+)?(-?\d+)?|(-?\d+)?(\s+)?(<=|=>|=<|>=|>|<))/gm
+              const matches = largerSmallerEqualsRegex.exec(this.searchText)
+              let comparisonCheck = false
 
-            if (comparisonCheck || `${value}`.toLowerCase().includes(searchText)) {
-              return true
+              if (matches) {
+                const operator = matches[1] || `${matches[5]}l`
+                const comparisonValue = matches[2] || matches[3]
+                const int = parseInt(value, 10)
+                const comparisonInt = parseInt(comparisonValue, 10)
+
+                switch (operator) {
+                  case '>':
+                  case '<l':
+                    comparisonCheck = int > comparisonInt
+                    break
+                  case '<':
+                  case '>l':
+                    comparisonCheck = int < comparisonInt
+                    break
+                  case '<=':
+                  case '=<':
+                  case '>=l':
+                  case '=>l':
+                    comparisonCheck = int <= comparisonInt
+                    break
+                  case '>=':
+                  case '=>':
+                  case '<=l':
+                  case '=<l':
+                    comparisonCheck = int >= comparisonInt
+                    break
+                  default:
+                    break
+                }
+              }
+
+              if (comparisonCheck || `${value}`.toLowerCase().includes(searchText)) {
+                return true
+              }
             }
           }
         }
@@ -1251,10 +1257,17 @@ class BootstrapTable {
     }
 
     if (this.paginationParts.includes('pageInfo') || this.paginationParts.includes('pageInfoShort')) {
-      const totalRows = this.options.totalRows +
-        (this.options.sidePagination === 'client' &&
+      let totalRows = this.options.totalRows
+
+      if (
+        this.options.sidePagination === 'client' &&
         this.options.paginationLoadMore &&
-        !this._paginationLoaded ? ' +' : '')
+        !this._paginationLoaded &&
+        this.totalPages > 1
+      ) {
+        totalRows += ' +'
+      }
+
       const paginationInfo = this.paginationParts.includes('pageInfoShort') ?
         opts.formatDetailPagination(totalRows) :
         opts.formatShowingRows(this.pageFrom, this.pageTo, totalRows, opts.totalNotFiltered)
@@ -1532,7 +1545,6 @@ class BootstrapTable {
       }
     }
     const tr = Utils.h('tr', {
-      ...attributes,
       id: Array.isArray(item) ? undefined : item._id,
       class: style && style.classes || (Array.isArray(item) ? undefined : item._class),
       style: style && style.css || (Array.isArray(item) ? undefined : item._style),
@@ -1540,6 +1552,7 @@ class BootstrapTable {
       'data-uniqueid': Utils.getItemField(item, this.options.uniqueId, false),
       'data-has-detail-view': this.options.detailView &&
         Utils.calculateObjectValue(null, this.options.detailFilter, [i, item]) ? 'true' : undefined,
+      ...attributes,
       ...data_
     })
     const trChildren = []
@@ -1569,6 +1582,7 @@ class BootstrapTable {
         class: this.header.classes[j] ? [this.header.classes[j]] : [],
         style: this.header.styles[j] ? [this.header.styles[j]] : []
       }
+      const cardViewClass = `card-view card-view-field-${field}`
 
       if ((this.fromHtml || this.autoMergeCells) && typeof value_ === 'undefined') {
         if (!column.checkbox && !column.radio) {
@@ -1585,16 +1599,16 @@ class BootstrapTable {
       }
 
       // handle class, style, id, rowspan, colspan and title of td
-      for (const item of ['class', 'style', 'id', 'rowspan', 'colspan', 'title']) {
-        const value = item[`_${field}_${item}`]
+      for (const attr of ['class', 'style', 'id', 'rowspan', 'colspan', 'title']) {
+        const value = item[`_${field}_${attr}`]
 
         if (!value) {
           continue
         }
-        if (attrs[item]) {
-          attrs[item].push(value)
+        if (attrs[attr]) {
+          attrs[attr].push(value)
         } else {
-          attrs[item] = value
+          attrs[attr] = value
         }
       }
 
@@ -1660,7 +1674,7 @@ class BootstrapTable {
         item[this.header.stateField] = value === true || (!!value_ || value && value.checked)
 
         return Utils.h(this.options.cardView ? 'div' : 'td', {
-          class: [this.options.cardView ? 'card-view' : 'bs-checkbox', column.class],
+          class: [this.options.cardView ? cardViewClass : 'bs-checkbox', column.class],
           style: this.options.cardView ? undefined : attrs.style
         }, [
           Utils.h('label', {}, [
@@ -1680,7 +1694,7 @@ class BootstrapTable {
 
       if (this.options.cardView) {
         if (this.options.smartDisplay && value === '') {
-          return Utils.h('div', { class: 'card-view' })
+          return Utils.h('div', { class: cardViewClass })
         }
 
         const cardTitle = this.options.showHeader ?
@@ -1690,7 +1704,7 @@ class BootstrapTable {
             html: Utils.getFieldTitle(this.columns, field)
           }) : ''
 
-        return Utils.h('div', { class: 'card-view' }, [
+        return Utils.h('div', { class: cardViewClass }, [
           cardTitle,
           Utils.h('span', {
             class: ['card-view-value', cellStyle.classes],
@@ -2429,6 +2443,7 @@ class BootstrapTable {
     if (Utils.compareObjects(this.options, options, true)) {
       return
     }
+    this.optionsColumnsChanged = !!options.columns
     this.options = Utils.extend(this.options, options)
     this.trigger('refresh-options', this.options)
     this.destroy()
@@ -2582,6 +2597,11 @@ class BootstrapTable {
     }
     const row = this.data[params.index]
     const originalIndex = this.options.data.indexOf(row)
+
+    if (originalIndex === -1) {
+      this.append([params.row])
+      return
+    }
 
     this.data.splice(params.index, 0, params.row)
     this.options.data.splice(originalIndex, 0, params.row)
@@ -3083,6 +3103,7 @@ class BootstrapTable {
   }
 
   destroy () {
+    clearTimeout(this.timeoutId_)
     this.$el.insertBefore(this.$container)
     $(this.options.toolbar).insertBefore(this.$el)
     this.$container.next().remove()
@@ -3234,7 +3255,8 @@ class BootstrapTable {
   }
 
   filterBy (columns, options) {
-    this.filterOptions = Utils.isEmptyObject(options) ? this.options.filterOptions : Utils.extend(this.options.filterOptions, options)
+    this.filterOptions = Utils.isEmptyObject(options) ? this.options.filterOptions :
+      Utils.extend({}, this.options.filterOptions, options)
     this.filterColumns = Utils.isEmptyObject(columns) ? {} : columns
     this.options.pageNumber = 1
     this.initSearch()
@@ -3467,6 +3489,7 @@ $.fn.bootstrapTable = function (option, ...args) {
 $.fn.bootstrapTable.Constructor = BootstrapTable
 $.fn.bootstrapTable.theme = Constants.THEME
 $.fn.bootstrapTable.VERSION = Constants.VERSION
+$.fn.bootstrapTable.icons = Constants.ICONS
 $.fn.bootstrapTable.defaults = BootstrapTable.DEFAULTS
 $.fn.bootstrapTable.columnDefaults = BootstrapTable.COLUMN_DEFAULTS
 $.fn.bootstrapTable.events = BootstrapTable.EVENTS

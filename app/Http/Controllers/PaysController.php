@@ -31,17 +31,8 @@ class PaysController extends Controller
 
     public function index(Request $request)
     {
-        $search = $request->input('search');
-    
-        $pays = Pays::when($search, function ($query, $search) {
-                return $query->where('nom', 'like', "%$search%")
-                             ->orWhere('code', 'like', "%$search%");
-            })
-            ->orderBy('nom')
-            ->paginate(10)
-            ->withQueryString(); // conserve la recherche en changeant de page
-    
-        return view('pays.index', compact('pays', 'search'));
+        $pays = Pays::all();
+        return view('pays.index', compact('pays'));
     }
     
 

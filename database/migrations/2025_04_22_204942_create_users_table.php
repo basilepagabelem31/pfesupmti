@@ -17,37 +17,32 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
-            $table->string("nom") ;
-            $table->text("prenom") ;
-            $table->string("cin")->unique() ;
-            $table->text("code")->unique() ;
-            $table->string("telephone") ;
-            $table->text("adresse") ;
-            $table->string("universite") ;
-            $table->text("faculte") ;
-            $table->text("titre_formation") ;
+            $table->string("nom");
+            $table->text("prenom");
+            $table->string("cin")->unique();
+            $table->text("code")->unique();
+            $table->string("telephone");
+            $table->text("adresse");
+            $table->string("universite")->nullable();
+            $table->text("faculte")->nullable();
+            $table->text("titre_formation")->nullable();
 
-            $table->unsignedBigInteger('pays_id');
+            $table->unsignedBigInteger('pays_id')->nullable();
             $table->foreign('pays_id')->references('id')->on('pays')->onDelete('cascade');
 
-
-            $table->unsignedBigInteger('ville_id');
+            $table->unsignedBigInteger('ville_id')->nullable();
             $table->foreign('ville_id')->references('id')->on('villes')->onDelete('cascade');
 
-
-            $table->unsignedBigInteger('groupe_id');
+            $table->unsignedBigInteger('groupe_id')->nullable();
             $table->foreign('groupe_id')->references('id')->on('groupes')->onDelete('cascade');
 
-
-            $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('role_id')->nullable();
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
 
-
-            $table->unsignedBigInteger('statut_id');
+            $table->unsignedBigInteger('statut_id')->nullable();
             $table->foreign('statut_id')->references('id')->on('statuts')->onDelete('cascade');
 
-
-            $table->unsignedBigInteger('email_log_id');
+            $table->unsignedBigInteger('email_log_id')->nullable();
             $table->foreign('email_log_id')->references('id')->on('email_logs')->onDelete('cascade');
 
             $table->timestamps();
