@@ -4,7 +4,7 @@
       <form id="form_add" action="{{ route('admin.store') }}" method="POST">
         @csrf
         <div class="modal-header">
-          <h5 class="modal-title" id="modalAddLabel">Ajouter un Administrateur</h5>
+          <h5 class="modal-title" id="modalAddLabel">  Ajouter un Administrateur/Superviseur</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\StagiaireConrtoller;
 use App\Http\Controllers\SuperviseurController;
 use Illuminate\Support\Facades\Route;
@@ -32,13 +33,16 @@ Route::get('/admin/edit/{id}',[AdminController::class,'edit'])->name('admin.edit
 Route::put('/admin/update/{id}',[AdminController::class,'update'])->name('admin.update');
 Route::delete('/admin/delete/{id}',[AdminController::class,'delete'])->name('admin.delete');
 
+//les routes pour la promotion
+Route::get('promotions', [PromotionController::class, 'index'])->name('promotions.index');
+Route::post('promotions', [PromotionController::class, 'store'])->name('promotions.store');
+Route::put('promotions/{promotion}', [PromotionController::class, 'update'])->name('promotions.update');
+Route::delete('promotions/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
+
+
+
 
 //route publique pour le moment 
-
-//Route::get('/', function () {
-//	return view('/pages/index');
-//});
-
 Route::get('/analytics', function () {
 	return view('/pages/analytics');
 });
