@@ -67,7 +67,7 @@ class User extends Authenticatable
     // Relation avec EmailLog
     public function emailLog()
     {
-        return $this->belongsTo(Email_log::class);
+        return $this->belongsTo(EmailLog::class);
     }
 
     public function absences()

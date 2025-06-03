@@ -29,12 +29,13 @@ class PaysController extends Controller
         return redirect()->route('pays.index')->with('success', 'Pays ajouté avec succès!');
     }
 
-    // Afficher tous les pays
-    public function index()
+    public function index(Request $request)
     {
-       $pays = Pays::with('villes')->get();
+        $pays = Pays::all();
         return view('pays.index', compact('pays'));
     }
+    
+
 
 
     public function destroy($id)

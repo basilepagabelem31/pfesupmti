@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('pays', function (Blueprint $table) {
             $table->id();
-            $table->string("code") ;
-            $table->string("nom") ;
+            $table->string("code")->unique() ;
+            $table->string("nom")->unique() ;
             $table->timestamps();
         });
     }

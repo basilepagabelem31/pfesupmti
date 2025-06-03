@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('groupes', function (Blueprint $table) {
             $table->id();
-            $table->string("code") ;
-            $table->string("nom") ;
-            $table->text("description") ;
-            $table->date("date") ;
+            $table->string("code")->unique(); // Code unique comme demandé
+            $table->string("nom");
+            $table->text("description");
+            $table->date("jour"); // Date du jour
+            $table->time("heure_debut"); // Heure de début
+            $table->time("heure_fin");   // Heure de fin
             $table->timestamps();
         });
     }
