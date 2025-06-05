@@ -1,3 +1,7 @@
+@extends('layout.default')
+
+@section('content')
+
 <div class="modal fade" id="editGroupeModal" tabindex="-1" aria-labelledby="editGroupeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -57,3 +61,5 @@
         </div>
     </div>
 </div>
+
+@endsection

@@ -1,5 +1,4 @@
-@extends('layouts.app')
-
+@extends('layout.default')
 @section('content')
 <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Gestion des Fichiers</h1>

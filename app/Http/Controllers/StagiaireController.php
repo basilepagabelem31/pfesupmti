@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class StagiaireConrtoller extends Controller
+class StagiaireController extends Controller
 {
     //
     public function index ()
