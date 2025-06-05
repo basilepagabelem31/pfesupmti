@@ -2,100 +2,138 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Auth; // Assurez-vous que cette ligne est présente
 
 class User extends Authenticatable
 {
-    use  HasFactory, Notifiable;
-
+    use HasFactory, Notifiable, HasApiTokens;
 
     protected static function booted()
     {
-        static::creating(function ($admin){
-            //generation d'un code aleatoire 
-            $admin->code= Str::upper(Str::random(10));
+        static::creating(function ($user) {
+            $user->code = Str::upper(Str::random(10));
         });
     }
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'nom', 'prenom', 'email', 'password', 'cin', 'code',
         'telephone', 'adresse', 'universite', 'faculte', 'titre_formation',
         'pays_id', 'ville_id', 'groupe_id', 'role_id', 'statut_id', 'email_log_id',
     ];
 
-    // Relation avec Pays
-    public function pays()
-    {
-        return $this->belongsTo(Pays::class);
-    }
-
-    // Relation avec Ville
-    public function ville()
-    {
-        return $this->belongsTo(Ville::class);
-    }
-
-    // Relation avec Groupe
-    public function groupe()
-    {
-        return $this->belongsTo(Groupe::class);
-    }
-
-    // Relation avec Role
-    public function role()
-    {
-        return $this->belongsTo(Role::class,'role_id');
-    }
-
-    // Relation avec Statut
-    public function statut()
-    {
-        return $this->belongsTo(Statut::class);
-    }
-
-    // Relation avec EmailLog
-    public function emailLog()
-    {
-        return $this->belongsTo(EmailLog::class);
-    }
-
-    public function absences()
-    {
-        return $this->hasMany(Absence::class);
-    }
-
-    public function InternSujetPivot()
-    {
-        return $this -> belongsTo(InternSujetPivot::class);
-    }
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'hashed', // Assurez-vous d'avoir ceci pour le hachage automatique du mot de passe
     ];
+
+    // --- Relations existantes (gardez toutes celles que vous avez déjà) ---
+    public function pays() { return $this->belongsTo(Pays::class); }
+    public function ville() { return $this->belongsTo(Ville::class); }
+    public function groupe() { return $this->belongsTo(Groupe::class); }
+    public function role() { return $this->belongsTo(Role::class, 'role_id'); }
+    public function statut() { return $this->belongsTo(Statut::class); }
+    public function emailLog() { return $this->belongsTo(EmailLog::class); }
+    public function absences() { return $this->hasMany(Absence::class); }
+    public function sujets() { return $this->belongsToMany(Sujet::class, 'sujet_user'); }
+
+    /**
+     * Obtenez les demandes de coéquipiers envoyées par cet utilisateur.
+     */
+    public function demandesEnvoyees()
+    {
+        return $this->hasMany(DemandeCoequipier::class, 'id_stagiaire_demandeur', 'id');
+    }
+
+    /**
+     * Obtenez les demandes de coéquipiers reçues par cet utilisateur.
+     */
+    public function demandesRecues()
+    {
+        return $this->hasMany(DemandeCoequipier::class, 'id_stagiaire_receveur', 'id');
+    }
+
+    /**
+     * Obtenez les coéquipiers de cet utilisateur.
+     * Cette relation gère les paires où l'utilisateur est le 'stagiaire_1'.
+     */
+    public function coequipiersAsStagiaire1()
+    {
+        return $this->belongsToMany(User::class, 'coequipiers', 'id_stagiaire_1', 'id_stagiaire_2')
+                     ->withPivot('date_association')
+                     ->as('coequipier_data'); // Nomme la relation pivot pour un accès plus clair
+    }
+
+    /**
+     * Obtenez les coéquipiers de cet utilisateur.
+     * Cette relation gère les paires où l'utilisateur est le 'stagiaire_2'.
+     */
+    public function coequipiersAsStagiaire2()
+    {
+        return $this->belongsToMany(User::class, 'coequipiers', 'id_stagiaire_2', 'id_stagiaire_1')
+                     ->withPivot('date_association')
+                     ->as('coequipier_data'); // Nomme la relation pivot pour un accès plus clair
+    }
+
+    /**
+     * Obtenez tous les coéquipiers de cet utilisateur (en combinant les deux côtés de la relation).
+     * Utilisez cette méthode pour récupérer tous les coéquipiers sans vous soucier de leur position (1 ou 2) dans la table pivot.
+     */
+    public function getAllCoequipiers()
+    {
+        return $this->coequipiersAsStagiaire1->merge($this->coequipiersAsStagiaire2);
+    }
+
+    // --- NOUVELLES RELATIONS POUR LES FICHIERS (À AJOUTER) ---
+
+    /**
+     * Relation : Un utilisateur peut posséder plusieurs fichiers (en tant que stagiaire propriétaire).
+     */
+    public function fichiersPossedes()
+    {
+        return $this->hasMany(Fichier::class, 'id_stagiaire');
+    }
+
+    /**
+     * Relation : Un utilisateur peut avoir téléversé plusieurs fichiers (en tant que téléverseur).
+     */
+    public function fichiersTeleverses()
+    {
+        return $this->hasMany(Fichier::class, 'id_superviseur_televerseur');
+    }
+
+    // --- FIN DES NOUVELLES RELATIONS POUR LES FICHIERS ---
+
+    // Méthodes pour vérifier le rôle de l'utilisateur (gardez celles que vous avez déjà)
+    public function hasRole($role)
+    {
+        return $this->role && $this->role->nom == $role;
+    }
+
+    // Il est recommandé d'utiliser isSuperAdmin, isSuperviseur, isStagiaire au lieu de isAdministrateur
+    // pour être cohérent avec le cahier des charges, à moins que 'Administrateur' soit un rôle séparé de 'Super Admin'.
+    // Si 'Super Administrateur' est le rôle principal, vous pouvez fusionner les deux ou renommer.
+    public function isSuperAdmin()
+    {
+        return $this->hasRole('Administrateur'); // Ajuster si le nom du rôle est différent
+    }
+
+    public function isSuperviseur()
+    {
+        return $this->hasRole('Superviseur');
+    }
+
+    public function isStagiaire()
+    {
+        return $this->hasRole('Stagiaire');
+    }
 }

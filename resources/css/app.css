@@ -1,3 +1,11 @@
+/* 1. Importez Bootstrap CSS */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* 2. Importez Font Awesome CSS pour les icônes */
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+/* 3. Si votre projet utilise Tailwind CSS (comme avec Laravel Breeze/Jetstream) */
+/* Ces lignes importent les styles de base, composants et utilitaires de Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -9,6 +9,6 @@ class StagiaireConrtoller extends Controller
     //
     public function index ()
     {
-        return view('stagiaire.test');
+        return view('stagiaires.dashboard');
     }
 }
