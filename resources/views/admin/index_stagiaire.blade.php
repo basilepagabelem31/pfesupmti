@@ -125,7 +125,7 @@ function loadCities(countryId, citySelect, selected = null) {
         return;
     }
     citySelect.prop('disabled', true).html('<option>Chargement…</option>');
-    $.getJSON(`/villes/${countryId}`, data => {
+        $.getJSON(`/villes/by-pays/${countryId}`, data => {
         cityCache[countryId] = data;
         populate(data, citySelect, selected);
     }).fail(() => {

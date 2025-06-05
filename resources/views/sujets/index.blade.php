@@ -1,151 +1,179 @@
-@extends('layouts.app')
+@extends('layout.default')
+
+@section('title', 'Sujet')
 
 @section('content')
 <div class="container py-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
+    <h2>Gestion des Sujets</h2>
 
-            <h1 class="mb-4 text-primary">Gestion des Sujets</h1>
+     @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
 
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+      <!-- Bouton ouvrir le modal d'ajout -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#sujetModal" onclick="openSujetModal()">Ajouter un Sujet</button>
 
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ session('error') }}
-                    @if ($errors->any())
-                        <ul class="mb-0 mt-2">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
+    <!-- Table des sujets -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Promotion</th>
+                <th>Groupe</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach($sujets as $sujet)
+            <tr>
+                <td>{{ $sujet->titre }}</td>
+                <td>{{ $sujet->description }}</td>
+                <td>{{ $sujet->promotion->titre ?? '' }}</td>
+                <td>{{ $sujet->groupe->nom ?? '' }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm"
+                        data-bs-toggle="modal" data-bs-target="#sujetModal"
+                        onclick="openSujetModal({{ $sujet->id }}, '{{ addslashes($sujet->titre) }}', `{{ addslashes($sujet->description) }}`, {{ $sujet->promotion_id }}, {{ $sujet->groupe_id }},'{{ route('sujets.update', $sujet->id) }}')">
+                        Modifier
+                    </button>
+                    <form method="POST" action="{{ route('sujets.destroy', $sujet) }}" style="display:inline-block;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce sujet ?')">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-danger btn-sm">
+                            Supprimer
+                        </button>
+                    </form>
+                      <!-- Bouton pour ouvrir le modal pour l'inscription  -->
+                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#inscriptionsModal{{ $sujet->id }}">
+                        Gérer les inscriptions des Stagiaires
+                    </button>
+                </td>
+            </tr>
+
+              <!-- Modal pour l'inscription du stagiaire  -->
+                <div class="modal fade" id="inscriptionsModal{{ $sujet->id }}" tabindex="-1" aria-labelledby="inscriptionsModalLabel{{ $sujet->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="inscriptionsModalLabel{{ $sujet->id }}">
+                            Gérer les inscriptions pour : {{ $sujet->titre }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Liste des stagiaires inscrits -->
+                        <h6>Stagiaires inscrits :</h6>
+                        <ul>
+                            @foreach($sujet->stagiaires as $stagiaire)
+                                <li>
+                                    {{ $stagiaire->prenom }} {{ $stagiaire->nom }}<br>
+                                    <form method="POST" action="{{ route('sujets.desinscrire', [$sujet, $stagiaire->id]) }}" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Voulez-vous vraiment désinscrire ce stagiaire ?')">Désinscrire</button>
+                                    </form>
+                                </li>
                             @endforeach
+                            @if($sujet->stagiaires->isEmpty())
+                                <li>Aucun stagiaire inscrit à ce sujet .</li>
+                            @endif
                         </ul>
-                    @endif
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
 
-            <!-- Bouton d'ajout de sujet qui ouvre le modal -->
-            <button type="button" class="btn btn-primary mb-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#createSujetModal">
-                <i class="fas fa-plus-circle me-2"></i> Ajouter un nouveau Sujet
-            </button>
-
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="h5 mb-0">Liste des Sujets</h2>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th scope="col" class="p-3">Titre</th>
-                                    <th scope="col" class="p-3">Description</th>
-                                    <th scope="col" class="p-3">Promotion</th>
-                                    <th scope="col" class="p-3">Groupe</th>
-                                    <th scope="col" class="p-3 text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($sujets as $sujet)
-                                    <tr>
-                                        <td class="p-2">{{ $sujet->titre }}</td>
-                                        <td class="p-2">{{ $sujet->description }}</td>
-                                        <td class="p-2">{{ $sujet->promotion->titre ?? 'N/A' }}</td> {{-- Affiche le titre de la promotion --}}
-                                        <td class="p-2">{{ $sujet->groupe->nom ?? 'N/A' }}</td> {{-- Affiche le nom du groupe --}}
-                                        <td class="p-2 text-center">
-                                            <!-- Bouton Modifier -->
-                                            <button type="button" class="btn btn-sm btn-info text-white me-2" data-bs-toggle="modal" data-bs-target="#editSujetModal"
-                                                    data-id="{{ $sujet->id }}"
-                                                    data-titre="{{ $sujet->titre }}"
-                                                    data-description="{{ $sujet->description }}"
-                                                    data-promotion_id="{{ $sujet->promotion_id }}"
-                                                    data-groupe_id="{{ $sujet->groupe_id }}">
-                                                <i class="fas fa-edit"></i> Modifier
-                                            </button>
-
-                                            <!-- Bouton Supprimer -->
-                                            <form action="{{ route('sujets.destroy', $sujet->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce sujet ? Cette action est irréversible et impossible si des stagiaires y sont inscrits.');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger shadow-sm">
-                                                    <i class="fas fa-trash-alt"></i> Supprimer
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center p-4 text-muted">Aucun sujet trouvé.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                        <!-- Formulaire d'inscription -->
+                        <h6>Inscrire un stagiaire :</h6>
+                        <form method="POST" action="{{ route('sujets.inscrire', $sujet) }}">
+                            @csrf
+                            <select name="stagiaire_id" class="form-select" required>
+                                <option value="">Sélectionner un stagiaire</option>
+                                @foreach($stagiaires->diff($sujet->stagiaires) as $stagiaire)
+                                    <option value="{{ $stagiaire->id }}">{{ $stagiaire->prenom }} {{ $stagiaire->nom }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm mt-2">Inscrire</button>
+                        </form>
+                    </div>
                     </div>
                 </div>
+                </div>          
+        @endforeach
+    </tbody>
+</table>
+
+      <!-- Modal Sujet -->
+    <div class="modal fade" id="sujetModal" tabindex="-1" aria-labelledby="sujetModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="sujetForm" method="POST">
+            @csrf
+            <input type="hidden" name="_method" id="sujetFormMethod" value="POST">
+            <div class="modal-header">
+              <h5 class="modal-title" id="sujetModalLabel">Ajouter un Sujet</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="titre" class="form-label">Titre</label>
+                <input type="text" class="form-control" id="titre" name="titre" required>
+              </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="promotion_id" class="form-label">Promotion (active seulement)</label>
+                <select class="form-select" id="promotion_id" name="promotion_id" required>
+                  <option value="">Sélectionner</option>
+                  @foreach($promotions as $promotion)
+                    <option value="{{ $promotion->id }}">{{ $promotion->titre }}</option>
+                  @endforeach
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="groupe_id" class="form-label">Groupe</label>
+                <select class="form-select" id="groupe_id" name="groupe_id" required>
+                  <option value="">Sélectionner...</option>
+                  @foreach($groupes as $groupe)
+                    <option value="{{ $groupe->id }}">{{ $groupe->nom }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-success">Enregistrer</button>
+            </div>
+          </form>
         </div>
+      </div>
     </div>
 </div>
 
-<!-- Modal d'Ajout de Sujet -->
-@include('sujets._create_modal', ['promotions' => $promotions, 'groupes' => $groupes])
-
-<!-- Modal de Modification de Sujet -->
-@include('sujets._edit_modal', ['promotions' => $promotions, 'groupes' => $groupes])
-
 @endsection
 
-@push('scripts')
+@section('my_js')
 <script>
-    // Script pour remplir le modal de modification
-    var editSujetModal = document.getElementById('editSujetModal');
-    if (editSujetModal) {
-        editSujetModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Bouton qui a déclenché le modal
-            var id = button.getAttribute('data-id');
-            var titre = button.getAttribute('data-titre');
-            var description = button.getAttribute('data-description');
-            var promotionId = button.getAttribute('data-promotion_id');
-            var groupeId = button.getAttribute('data-groupe_id');
+function openSujetModal(id = null, titre = '', description = '', promotion_id = '', groupe_id = '',updateUrl = '') {
+    let form = document.getElementById('sujetForm');
+    form.reset();
+    document.getElementById('titre').value = titre || '';
+    document.getElementById('description').value = description || '';
+    document.getElementById('sujetModalLabel').textContent = id ? 'Modifier le Sujet' : 'Ajouter un Sujet';
 
-            var modalTitle = editSujetModal.querySelector('.modal-title');
-            var modalForm = editSujetModal.querySelector('form');
-            var modalTitreInput = editSujetModal.querySelector('#edit_titre');
-            var modalDescriptionInput = editSujetModal.querySelector('#edit_description');
-            var modalPromotionSelect = editSujetModal.querySelector('#edit_promotion_id');
-            var modalGroupeSelect = editSujetModal.querySelector('#edit_groupe_id');
-
-            modalTitle.textContent = 'Modifier le Sujet : ' + titre;
-            modalForm.action = '/sujets/' + id; // Assurez-vous que cette URL est correcte
-            modalTitreInput.value = titre;
-            modalDescriptionInput.value = description;
-
-            // Sélectionne l'option correcte dans le select de promotion
-            if (modalPromotionSelect) {
-                Array.from(modalPromotionSelect.options).forEach(option => {
-                    if (option.value == promotionId) {
-                        option.selected = true;
-                    } else {
-                        option.selected = false;
-                    }
-                });
-            }
-
-            // Sélectionne l'option correcte dans le select de groupe
-            if (modalGroupeSelect) {
-                Array.from(modalGroupeSelect.options).forEach(option => {
-                    if (option.value == groupeId) {
-                        option.selected = true;
-                    } else {
-                        option.selected = false;
-                    }
-                });
-            }
-        });
+    if(id) {
+        form.action = updateUrl;
+        document.getElementById('sujetFormMethod').value = 'PUT';
+        document.getElementById('promotion_id').value = promotion_id;
+        document.getElementById('groupe_id').value = groupe_id;
+    } else {
+        form.action = "{{ route('sujets.store') }}";
+        document.getElementById('sujetFormMethod').value = 'POST';
+        document.getElementById('promotion_id').value = '';
+        document.getElementById('groupe_id').value = '';
     }
+}
 </script>
-@endpush
+@endsection
