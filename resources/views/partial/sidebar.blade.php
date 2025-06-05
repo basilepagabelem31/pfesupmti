@@ -1,20 +1,18 @@
 @php
-    // URL courante (avec leading slash)
+    // URL courante
     $currentUrl = '/'.trim(request()->path(), '/');
 
-    // Closure récursive UNIQUE pour les sous-menus
+    // Génération récursive du sous-menu
     $renderSubMenu = function(array $items) use (&$renderSubMenu, $currentUrl) {
         $html = '';
-
         foreach ($items as $menu) {
-            $hasSub  = ! empty($menu['children']) ? 'has-sub' : '';
-            $url     = $menu['url']   ?? '#';
+            $hasSub  = !empty($menu['children']) ? 'has-sub' : '';
+            $url     = $menu['url'] ?? '#';
             $text    = '<span class="menu-text">'. ($menu['text'] ?? '') .'</span>';
             $caret   = $hasSub ? '<span class="menu-caret"><b class="caret"></b></span>' : '';
             $submenu = '';
 
-            // Rendu récursif des enfants
-            if (! empty($menu['children'])) {
+            if (!empty($menu['children'])) {
                 $submenu = '<div class="menu-submenu">'
                          . $renderSubMenu($menu['children'])
                          . '</div>';
@@ -28,79 +26,90 @@
                    . $submenu
                    . '</div>';
         }
-
         return $html;
     };
 @endphp
 
 <!-- BEGIN #sidebar -->
 <div id="sidebar" class="app-sidebar">
-  <!-- BEGIN scrollbar -->
-  <div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
-    <!-- BEGIN menu -->
-    <div class="menu">
+    <div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
+        <div class="menu">
 
-      @foreach(config('sidebar.menu') as $menu)
-        @php
-            // Paramètres du menu principal
-            $hasSub  = ! empty($menu['children']) ? 'has-sub' : '';
-            $url     = $menu['url']   ?? '#';
-            $icon    = '';
-            if (! empty($menu['icon'])) {
-                $icon = '<span class="menu-icon"><i class="'. $menu['icon'] .'"></i>'
-                      . (! empty($menu['label'])
-                         ? '<span class="menu-icon-label">'. $menu['label'] .'</span>'
-                         : '')
-                      . '</span>';
-            }
-            $text    = ! empty($menu['text'])
-                      ? '<span class="menu-text">'. $menu['text'] .'</span>'
-                      : '';
-            $caret   = $hasSub ? '<span class="menu-caret"><b class="caret"></b></span>' : '';
-            $submenu = '';
+            <div class="menu-header">Navigation</div>
 
-            // Rendu des sous-menus si présents
-            if (! empty($menu['children'])) {
-                $submenu = '<div class="menu-submenu">'
-                         . $renderSubMenu($menu['children'])
-                         . '</div>';
-            }
+            <!-- Dashboard -->
+            <div class="menu-item {{ ($currentUrl === route('dashboard')) ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+            </div>
 
-            // Actif au niveau principal
-            $active = ($currentUrl === $url) ? 'active' : '';
-        @endphp
+           
 
-        @if(! empty($menu['is_header']))
-          <div class="menu-header">{!! $menu['text'] !!}</div>
+            <!-- Utilisateurs -->
+            <div class="menu-item {{ ($currentUrl === route('admin.index')) ? 'active' : '' }}">
+                <a href="{{ route('admin.index') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-user"></i></span>
+                    <span class="menu-text">Gestion des Administrateurs</span>
+                </a>
+            </div>
 
-        @elseif(! empty($menu['is_divider']))
-          <div class="menu-divider"></div>
+            <!-- Promotions -->
+            <div class="menu-item {{ ($currentUrl === route('promotions.index')) ? 'active' : '' }}">
+                <a href="{{ route('promotions.index') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-tags"></i></span>
+                    <span class="menu-text">Promotions</span>
+                </a>
+            </div>
 
-        @else
-          <div class="menu-item {{ $hasSub }} {{ $active }}">
-            <a href="{{ $url }}" class="menu-link">
-              {!! $icon !!}
-              {!! $text !!}
-              {!! $caret !!}
-            </a>
-            {!! $submenu !!}
-          </div>
-        @endif
+            <!-- Pays & Villes -->
+            <div class="menu-item {{ ($currentUrl === route('pays.index')) ? 'active' : '' }}">
+                <a href="{{ route('pays.index') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-globe"></i></span>
+                    <span class="menu-text">Pays</span>
+                </a>
+            </div>
+            <div class="menu-item {{ ($currentUrl === route('villes.index')) ? 'active' : '' }}">
+                <a href="{{ route('villes.index') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-city"></i></span>
+                    <span class="menu-text">Villes</span>
+                </a>
+            </div>
 
-      @endforeach
+            <!-- Stagiaires -->
+            <div class="menu-item {{ ($currentUrl === route('stagiaires.import.form')) ? 'active' : '' }}">
+                <a href="{{ route('stagiaires.import.form') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-graduation-cap"></i></span>
+                    <span class="menu-text">Importer Stagiaires</span>
+                </a>
+            </div>
 
-      <div class="p-3 px-4 mt-auto hide-on-minified">
-        <a href="https://seantheme.com/studio/documentation/index.html"
-           class="btn btn-secondary d-block w-100 fw-600 rounded-pill">
-          <i class="fa fa-code-branch me-1 ms-n1 opacity-5"></i> Documentation
-        </a>
-      </div>
+            <!-- Superviseur -->
+            <div class="menu-item {{ ($currentUrl === route('superviseur.dashboard')) ? 'active' : '' }}">
+                <a href="{{ route('superviseur.dashboard') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-user-tie"></i></span>
+                    <span class="menu-text">Dashboard Superviseur</span>
+                </a>
+            </div>
+
+            <!-- Stagiaire -->
+            <div class="menu-item {{ ($currentUrl === route('stagiaire.dashboard')) ? 'active' : '' }}">
+                <a href="{{ route('stagiaire.dashboard') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-user-graduate"></i></span>
+                    <span class="menu-text">Dashboard Stagiaire</span>
+                </a>
+            </div>
+
+            <!-- Bouton Documentation -->
+            <div class="p-3 px-4 mt-auto hide-on-minified">
+                <a href="https://seantheme.com/studio/documentation/index.html" class="btn btn-secondary d-block w-100 fw-600 rounded-pill">
+                    <i class="fa fa-code-branch me-1 ms-n1 opacity-5"></i> Documentation
+                </a>
+            </div>
+
+        </div>
     </div>
-    <!-- END menu -->
-  </div>
-  <!-- END scrollbar -->
-  <!-- BEGIN mobile-sidebar-backdrop -->
-  <button class="app-sidebar-mobile-backdrop" data-dismiss="sidebar-mobile"></button>
-  <!-- END mobile-sidebar-backdrop -->
+    <button class="app-sidebar-mobile-backdrop" data-dismiss="sidebar-mobile"></button>
 </div>
 <!-- END #sidebar -->
