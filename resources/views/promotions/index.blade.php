@@ -35,7 +35,7 @@
                         <td>
                         <!-- Bouton éditer -->
                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#promotionModal"
-                            onclick="openPromotionModal({{ $promotion->id }}, '{{ addslashes($promotion->titre) }}', '{{ $promotion->status }}')">
+                            onclick="openPromotionModal({{ $promotion->id }}, '{{ addslashes($promotion->titre) }}', '{{ $promotion->status }}', '{{ route('promotions.update', $promotion->id) }}')">
                             Modifier
                         </button>
                         <form method="POST" action="{{ route('promotions.destroy', $promotion) }}" style="display:inline-block;" onsubmit="return confirm('Voulez-vous vraiment supprime cette promotion ?')">
@@ -86,25 +86,22 @@
 
 @section('my_js')
 <script>
-function openPromotionModal(id = null, titre = '', status = 'active') {
-      // Réinitialise le formulaire
+function openPromotionModal(id = null, titre = '', status = 'active', updateUrl = null) {
     let form = document.getElementById('promotionForm');
     form.reset();
-        // Remplit le champ titre si une valeur est fournie
     document.getElementById('titre').value = titre || '';
-    // Change le titre du modal selon le contexte
     document.getElementById('promotionModalLabel').textContent = id ? 'Modifier la Promotion' : 'Ajouter une Promotion';
 
     if(id) {
-        // Mode modification : prépare le formulaire pour l'édition
-        form.action = '/promotions/' + id;//la route update 
-        document.getElementById('promotionFormMethod').value = 'PUT';//methode qui est put pour la modification 
-        document.getElementById('statusField').style.display = '';//affiche le champ statut
-        document.getElementById('status').value = status;//selectionne le status actuel
+        // Utilise l'URL exacte générée par Laravel
+        form.action = updateUrl;
+        document.getElementById('promotionFormMethod').value = 'PUT';
+        document.getElementById('statusField').style.display = '';
+        document.getElementById('status').value = status;
     } else {
-        form.action = '/promotions';//la route store 
+        form.action = "{{ route('promotions.store') }}";
         document.getElementById('promotionFormMethod').value = 'POST';
-        document.getElementById('statusField').style.display = 'none';//champ status cache 
+        document.getElementById('statusField').style.display = 'none';
     }
 }
 </script>

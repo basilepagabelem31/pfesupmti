@@ -10,6 +10,7 @@ use App\Http\Controllers\VilleController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SuperviseurController ;
 use App\Http\Controllers\GroupeController ;
+use App\Http\Controllers\SujetController;
 use Illuminate\Support\Facades\Route;
 
 // Redirection de la page d'accueil vers la page de login
@@ -29,34 +30,54 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Import de stagiaires (accessible à tous ? sinon à placer dans le groupe Administrateur)
-Route::get('/stagiaires/import', [StagiairesImportController::class, 'showImportForm'])->name('stagiaires.import.form');
-Route::post('/stagiaires/import', [StagiairesImportController::class, 'import'])->name('stagiaires.import');
+
 
 // Routes accessibles uniquement aux Administrateurs
 Route::middleware(['auth', 'role:Administrateur'])->group(function () {
     // AdminController
     Route::prefix('admin')->group(function () {
-        Route::get('/', [AdminController::class, 'index'])->name('admin.index');
+        Route::get('/', [AdminController::class, 'index'])->name('admin.index');//affichage de admin et superviseur 
         Route::get('/create', [AdminController::class, 'create'])->name('admin.create');
         Route::post('/store', [AdminController::class, 'store'])->name('admin.store');
         Route::get('/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
         Route::put('/update/{id}', [AdminController::class, 'update'])->name('admin.update');
         Route::delete('/delete/{id}', [AdminController::class, 'delete'])->name('admin.delete');
 
-        // Vues spécifiques pour superviseurs/stagiaires
-        Route::get('/Administrateur-Superviseur', [AdminController::class, 'index'])->name('admin.superviseur');
+    // Vues spécifiques pour superviseurs-Administrateur /stagiaires
+        //Route::get('/Administrateur-Superviseur', [AdminController::class, 'index'])->name('admin.superviseur');
         Route::get('/Stagiaire', [AdminController::class, 'indexStagiaire'])->name('admin.stagiaire');
 
-     
-
-});
-
-   //les routes pour la promotion
+    // Import de stagiaires (accessible à tous ? sinon à placer dans le groupe Administrateur)
+    Route::get('/stagiaires/import', [StagiairesImportController::class, 'showImportForm'])->name('stagiaires.import.form');
+    Route::post('/stagiaires/import', [StagiairesImportController::class, 'import'])->name('stagiaires.import');
+        
+    //les routes pour la promotion
         Route::get('promotions', [PromotionController::class, 'index'])->name('promotions.index');
         Route::post('promotions', [PromotionController::class, 'store'])->name('promotions.store');
         Route::put('promotions/{promotion}', [PromotionController::class, 'update'])->name('promotions.update');
         Route::delete('promotions/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
+
+    //les routes pour le sujet 
+        Route::resource('sujets',SujetController::class)->except(['show','create','edit']);
+        Route::post('/sujets/{sujet}/inscrire',[SujetController::class,'inscrire'])->name('sujets.inscrire');
+        Route::delete('/sujets/{sujet}/desinscrire/{stagiaire}', [SujetController::class, 'desinscrire'])->name('sujets.desinscrire');
+});
+
+
+
+// Route pour le superviseur
+Route::middleware(['auth','role:Superviseur'])->group(function(){
+    Route::get('/test-dashboard-Supervisseur',[SuperviseurController::class,'index'])->name('superviseur.dashboard');
+});
+// Route pour le stagiaire
+Route::middleware(['auth','role:Stagiaire'])->group(function(){
+    Route::get('/test-dashboard-Stagiaire',[StagiaireController::class,'index'])->name('stagiaire.dashboard');
+});
+
+//Groupe
+Route::resource('groupes', GroupeController::class);
+Route::post('/groupes/store', [GroupeController::class, 'store'])->name('groupes.store');
+Route::put('/groupes/{id}', [GroupeController::class, 'update'])->name('groupes.update');
 
 //route publique pour le moment 
 Route::get('/analytics', function () {
@@ -293,22 +314,6 @@ Route::get('/analytics', function () {
     });
 
 
-// Route pour le superviseur
-Route::middleware(['auth','role:Superviseur'])->group(function(){
-    Route::get('/test-dashboard-Supervisseur',[SuperviseurController::class,'index'])->name('superviseur.dashboard');
-});
-// Route pour le stagiaire
-Route::middleware(['auth','role:Stagiaire'])->group(function(){
-    Route::get('/test-dashboard-Stagiaire',[StagiaireController::class,'index'])->name('stagiaire.dashboard');
-});
-
-
-
-
-//Groupe
-Route::resource('groupes', GroupeController::class);
-Route::post('/groupes/store', [GroupeController::class, 'store'])->name('groupes.store');
-Route::put('/groupes/{id}', [GroupeController::class, 'update'])->name('groupes.update');
 
 
 require __DIR__.'/auth.php';

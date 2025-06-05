@@ -82,7 +82,7 @@ class AdminController extends Controller
              return redirect()->route('admin.index')->with('success', 'Admin/Superviseur a été bien creer.');
 
         }else {
-         return redirect()->route('admin.index_stagiaire')->with('success', 'Stagiaire a été bien creer.');
+         return redirect()->route('admin.stagiaire')->with('success', 'Stagiaire a été bien creer.');
 
         }
         
@@ -141,7 +141,7 @@ class AdminController extends Controller
              return redirect()->route('admin.index')->with('success', 'Admin/Superviseur a été bien creer.');
 
         }else {
-         return redirect()->route('admin.index_stagiaire')->with('success', 'Stagiaire a été bien creer.');
+         return redirect()->route('admin.stagiaire')->with('success', 'Stagiaire a été bien creer.');
 
         }
         

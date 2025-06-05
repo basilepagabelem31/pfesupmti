@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             StatutSeeder::class,
             UserSeeder::class ,
             AdminUserSeeder::class,
+            GroupeSeeder::class,
         ]);
     }
 }
