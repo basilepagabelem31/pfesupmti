@@ -1,39 +1,38 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}"{{ (!empty($htmlAttribute)) ? $htmlAttribute : '' }}>
 <head>
-	@include('partial.head')
+    @include('partial.head')
 </head>
 <body class="{{ (!empty($bodyClass)) ? $bodyClass : '' }}">
 
+    <!-- BEGIN #app -->
+    <div id="app" class="app {{ (!empty($appClass)) ? $appClass : '' }}">
+        @includeWhen(empty($appHeaderHide), 'partial.header')
+        @includeWhen(empty($appSidebarHide), 'partial.sidebar')
+        @includeWhen(!empty($appTopNav), 'partial.top-nav')
 
-	<!-- BEGIN #app -->
-	<div id="app" class="app {{ (!empty($appClass)) ? $appClass : '' }}">
-	  @includeWhen(empty($appHeaderHide), 'partial.header')
-		@includeWhen(empty($appSidebarHide), 'partial.sidebar')
-		@includeWhen(!empty($appTopNav), 'partial.top-nav')
+        @if (empty($appContentHide))
+            <!-- BEGIN #content -->
+            <div id="content" class="app-content  {{ (!empty($appContentClass)) ? $appContentClass : '' }}">
+                @yield('content')
+            </div>
+            <!-- END #content -->
+        @else
+            @yield('content')
+            {{-- Injection du JSON pré-calculé --}}
+            <script>
+                window._paysVilles = @json($paysVilles ?? []) ;
+            </script>
+        @endif
 
-		@if (empty($appContentHide))
-			<!-- BEGIN #content -->
-			<div id="content" class="app-content  {{ (!empty($appContentClass)) ? $appContentClass : '' }}">
-				@yield('content')
-			</div>
-			<!-- END #content -->
-		@else
-    	@yield('content')
-			 {{-- Injection du JSON pré-calculé --}}
-			<script>
-				window._paysVilles = @json($paysVilles ?? []) ;
-			</script>
-		@endif
+        @includeWhen(!empty($appFooter), 'partial.footer')
+    </div>
+    <!-- END #app -->
 
-		@includeWhen(!empty($appFooter), 'partial.footer')
-	</div>
-	<!-- END #app -->
-
-	@yield('outter_content')
-	@include('partial.scroll-top-btn')
-	@include('partial.theme-panel')
-	@include('partial.scripts')
+    @yield('outter_content')
+    @include('partial.scroll-top-btn')
+    @include('partial.theme-panel')
+    @include('partial.scripts')
 </body>
 @yield('my_js')
 
