@@ -1,4 +1,4 @@
-@extends('layouts.app') {{-- Assurez-vous d'avoir un layout approprié --}}
+@extends('layout.default') {{-- Assurez-vous d'avoir un layout approprié --}}
 
 @section('content')
 <div class="container">
