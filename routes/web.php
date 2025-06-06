@@ -42,22 +42,20 @@ Route::get('/analytics', function () {
 Route::middleware(['auth'])->group(function () {
 
     // Tableau de bord commun pour tous les utilisateurs authentifiés.
-    // La redirection spécifique au rôle se fait ici même pour plus de clarté
-    // ou peut être déportée dans app/Providers/RouteServiceProvider.php (méthode HOME()).
     Route::get('/dashboard', function () {
         if (Auth::user()->isStagiaire()) {
-            return redirect()->route('stagiaire.dashboard'); // REDIRECTION VERS LE DASHBOARD STAGIAIRE (SINGULIER)
+            return redirect()->route('stagiaire.dashboard');
         } elseif (Auth::user()->isSuperviseur()) {
-            return redirect()->route('superviseur.dashboard'); // REDIRECTION VERS LE DASHBOARD SUPERVISEUR
+            return redirect()->route('superviseur.dashboard');
         } elseif (Auth::user()->isAdministrateur()) {
-            return redirect()->route('admin.index'); // REDIRECTION VERS LE DASHBOARD ADMIN
+            return redirect()->route('admin.index');
         }
-        return view('dashboard'); // Dashboard générique si aucun rôle spécifique ne correspond
+        return view('dashboard');
     })->middleware('verified')->name('dashboard');
 
 
     // Gestion du profil (accessible à tous les utilisateurs authentifiés)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edite');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
@@ -82,10 +80,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/stagiaires/{stagiaire}/fichiers', [FichierController::class, 'index'])->name('stagiaire.fichiers.index');
 
 
+    // --- ROUTE SPÉCIFIQUE POUR LES VILLES PAR PAYS (AJAX) ---
+    // Cette route est placée ici pour qu'elle soit sous le middleware 'auth'
+    // mais PAS sous un préfixe 'admin' ou 'superviseur' qui ne correspondrait pas au JS.
+    Route::get('/villes/by-pays/{pays_id}', [VilleController::class, 'getVilles'])->name('villes.by_pays');
+
+
     // --- Groupe de routes pour Administrateurs et Superviseurs ---
     Route::middleware('role:Administrateur,Superviseur')->group(function () {
         Route::resource('groupes', GroupeController::class);
-        Route::resource('sujets', SujetController::class); // CRUD complet via resource
+        Route::resource('sujets', SujetController::class);
         Route::post('/sujets/{sujet}/inscrire', [SujetController::class, 'inscrire'])->name('sujets.inscrire');
         Route::delete('/sujets/{sujet}/desinscrire/{stagiaire}', [SujetController::class, 'desinscrire'])->name('sujets.desinscrire');
 
@@ -97,6 +101,13 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Groupe de routes pour Administrateurs UNIQUEMENT ---
     Route::middleware('role:Administrateur')->group(function () {
+        // Routes des promotions (directement sous le middleware Admin)
+        Route::get('/promotions', [PromotionController::class, 'index'])->name('promotions.index');
+        Route::post('/promotions', [PromotionController::class, 'store'])->name('promotions.store');
+        Route::put('/promotions/{promotion}', [PromotionController::class, 'update'])->name('promotions.update');
+        Route::delete('/promotions/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
+
+        // Préfixe 'admin' pour les routes spécifiques au panneau d'administration
         Route::prefix('admin')->group(function () {
             // AdminController - Gestion des utilisateurs, etc.
             Route::get('/', [AdminController::class, 'index'])->name('admin.index');
@@ -109,25 +120,17 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/utilisateurs-superviseurs', [AdminController::class, 'index'])->name('admin.users.superviseurs');
             Route::get('/utilisateurs-stagiaires', [AdminController::class, 'indexStagiaire'])->name('admin.users.stagiaires');
 
-            // CRUD pour Pays, Villes, Rôles, Promotions
+            // CRUD pour Pays, Villes (gestion complète, pas seulement AJAX), Rôles
+            // Note: 'villes.by_pays' est gérée en dehors de ce préfixe 'admin' pour l'AJAX
             Route::resource('pays', PaysController::class)->except(['show']);
-            Route::resource('villes', VilleController::class)->except(['show']);
-            Route::get('/villes/by-pays/{pays_id}', [VilleController::class, 'getVilles'])->name('villes.by_pays');
+            Route::resource('villes', VilleController::class)->except(['show', 'getVilles']); 
             Route::resource('roles', RoleController::class)->except(['show']);
-
-
-
-            Route::get('/promotions', [PromotionController::class, 'index'])->name('promotions.index');
-            Route::post('/promotions', [PromotionController::class, 'store'])->name('promotions.store');
-            Route::put('/promotions/{promotion}', [PromotionController::class, 'update'])->name('promotions.update');
-            Route::delete('/promotions/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
         });
     });
 
 
     // --- Groupe de routes pour Superviseurs UNIQUEMENT ---
     Route::middleware('role:Superviseur')->group(function () {
-        // Tableau de bord spécifique du superviseur
         Route::get('/superviseur/dashboard', [SuperviseurController::class, 'index'])->name('superviseur.dashboard');
         // Autres routes spécifiques au superviseur
     });
@@ -135,19 +138,13 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Groupe de routes pour Stagiaires UNIQUEMENT ---
     Route::middleware('role:Stagiaire')->group(function () {
-        // Tableau de bord spécifique du stagiaire
-        // Utilise la vue stagiaires/dashboard.blade.php
         Route::get('/stagiaires/dashboard', function () {
             return view('stagiaires.dashboard');
-        })->name('stagiaire.dashboard'); // Nom de la route est maintenant SINGULIER
-
-        // Exemple d'autre route spécifique au stagiaire
-        // Route::get('/stagiaire/mes-notes', [StagiaireController::class, 'showNotes'])->name('stagiaire.notes');
+        })->name('stagiaire.dashboard');
     });
 
 
     // --- Pages statiques du template (nécessitent authentification mais pas de rôle spécifique) ---
-    // J'ai regroupé toutes ces routes ici.
     Route::get('/email/inbox', function () { return view('pages.email-inbox'); });
     Route::get('/email/compose', function () { return view('pages.email-compose'); });
     Route::get('/email/detail', function () { return view('pages.email-detail'); });
@@ -197,7 +194,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/page/file-manager', function () { return view('pages.page-file-manager'); });
     Route::get('/page/pricing', function () { return view('pages.page-pricing'); });
     Route::get('/landing', function () { return view('pages.landing'); });
-    // Route::get('/profile', function () { return view('pages.profile'); }); // Attention: Si ceci est une page de profil statique du template, cela peut entrer en conflit avec la route 'profile.edit'. Envisagez de la renommer si elle est nécessaire.
+    Route::get('/profile', function () { return view('pages.profile'); });
     Route::get('/calendar', function () { return view('pages.calendar'); });
     Route::get('/settings', function () { return view('pages.settings'); });
     Route::get('/helper', function () { return view('pages.helper'); });
