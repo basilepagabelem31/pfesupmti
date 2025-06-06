@@ -1,107 +1,108 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Importer des Stagiaires</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Custom animation for fade-in effect */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-        /* Custom button gradient and shadow */
-        .btn-gradient {
-            background-image: linear-gradient(to right, #4F46E5 0%, #6366F1 50%, #4F46E5 100%);
-            background-size: 200% auto;
-            transition: background-position 0.3s ease-out, transform 0.2s ease-out;
-        }
-        .btn-gradient:hover {
-            background-position: right center; /* Shift background for hover effect */
-            transform: translateY(-2px); /* Slight lift effect */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
-        }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4 min-h-screen flex items-center justify-center">
-    <div class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-2xl w-full animate-fade-in transform hover:scale-105 transition duration-300 ease-in-out">
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-8 text-center tracking-tight">
-            Importer des Stagiaires
-        </h1>
+@extends('layout.default')
 
-        @if (session('success'))
-            <div class="bg-green-50 text-green-700 border border-green-200 p-4 mb-5 rounded-xl text-base font-medium flex items-center space-x-3 shadow-sm">
-                <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
+@section('content')
+<div class="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div class="max-w-3xl w-full bg-white rounded-3xl shadow-xl overflow-hidden animate-fade-in">
+        <div class="relative p-8 md:p-10 lg:p-12">
+            {{-- Decorative element at the top --}}
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-3xl"></div>
 
-        @if (session('warning'))
-            <div class="bg-yellow-50 text-yellow-700 border border-yellow-200 p-4 mb-5 rounded-xl text-base font-medium flex items-center space-x-3 shadow-sm">
-                <svg class="h-6 w-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                <span>{!! session('warning') !!}</span>
-            </div>
-        @endif
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 text-center mb-6 mt-4 leading-tight">
+                Importation Rapide des <span class="text-blue-600">Stagiaires</span>
+            </h1>
+            <p class="text-center text-gray-600 mb-8 text-lg">
+                Téléchargez votre fichier CSV pour ajouter de nouveaux stagiaires en masse.
+            </p>
 
-        @if (session('error'))
-            <div class="bg-red-50 text-red-700 border border-red-200 p-4 mb-5 rounded-xl text-base font-medium flex items-center space-x-3 shadow-sm">
-                <svg class="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
+            {{-- Messages de session --}}
+            @if (session('success'))
+                <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-6 flex items-center space-x-3 shadow-md border border-green-200">
+                    <svg class="h-7 w-7 text-green-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    <span class="font-semibold text-lg">{{ session('success') }}</span>
+                </div>
+            @endif
 
-        @if ($errors->any())
-            <div class="bg-red-50 text-red-700 border border-red-200 p-4 mb-5 rounded-xl text-base font-medium shadow-sm">
-                <p class="font-bold mb-2 flex items-center space-x-2">
-                    <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span>Erreurs de validation :</span>
+            @if (session('warning'))
+                <div class="bg-yellow-100 text-yellow-800 p-4 rounded-xl mb-6 flex items-center space-x-3 shadow-md border border-yellow-200">
+                    <svg class="h-7 w-7 text-yellow-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.3 2.647-1.3 3.412 0l7.258 12.49A1.5 1.5 0 0118.067 17H1.933a1.5 1.5 0 01-1.317-2.201l7.258-12.49zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <span class="font-semibold text-lg">{!! session('warning') !!}</span>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 flex items-center space-x-3 shadow-md border border-red-200">
+                    <svg class="h-7 w-7 text-red-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                    <span class="font-semibold text-lg">{{ session('error') }}</span>
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow-md border border-red-200">
+                    <p class="font-bold mb-3 flex items-center space-x-2 text-lg">
+                        <svg class="h-6 w-6 text-red-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                        <span>Erreurs de validation :</span>
+                    </p>
+                    <ul class="list-disc list-inside text-base mt-2 space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form action="{{ route('stagiaires.import') }}" method="POST" enctype="multipart/form-data" class="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
+                @csrf
+                <div class="mb-6">
+                    <label for="file" class="block text-gray-800 text-lg font-semibold mb-3">
+                        <i class="fas fa-file-csv text-blue-500 mr-2"></i> Sélectionnez votre fichier CSV :
+                    </label>
+                    <input type="file" name="file" id="file" accept=".csv, .txt"
+                           class="block w-full text-lg text-gray-900 border border-gray-300 rounded-xl cursor-pointer bg-white file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-lg file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300 ease-in-out shadow-sm"
+                           required>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Seuls les fichiers .csv ou .txt sont acceptés. Taille maximale : 10 Mo.
+                    </p>
+                </div>
+                <button type="submit"
+                        class="w-full bg-gradient-to-r from-blue-600 to-purple-700 text-white font-extrabold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-75 tracking-wider uppercase text-lg">
+                    <i class="fas fa-upload mr-3"></i> Importer les stagiaires
+                </button>
+            </form>
+
+            <hr class="my-10 border-t-2 border-gray-100">
+
+            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-inner">
+                <h2 class="text-2xl font-bold text-gray-800 mb-5 flex items-center">
+                    <i class="fas fa-info-circle text-purple-600 mr-3"></i> Format du fichier CSV attendu
+                </h2>
+                <p class="text-gray-600 text-base mb-4 leading-relaxed">
+                    Votre fichier CSV doit impérativement inclure les colonnes suivantes. Les autres champs de stagiaires sont facultatifs et peuvent être ajoutés si nécessaire.
                 </p>
-                <ul class="list-disc list-inside text-sm mt-2">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700 text-base mb-6">
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">email</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire, unique)</span></li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">cin</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire, unique)</span></li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">nom</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire)</span></li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">prenom</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire)</span></li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">telephone</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire)</span></li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">code_groupe</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire)</span></li>
                 </ul>
-            </div>
-        @endif
-
-        <form action="{{ route('stagiaires.import') }}" method="POST" enctype="multipart/form-data" class="mb-8">
-            @csrf
-            <div class="mb-6">
-                <label for="file" class="block text-gray-700 text-lg font-semibold mb-3">Sélectionnez le fichier CSV :</label>
-                <input type="file" name="file" id="file" accept=".csv, .txt" class="block w-full text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3.5 shadow-sm">
-            </div>
-            <button type="submit" class="w-full btn-gradient text-white font-extrabold py-3 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
-                Importer le fichier
-            </button>
-        </form>
-
-        <hr class="my-8 border-t-2 border-gray-200">
-
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Format CSV attendu :</h2>
-        <p class="text-gray-600 text-base mb-4">Votre fichier CSV doit inclure les colonnes suivantes (les autres sont facultatives) :</p>
-        <ul class="list-disc list-inside text-gray-700 text-base mb-5 space-y-1">
-            <li><code class="font-mono bg-gray-100 text-purple-700 px-2 py-1 rounded">email</code> (obligatoire, unique)</li>
-            <li><code class="font-mono bg-gray-100 text-purple-700 px-2 py-1 rounded">cin</code> (obligatoire, unique)</li>
-            <li><code class="font-mono bg-gray-100 text-purple-700 px-2 py-1 rounded">nom</code> (obligatoire)</li>
-            <li><code class="font-mono bg-gray-100 text-purple-700 px-2 py-1 rounded">prenom</code> (obligatoire)</li>
-            <li><code class="font-mono bg-gray-100 text-purple-700 px-2 py-1 rounded">telephone</code> (obligatoire)</li>
-            <li><code class="font-mono bg-gray-100 text-purple-700 px-2 py-1 rounded">code_groupe</code> (obligatoire)</li>
-        </ul>
-        <p class="text-gray-600 text-base mb-3">Exemple de ligne CSV :</p>
-        <pre class="bg-gray-50 p-4 rounded-xl text-gray-800 text-sm overflow-x-auto whitespace-pre-wrap break-words border border-gray-200 shadow-inner">
-<span class="text-blue-600">email</span>,<span class="text-blue-600">cin</span>,<span class="text-blue-600">nom</span>,<span class="text-blue-600">prenom</span>,<span class="text-blue-600">telephone</span>,<span class="text-blue-600">code_groupe</span>
+                <p class="text-gray-600 text-base mb-3 font-semibold">Exemple de ligne CSV :</p>
+                <pre class="bg-gray-100 p-5 rounded-xl text-gray-800 text-sm overflow-x-auto whitespace-pre-wrap break-words border border-gray-300 shadow-inner">
+<span class="text-indigo-600">email</span>,<span class="text-indigo-600">cin</span>,<span class="text-indigo-600">nom</span>,<span class="text-indigo-600">prenom</span>,<span class="text-indigo-600">telephone</span>,<span class="text-indigo-600">code_groupe</span>
 jean.dupont@example.com,AB12345,Dupont,Jean,0612345678,G001</pre>
-        <p class="text-gray-600 text-sm mt-4">
-            Assurez-vous que les groupes et rôles (`Stagiaire`) existent dans votre base de données avant l'importation.
-        </p>
+                <p class="text-gray-600 text-sm mt-5 leading-relaxed">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i> Assurez-vous que les groupes (via leur `code_groupe`) et les rôles (`Stagiaire` en particulier) existent dans votre base de données avant de procéder à l'importation pour éviter les erreurs.
+                </p>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+{{-- Si vous avez des scripts JS spécifiques à cette page, vous pouvez les pousser ici --}}
+{{-- @push('scripts')
+<script>
+    // Votre JavaScript ici
+</script>
+@endpush --}}
+@endsection
+

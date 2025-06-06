@@ -20,7 +20,7 @@
     <form action="{{ route('fichiers.store') }}" method="POST" enctype="multipart/form-data" class="bg-white shadow-md rounded-lg p-6">
         @csrf
 
-        @if (Auth::user()->isSuperviseur() || Auth::user()->isSuperAdmin())
+        @if (Auth::user()->isSuperviseur() || Auth::user()->isAdministrateur())
             <div class="mb-4">
                 <label for="id_stagiaire" class="block text-gray-700 text-sm font-bold mb-2">Stagiaire :</label>
                 <select name="id_stagiaire" id="id_stagiaire" class="form-select w-full" required>
@@ -79,7 +79,7 @@
             @error('sujet_id')<p class="text-red-500 text-xs italic">{{ $message }}</p>@enderror
         </div>
 
-        @if (Auth::user()->isSuperviseur() || Auth::user()->isSuperAdmin())
+        @if (Auth::user()->isSuperviseur() || Auth::user()->isAdministrateur())
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Permissions pour le Stagiaire :</label>
                 <div class="flex items-center">

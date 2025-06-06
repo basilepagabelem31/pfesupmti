@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layout.default') 
 
 @section('content')
 <div class="container py-4">
@@ -95,11 +95,13 @@
         </div>
     </div>
 </div>
+@endsection {{-- Cette directive @endsection est correcte et ferme la section 'content'. --}}
 
+{{-- Les includes pour les modals ne nécessitent PAS de directives @section/@endsection autour d'eux --}}
 @include('groupes.create')
 @include('groupes.edit')
 
-@endsection
+{{-- Supprimez la ligne '@endsection' qui était ici. Elle était en trop et causait l'erreur. --}}
 
 @push('scripts')
 <script>
@@ -144,5 +146,3 @@
     }
 </script>
 @endpush
-
-@endsection

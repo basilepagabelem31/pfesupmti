@@ -7,7 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth; // Assurez-vous que cette ligne est présente
+// Ligne suivante non nécessaire pour le modèle, car Auth est un Facade,
+// mais inoffensive si présente. Souvent utilisée dans les contrôleurs/vues.
+// use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -33,10 +35,10 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed', // Assurez-vous d'avoir ceci pour le hachage automatique du mot de passe
+        'password' => 'hashed',
     ];
 
-    // --- Relations existantes (gardez toutes celles que vous avez déjà) ---
+    // --- Relations existantes ---
     public function pays() { return $this->belongsTo(Pays::class); }
     public function ville() { return $this->belongsTo(Ville::class); }
     public function groupe() { return $this->belongsTo(Groupe::class); }
@@ -70,7 +72,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'coequipiers', 'id_stagiaire_1', 'id_stagiaire_2')
                      ->withPivot('date_association')
-                     ->as('coequipier_data'); // Nomme la relation pivot pour un accès plus clair
+                     ->as('coequipier_data');
     }
 
     /**
@@ -81,7 +83,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'coequipiers', 'id_stagiaire_2', 'id_stagiaire_1')
                      ->withPivot('date_association')
-                     ->as('coequipier_data'); // Nomme la relation pivot pour un accès plus clair
+                     ->as('coequipier_data');
     }
 
     /**
@@ -93,8 +95,7 @@ class User extends Authenticatable
         return $this->coequipiersAsStagiaire1->merge($this->coequipiersAsStagiaire2);
     }
 
-    // --- NOUVELLES RELATIONS POUR LES FICHIERS (À AJOUTER) ---
-
+    // --- NOUVELLES RELATIONS POUR LES FICHIERS ---
     /**
      * Relation : Un utilisateur peut posséder plusieurs fichiers (en tant que stagiaire propriétaire).
      */
@@ -113,18 +114,19 @@ class User extends Authenticatable
 
     // --- FIN DES NOUVELLES RELATIONS POUR LES FICHIERS ---
 
-    // Méthodes pour vérifier le rôle de l'utilisateur (gardez celles que vous avez déjà)
+    // Méthodes pour vérifier le rôle de l'utilisateur
     public function hasRole($role)
     {
         return $this->role && $this->role->nom == $role;
     }
 
-    // Il est recommandé d'utiliser isSuperAdmin, isSuperviseur, isStagiaire au lieu de isAdministrateur
-    // pour être cohérent avec le cahier des charges, à moins que 'Administrateur' soit un rôle séparé de 'Super Admin'.
-    // Si 'Super Administrateur' est le rôle principal, vous pouvez fusionner les deux ou renommer.
-    public function isSuperAdmin()
+    /**
+     * Vérifie si l'utilisateur est un administrateur.
+     * Renommée de isSuperAdmin() pour correspondre au rôle 'Administrateur'.
+     */
+    public function isAdministrateur() // <--- NOUVEAU NOM DE LA MÉTHODE
     {
-        return $this->hasRole('Administrateur'); // Ajuster si le nom du rôle est différent
+        return $this->hasRole('Administrateur'); // Le rôle dans la BDD est 'Administrateur'
     }
 
     public function isSuperviseur()

@@ -21,11 +21,11 @@ class FichierController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->isStagiaire()) {
+        if ($user->isStagiaire()) { 
             // Un stagiaire ne voit que ses propres fichiers
             $fichiers = $user->fichiersPossedes()->with('televerseur', 'sujet')->latest()->get();
             return view('fichiers.index_stagiaire', compact('fichiers'));
-        } elseif ($user->isSuperviseur() || $user->isSuperAdmin()) {
+        } elseif ($user->isSuperviseur() || $user->isAdministrateur()) {
             // Superviseur/Admin peuvent voir tous les fichiers ou filtrer par stagiaire
             if ($stagiaire && $stagiaire->isStagiaire()) {
                 $fichiers = $stagiaire->fichiersPossedes()->with('televerseur', 'sujet')->latest()->get();
@@ -55,7 +55,7 @@ class FichierController extends Controller
         $stagiaires = null;
         $sujets = null; // Si vous avez un modèle Sujet et une table de sujets
 
-        if ($user->isSuperviseur() || $user->isSuperAdmin()) {
+        if ($user->isSuperviseur() || $user->isAdministrateur()) {
             // Le superviseur/admin peut choisir pour quel stagiaire téléverser
             $stagiaires = User::whereHas('role', function ($query) {
                 $query->where('id', 3); // L'ID du rôle Stagiaire
@@ -91,7 +91,7 @@ class FichierController extends Controller
         ];
 
         // Si c'est un superviseur/admin qui téléverse, il doit choisir un stagiaire
-        if ($user->isSuperviseur() || $user->isSuperAdmin()) {
+        if ($user->isSuperviseur() || $user->isAdministrateur()) {
             $rules['id_stagiaire'] = 'required|exists:users,id';
         }
 
@@ -132,7 +132,7 @@ class FichierController extends Controller
         // Le superviseur/admin peut modifier tous les fichiers
         if ($user->isStagiaire() && ($fichier->id_stagiaire !== $user->id || !$fichier->peut_modifier)) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce fichier.');
-        } elseif (!$user->isSuperviseur() && !$user->isSuperAdmin() && !$user->isStagiaire()) {
+        } elseif (!$user->isSuperviseur() && !$user->isAdministrateur() && !$user->isStagiaire()) {
             abort(403, 'Accès non autorisé.');
         }
 
@@ -155,7 +155,7 @@ class FichierController extends Controller
         // Vérification des permissions de modification
         if ($user->isStagiaire() && ($fichier->id_stagiaire !== $user->id || !$fichier->peut_modifier)) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce fichier.');
-        } elseif (!$user->isSuperviseur() && !$user->isSuperAdmin() && !$user->isStagiaire()) {
+        } elseif (!$user->isSuperviseur() && !$user->isAdministrateur() && !$user->isStagiaire()) {
             abort(403, 'Accès non autorisé.');
         }
 
@@ -168,7 +168,7 @@ class FichierController extends Controller
         ];
 
         // Le superviseur/admin peut modifier les permissions
-        if ($user->isSuperviseur() || $user->isSuperAdmin()) {
+        if ($user->isSuperviseur() || $user->isAdministrateur()) {
             $rules['peut_modifier'] = 'boolean';
             $rules['peut_supprimer'] = 'boolean';
         }
@@ -191,7 +191,7 @@ class FichierController extends Controller
         }
 
         // Mettez à jour les permissions si l'utilisateur est superviseur/admin
-        if ($user->isSuperviseur() || $user->isSuperAdmin()) {
+        if ($user->isSuperviseur() || $user->isAdministrateur()) {
             $data['peut_modifier'] = $request->boolean('peut_modifier');
             $data['peut_supprimer'] = $request->boolean('peut_supprimer');
         }
@@ -214,7 +214,7 @@ class FichierController extends Controller
         // Vérification des permissions de suppression
         if ($user->isStagiaire() && ($fichier->id_stagiaire !== $user->id || !$fichier->peut_supprimer)) {
             abort(403, 'Vous n\'êtes pas autorisé à supprimer ce fichier.');
-        } elseif (!$user->isSuperviseur() && !$user->isSuperAdmin() && !$user->isStagiaire()) {
+        } elseif (!$user->isSuperviseur() && !$user->isAdministrateur() && !$user->isStagiaire()) {
             abort(403, 'Accès non autorisé.');
         }
 
@@ -237,7 +237,7 @@ class FichierController extends Controller
         // Optionnel: Ajouter une logique de vérification de permission avant le téléchargement
         // Par exemple, seuls le propriétaire ou les superviseurs peuvent télécharger.
         $user = Auth::user();
-        if ($user->id !== $fichier->id_stagiaire && !$user->isSuperviseur() && !$user->isSuperAdmin()) {
+        if ($user->id !== $fichier->id_stagiaire && !$user->isSuperviseur() && !$user->isAdministrateur()) {
             abort(403, 'Accès non autorisé au téléchargement de ce fichier.');
         }
 

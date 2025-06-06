@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Importer Stagiaires</title>
-</head>
-<body>
+
+@extends('layout.default')
+@section('content')
+
     <h1>Importer des Stagiaires</h1>
 
     {{-- Affichage des messages de session --}}
@@ -40,5 +36,5 @@
         <br><br>
         <button type="submit">Importer le fichier</button>
     </form>
-</body>
-</html>
+
+@endsection
