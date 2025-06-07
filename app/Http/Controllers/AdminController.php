@@ -92,18 +92,28 @@ class AdminController extends Controller
 
     public function edit($id)
     {
-        $editAdmin =User::findorFail($id);
-        $admins= User::with(['pays','ville','role','statut'])
-        ->whereHas('role',function($q){
-            $q->whereIn('nom',['Administrateur','Superviseur','Stagiaire']);
-        })->paginate(10);
-        $roles=Role::all();
-        $pays=Pays::all();
-        $villes=Ville::all();
-        $statuts=Statut::all();
+        $editAdmin = User::findorFail($id);
 
-        return view("admin.index",compact(['editAdmin','admins','roles','pays','villes','statuts']));
-        
+        // Assurez-vous de charger les mêmes données que dans la méthode index pour la vue
+        $admins = User::with(['pays','ville','role','statut'])
+            ->whereHas('role', function($q){
+                $q->whereIn('nom',['Administrateur','Superviseur','Stagiaire']); // Inclure Stagiaire pour l'édition
+            })->paginate(10);
+
+        $roles = Role::all();
+        $statuts = Statut::all();
+        $pays = Pays::all();
+
+        // Charge tous les pays avec leurs villes associées pour l'hydratation JS ou le fallback AJAX
+        $paysVilles = Pays::with([
+            'villes' => fn($q) => $q->select('id','nom','pays_id')->orderBy('nom')
+        ])->orderBy('nom')->get(['id','nom']);
+
+        // Récupère l'ID du rôle Stagiaire pour la logique JS
+        $stagiaireId = Role::where('nom','Stagiaire')->value('id');
+
+        // Passe toutes les variables nécessaires à la vue
+        return view("admin.index",compact('editAdmin','admins','roles','statuts','pays','paysVilles','stagiaireId'));
     }
 
     public function update(Request $request, $id){
