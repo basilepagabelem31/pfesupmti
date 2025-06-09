@@ -13,6 +13,7 @@ use App\Http\Controllers\GroupeController;
 use App\Http\Controllers\SujetController;
 use App\Http\Controllers\DemandeCoequipierController;
 use App\Http\Controllers\FichierController;
+use App\Http\Controllers\NoteController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -161,6 +162,28 @@ Route::middleware(['auth'])->group(function () {
             return view('stagiaires.dashboard');
         })->name('stagiaire.dashboard');
     });
+
+    //route pour la gestion des notes 
+    Route::middleware(['auth', 'role:Administrateur,Superviseur'])->group(function () {
+    Route::get('/stagiaires-notes', [NoteController::class, 'listeStagiaires'])->name('notes.liste_stagiaires');
+    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::get('/notes/{id}/edit', [NoteController::class, 'edit'])->name('notes.edit');
+    Route::put('/notes/{id}', [NoteController::class, 'update'])->name('notes.update');
+    Route::delete('/notes/{id}', [NoteController::class, 'destroy'])->name('notes.destroy');
+    });
+    //suite pour la gestion des notes 
+    Route::middleware(['auth'])->group(function () {
+    Route::get('/stagiaire/{id}', [NoteController::class, 'ficheStagiaire'])->name('notes.fiche_stagiaire');
+    //suppime la notification apres avoir clique sur le bouton voir avec les stagiaires
+    Route::post('/notifications/{id}/marque-lu', function($id) {
+    $notification = Auth::user()->unreadNotifications()->findOrFail($id);
+    $stagiaire_id = $notification->data['stagiaire_id'];
+    $notification->markAsRead();
+    return redirect()->route('notes.fiche_stagiaire', $stagiaire_id);
+    })->name('notifications.markAsRead');
+    });
+
+    
 
 
     // --- Pages statiques du template (nécessitent authentification mais pas de rôle spécifique) ---

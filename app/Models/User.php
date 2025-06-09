@@ -138,4 +138,9 @@ class User extends Authenticatable
     {
         return $this->hasRole('Stagiaire');
     }
+
+     public function notes()
+    {
+        return $this->hasMany(Note::class, 'stagiaire_id');
+    }
 }
