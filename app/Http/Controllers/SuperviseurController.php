@@ -10,6 +10,6 @@ class SuperviseurController extends Controller
 
     public function index()
     {
-        return view('supervisseur.test');
+        return view('supervisseur.dashboard');
     }
 }

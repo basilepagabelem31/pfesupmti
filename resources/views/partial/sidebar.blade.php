@@ -1,12 +1,14 @@
 @php
     use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Str; // Pour Str::startsWith
 
     // Récupérer l'utilisateur connecté
     $user = Auth::user();
     // URL courante pour l'activation du menu
     $currentUrl = '/'.trim(request()->path(), '/');
 
-    // Pour la gestion des sous-menus (si vous avez des éléments imbriqués)
+    // La fonction renderSubMenu n'est plus pertinente pour la section modifiée,
+    // mais elle reste si elle est utilisée ailleurs pour d'autres sous-menus.
     $renderSubMenu = function(array $items) use (&$renderSubMenu, $currentUrl) {
         $html = '';
         foreach ($items as $menu) {
@@ -23,7 +25,7 @@
             }
 
             // Détection de l'état actif
-            $active = ($currentUrl === trim(parse_url($url, PHP_URL_PATH), '/')) ? 'active' : '';
+            $active = (Str::startsWith($currentUrl, trim(parse_url($url, PHP_URL_PATH), '/'))) ? 'active' : '';
 
             $html .= '<div class="menu-item '. $hasSub .' '. $active .'">'
                     . '<a href="'. $url .'" class="menu-link">'. $text . $caret .'</a>'
@@ -36,49 +38,62 @@
 
 <!-- BEGIN #sidebar -->
 <div id="sidebar" class="app-sidebar">
+    {{-- Ajout de styles pour forcer le défilement si le contenu est trop long --}}
+    <style>
+        #sidebar .app-sidebar-content {
+            overflow-y: auto; /* Active le défilement vertical si le contenu dépasse */
+            height: 100%;     /* Assure que le conteneur prend toute la hauteur disponible de son parent */
+        }
+    </style>
+    
     <div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
         <div class="menu">
 
             <div class="menu-header">Navigation</div>
 
             <!-- --- Dashboard commun (redirige en fonction du rôle) --- -->
-            <div class="menu-item {{ ($currentUrl === trim(parse_url(route('dashboard'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                <a href="{{ route('dashboard') }}" class="menu-link">
-                    <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
-                    <span class="menu-text">Dashboard</span>
-                </a>
-            </div>
+            
 
             @if ($user) {{-- S'assurer qu'un utilisateur est connecté --}}
 
                 {{-- --- Menu pour le Super Administrateur --- --}}
                 @if ($user->isAdministrateur())
+
+                <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.dashboard'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                <a href="{{ route('admin.dashboard') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+            </div>
                     <div class="menu-header">Administration Système</div>
 
-                    <div class="menu-item {{ (Str::startsWith($currentUrl, 'admin')) ? 'active' : '' }} has-sub">
-                        <a href="#" class="menu-link">
-                            <span class="menu-icon"><i class="fas fa-users-cog"></i></span>
-                            <span class="menu-text">Gestion des Utilisateurs</span>
-                            <span class="menu-caret"><b class="caret"></b></span>
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.dashboard'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('admin.dashboard') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fas fa-tachometer-alt"></i></span>
+                            <span class="menu-text">Mon Tableau de Bord</span>
                         </a>
-                        <div class="menu-submenu">
-                            <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                                <a href="{{ route('admin.index') }}" class="menu-link">
-                                    <span class="menu-text">Admins & Superviseurs</span>
-                                </a>
-                            </div>
-                            <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.users.stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                                <a href="{{ route('admin.users.stagiaires') }}" class="menu-link">
-                                    <span class="menu-text">Stagiaires</span>
-                                </a>
-                            </div>
-                            <div class="menu-item {{ ($currentUrl === trim(parse_url(route('roles.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                                <a href="{{ route('roles.index') }}" class="menu-link">
-                                    <span class="menu-text">Rôles</span>
-                                </a>
-                            </div>
-                        </div>
                     </div>
+
+                    {{-- Nouveaux boutons directs pour la gestion des utilisateurs --}}
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('admin.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fas fa-user-shield"></i></span> {{-- Nouvelle icône pour admin/superviseur --}}
+                            <span class="menu-text">Gestion Admin et Superviseur</span>
+                        </a>
+                    </div>
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.users.stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('admin.users.stagiaires') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fas fa-user-graduate"></i></span> {{-- Icône pour stagiaires --}}
+                            <span class="menu-text">Gestion Stagiaires</span>
+                        </a>
+                    </div>
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('roles.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('roles.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fas fa-id-badge"></i></span> {{-- Icône pour rôles --}}
+                            <span class="menu-text">Rôles</span>
+                        </a>
+                    </div>
+                    {{-- FIN des nouveaux boutons directs pour la gestion des utilisateurs --}}
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('promotions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
                         <a href="{{ route('promotions.index') }}" class="menu-link">
@@ -196,6 +211,14 @@
 
                 {{-- --- Menu pour le Superviseur --- --}}
                 @elseif ($user->isSuperviseur())
+
+
+                <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.dashboard'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                <a href="{{ route('superviseur.dashboard') }}" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+            </div>
                     <div class="menu-header">Gestion</div>
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('superviseur.dashboard'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
@@ -205,25 +228,13 @@
                         </a>
                     </div>
 
-                    <div class="menu-item {{ (Str::startsWith($currentUrl, ['stagiaires/list', 'stagiaires/import'])) ? 'active' : '' }} has-sub">
-                        <a href="#" class="menu-link">
-                            <span class="menu-icon"><i class="fas fa-user-graduate"></i></span>
-                            <span class="menu-text">Gestion des Stagiaires</span>
-                            <span class="menu-caret"><b class="caret"></b></span>
+                        
+                         <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.users.stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('admin.users.stagiaires') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fas fa-user-graduate"></i></span> {{-- Icône pour stagiaires --}}
+                            <span class="menu-text">Gestion Stagiaires</span>
                         </a>
-                        <div class="menu-submenu">
-                            {{-- Placeholder: Route pour la liste des stagiaires gérée par le superviseur --}}
-                            <div class="menu-item {{ ($currentUrl === '/superviseur/stagiaires') ? 'active' : '' }}">
-                                <a href="/superviseur/stagiaires" class="menu-link"> {{-- Remplacez par route('superviseur.stagiaires.index') si définie --}}
-                                    <span class="menu-text">Liste & Détails</span>
-                                </a>
-                            </div>
-                            <div class="menu-item {{ ($currentUrl === trim(parse_url(route('stagiaires.import.form'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                                <a href="{{ route('stagiaires.import.form') }}" class="menu-link">
-                                    <span class="menu-text">Importer Stagiaires</span>
-                                </a>
-                            </div>
-                        </div>
+                    
                     </div>
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('promotions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
@@ -257,7 +268,7 @@
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('demande_coequipiers.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
                         <a href="{{ route('demande_coequipiers.index') }}" class="menu-link">
                             <span class="menu-icon"><i class="fas fa-user-friends"></i></span>
-                            <span class="menu-text">Demandes de Coéquipiers</span>
+                            <span class="menu-text">Gestion de Coéquipiers</span>
                         </a>
                     </div>
 
@@ -295,12 +306,12 @@
                         </a>
                     </div>
 
-                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('profile.edite'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('profile.edite') }}" class="menu-link">
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('profile.edit'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('profile.edit') }}" class="menu-link">
                             <span class="menu-icon"><i class="fas fa-user-circle"></i></span>
                             <span class="menu-text">Mon Profil</span>
                         </a>
-                    </div>
+                    </div> 
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('fichiers.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
                         <a href="{{ route('fichiers.index') }}" class="menu-link">
@@ -324,9 +335,9 @@
                         </a>
                     </div>
                 @endif
+            @endif {{-- Fin du Auth::user() check --}}
 
-
-                 {{-- --- OPTION DE DÉCONNEXION --- --}}
+            {{-- --- OPTION DE DÉCONNEXION --- --}}
             {{-- Cette section est visible pour tous les utilisateurs connectés --}}
             @if ($user)
             <div class="menu-item mt-4"> {{-- Ajoute une petite marge au-dessus --}}
@@ -339,8 +350,6 @@
                 </form>
             </div>
             @endif
-            
-            @endif {{-- Fin du Auth::user() check --}}
 
             <!-- Bouton Documentation (toujours visible) -->
             <div class="p-3 px-4 mt-auto hide-on-minified">

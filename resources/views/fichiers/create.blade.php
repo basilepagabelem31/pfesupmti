@@ -83,11 +83,13 @@
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Permissions pour le Stagiaire :</label>
                 <div class="flex items-center">
-                    <input type="checkbox" name="peut_modifier" id="peut_modifier" class="form-checkbox h-5 w-5 text-indigo-600" checked>
+                    {{-- REMOVED 'checked' attribute so it defaults to unchecked --}}
+                    <input type="checkbox" name="peut_modifier" id="peut_modifier" class="form-checkbox h-5 w-5 text-indigo-600"> 
                     <label for="peut_modifier" class="ml-2 text-gray-700">Peut Modifier</label>
                 </div>
                 <div class="flex items-center mt-2">
-                    <input type="checkbox" name="peut_supprimer" id="peut_supprimer" class="form-checkbox h-5 w-5 text-indigo-600" checked>
+                    {{-- REMOVED 'checked' attribute so it defaults to unchecked --}}
+                    <input type="checkbox" name="peut_supprimer" id="peut_supprimer" class="form-checkbox h-5 w-5 text-indigo-600">
                     <label for="peut_supprimer" class="ml-2 text-gray-700">Peut Supprimer</label>
                 </div>
             </div>

@@ -6,7 +6,9 @@ use App\Models\Groupe;
 use App\Models\Promotion;
 use App\Models\Sujet;
 use App\Models\User;
+use App\Models\Role; // Importez le modèle Role
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator; // Importez la façade Validator
 
 class SujetController extends Controller
 {
@@ -15,15 +17,16 @@ class SujetController extends Controller
      */
     public function index()
     {
-        $sujets=Sujet::with(['promotion','groupe', 'stagiaires'])->orderByDesc('created_at')->get(); // Ajout de 'stagiaires' pour eager loading
-        $promotions=Promotion::where('status','active')->get();
-        $groupes= Groupe::all();
+        $sujets = Sujet::with(['promotion', 'groupe', 'stagiaires'])->orderByDesc('created_at')->get(); // Ajout de 'stagiaires' pour eager loading
+        $promotions = Promotion::where('status', 'active')->get();
+        $groupes = Groupe::all();
         // Pour les stagiaires, vous pouvez récupérer ceux qui ont le rôle 'Stagiaire'
+        // Cette partie est pour l'affichage initial de la page si vous en avez besoin pour d'autres fonctionnalités
         $stagiaires = User::whereHas('role', function ($query) {
-            $query->where('nom', 'Stagiaire'); // Utilisez le nom du rôle
+            $query->where('nom', 'Stagiaire'); // Utilisez le nom de la colonne de votre rôle si c'est 'nom_role'
         })->get();
 
-        return view('sujets.index',compact('sujets','promotions','groupes','stagiaires'));
+        return view('sujets.index', compact('sujets', 'promotions', 'groupes', 'stagiaires'));
     }
 
     /**
@@ -39,20 +42,20 @@ class SujetController extends Controller
      */
     public function store(Request $request)
     {
-        $validated=$request->validate([
+        $validated = $request->validate([
             'titre' => 'required|string|max:225',
             'description' => 'required|string',
             'promotion_id' => 'required|exists:promotions,id',
             'groupe_id' => 'required|exists:groupes,id'
         ]);
-        //verifie si la pomotion est bien active
-        $promotion=Promotion::find($validated['promotion_id']);
-        if($promotion->status !== 'active'){
-            return redirect()->route('sujets.index')->with('error','Impossible d\'associer à une promotion archivée.');
+        // Vérifie si la promotion est bien active
+        $promotion = Promotion::find($validated['promotion_id']);
+        if ($promotion->status !== 'active') {
+            return redirect()->route('sujets.index')->with('error', 'Impossible d\'associer à une promotion archivée.');
         }
 
         Sujet::create($validated);
-        return redirect()->route('sujets.index')->with('success','Sujet ajouté avec succès.');
+        return redirect()->route('sujets.index')->with('success', 'Sujet ajouté avec succès.');
     }
 
     /**
@@ -76,7 +79,7 @@ class SujetController extends Controller
      */
     public function update(Request $request, Sujet $sujet)
     {
-        $validated=$request->validate([
+        $validated = $request->validate([
             'titre' => 'required|string|max:225',
             'description' => 'required|string',
             'promotion_id' => 'required|exists:promotions,id',
@@ -88,8 +91,7 @@ class SujetController extends Controller
             return redirect()->route('sujets.index')->with('error', 'Impossible d\'associer à une promotion archivée.');
         }
         $sujet->update($validated);
-        return redirect()->route('sujets.index')->with('success','Sujet modifié avec succès.');
-
+        return redirect()->route('sujets.index')->with('success', 'Sujet modifié avec succès.');
     }
 
     /**
@@ -97,47 +99,84 @@ class SujetController extends Controller
      */
     public function destroy(Sujet $sujet)
     {
-        //on va utilise la relation dans sujet avec User
-        if($sujet->stagiaires()->count()> 0)
-        {
-            return redirect()->route('sujets.index')->with('error','Suppression impossible : des stagiaires sont déjà inscrits à ce sujet.');
+        // On va utiliser la relation dans sujet avec User
+        if ($sujet->stagiaires()->count() > 0) {
+            return redirect()->route('sujets.index')->with('error', 'Suppression impossible : des stagiaires sont déjà inscrits à ce sujet.');
         }
         $sujet->delete();
-        return redirect()->route('sujets.index')->with('success','Sujet supprimé avec succès.');
+        return redirect()->route('sujets.index')->with('success', 'Sujet supprimé avec succès.');
     }
 
-    //inscrire un stagire a un sujet
+    /**
+     * Récupère les stagiaires inscrits et disponibles pour un sujet.
+     * Utilisé par AJAX pour la modale d'inscription.
+     */
+    public function getStagiairesForEnrollment(Sujet $sujet)
+    {
+        // Stagiaires déjà inscrits à ce sujet
+        $inscribedStagiaires = $sujet->stagiaires->map(function ($stagiaire) {
+            return ['id' => $stagiaire->id, 'prenom' => $stagiaire->prenom, 'nom' => $stagiaire->nom];
+        });
 
+        // Récupérer l'ID du rôle 'Stagiaire'.
+        // Assurez-vous que votre table 'roles' et le modèle 'Role' existent
+        // et que la colonne du nom de rôle est 'nom_role' ou 'name'.
+        $stagiaireRole = Role::where('nom', 'Stagiaire')->first(); // Utilisez 'nom_role' ou 'name' selon votre BD
+        $stagiaireRoleId = $stagiaireRole ? $stagiaireRole->id : null;
+
+        // Tous les utilisateurs qui sont des stagiaires
+        $allStagiaires = collect();
+        if ($stagiaireRoleId) {
+            $allStagiaires = User::where('role_id', $stagiaireRoleId)->get();
+        }
+
+        // Stagiaires disponibles (ceux qui ne sont pas déjà inscrits au sujet)
+        $availableStagiaires = $allStagiaires->diff($sujet->stagiaires)->map(function ($stagiaire) {
+            return ['id' => $stagiaire->id, 'prenom' => $stagiaire->prenom, 'nom' => $stagiaire->nom];
+        });
+
+        return response()->json([
+            'inscribed' => $inscribedStagiaires,
+            'available' => $availableStagiaires,
+        ]);
+    }
+
+    /**
+     * Gère l'inscription d'un stagiaire à un sujet.
+     */
     public function inscrire(Request $request, Sujet $sujet)
     {
-        $request->validate([
-            'stagiaire_id'=> 'required|exists:users,id'
+        $validator = Validator::make($request->all(), [
+            'stagiaire_id' => 'required|exists:users,id', // Assurez-vous que 'users' est la bonne table pour les stagiaires
         ]);
 
-        // Correction ici: utilisez 'users.id' ou simplement 'id' pour filtrer le stagiaire
-        // ou utilisez syncWithoutDetaching pour éviter les doublons automatiquement.
-        // La méthode syncWithoutDetaching est la plus simple pour éviter les doublons lors de l'attachement.
-        // Elle va attacher l'ID s'il n'est pas déjà attaché, et ne rien faire s'il l'est.
-        $sujet->stagiaires()->syncWithoutDetaching([$request->stagiaire_id]);
-
-        return redirect()->route('sujets.index')->with('success','Stagiaire inscrit au sujet avec succès.');
-
-        /*
-        // Si vous voulez un message d'erreur spécifique en cas de double inscription :
-        if(!$sujet->stagiaires()->where('users.id', $request->stagiaire_id)->exists()){
-            $sujet->stagiaires()->attach($request->stagiaire_id);
-            return redirect()->route('sujets.index')->with('success','Stagiaire inscrit au sujet avec succès.');
-        } else {
-            return redirect()->route('sujets.index')->with('error','Ce stagiaire est déjà inscrit à ce sujet.');
+        if ($validator->fails()) {
+            return back()->withInput()->withErrors($validator)
+                         ->with('error', 'Échec de l\'inscription. Veuillez corriger les erreurs.')
+                         ->with('sujet_id_for_modal', $sujet->id) // Important pour rouvrir la modale
+                         ->with('sujet_titre_for_modal', $sujet->titre); // Important pour pré-remplir le titre
         }
-        */
+
+        $stagiaire = User::find($request->stagiaire_id);
+
+        if ($stagiaire && !$sujet->stagiaires->contains($stagiaire->id)) {
+            $sujet->stagiaires()->attach($stagiaire->id);
+            return back()->with('success', 'Stagiaire inscrit avec succès!');
+        }
+
+        return back()->with('error', 'Le stagiaire est déjà inscrit à ce sujet ou n\'existe pas.');
     }
 
-    //desinscrire un stagiaire a un sujet
-    public function desinscrire(Sujet $sujet, $stagiaire_id)
+    /**
+     * Gère la désinscription d'un stagiaire d'un sujet.
+     */
+    public function desinscrire(Sujet $sujet, User $stagiaire) // Utilisez le type-hinting pour $stagiaire
     {
-        $sujet->stagiaires()->detach($stagiaire_id);
-        return redirect()->route('sujets.index')->with('success','Stagiaire désinscrit avec succès.');
+        if ($sujet->stagiaires->contains($stagiaire->id)) {
+            $sujet->stagiaires()->detach($stagiaire->id);
+            return back()->with('success', 'Stagiaire désinscrit avec succès!');
+        }
 
+        return back()->with('error', 'Ce stagiaire n\'est pas inscrit à ce sujet.');
     }
 }

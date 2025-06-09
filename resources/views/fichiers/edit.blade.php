@@ -62,14 +62,19 @@
             @error('sujet_id')<p class="text-red-500 text-xs italic">{{ $message }}</p>@enderror
         </div>
 
-        @if (Auth::user()->isSuperviseur() || Auth::user()->isSuperAdmin())
+        {{-- Afficher les permissions seulement pour les Superviseurs/Administrateurs --}}
+        @if (Auth::user()->isSuperviseur() || Auth::user()->isAdministrateur())
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Permissions pour le Stagiaire :</label>
                 <div class="flex items-center">
+                    {{-- CHAMP CACHÉ AJOUTÉ ICI --}}
+                    <input type="hidden" name="peut_modifier" value="0">
                     <input type="checkbox" name="peut_modifier" id="peut_modifier" class="form-checkbox h-5 w-5 text-indigo-600" {{ old('peut_modifier', $fichier->peut_modifier) ? 'checked' : '' }}>
                     <label for="peut_modifier" class="ml-2 text-gray-700">Peut Modifier</label>
                 </div>
                 <div class="flex items-center mt-2">
+                    {{-- CHAMP CACHÉ AJOUTÉ ICI --}}
+                    <input type="hidden" name="peut_supprimer" value="0">
                     <input type="checkbox" name="peut_supprimer" id="peut_supprimer" class="form-checkbox h-5 w-5 text-indigo-600" {{ old('peut_supprimer', $fichier->peut_supprimer) ? 'checked' : '' }}>
                     <label for="peut_supprimer" class="ml-2 text-gray-700">Peut Supprimer</label>
                 </div>

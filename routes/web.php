@@ -48,7 +48,7 @@ Route::middleware(['auth'])->group(function () {
         } elseif (Auth::user()->isSuperviseur()) {
             return redirect()->route('superviseur.dashboard');
         } elseif (Auth::user()->isAdministrateur()) {
-            return redirect()->route('admin.index');
+            return redirect()->route('admin.dashboard');
         }
         return view('dashboard');
     })->middleware('verified')->name('dashboard');
@@ -87,8 +87,30 @@ Route::middleware(['auth'])->group(function () {
 
 
     // --- Groupe de routes pour Administrateurs et Superviseurs ---
+    // Ces routes sont accessibles par les deux rôles.
     Route::middleware('role:Administrateur,Superviseur')->group(function () {
+
+
+
+          Route::prefix('admin')->group(function () {
+             Route::get('/create', [AdminController::class, 'create'])->name('admin.create');
+            Route::post('/store', [AdminController::class, 'store'])->name('admin.store');
+          
+        // ...
+        Route::get('/edit/{user}', [AdminController::class, 'edit'])->name('admin.edit');
+        Route::put('/update/{user}', [AdminController::class, 'update'])->name('admin.update');
+        Route::delete('/delete/{user}', [AdminController::class, 'delete'])->name('admin.delete');
+    });
+        // Promotions (déplacées ici pour être accessibles aux deux rôles)
+        Route::get('/promotions', [PromotionController::class, 'index'])->name('promotions.index');
+        Route::post('/promotions', [PromotionController::class, 'store'])->name('promotions.store');
+        Route::put('/promotions/{promotion}', [PromotionController::class, 'update'])->name('promotions.update');
+        Route::delete('/promotions/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
+
+        // Groupes
         Route::resource('groupes', GroupeController::class);
+
+        // Sujets
         Route::resource('sujets', SujetController::class);
         Route::post('/sujets/{sujet}/inscrire', [SujetController::class, 'inscrire'])->name('sujets.inscrire');
         Route::delete('/sujets/{sujet}/desinscrire/{stagiaire}', [SujetController::class, 'desinscrire'])->name('sujets.desinscrire');
@@ -96,34 +118,26 @@ Route::middleware(['auth'])->group(function () {
         // Import de stagiaires
         Route::get('/stagiaires/import', [StagiairesImportController::class, 'showImportForm'])->name('stagiaires.import.form');
         Route::post('/stagiaires/import', [StagiairesImportController::class, 'import'])->name('stagiaires.import');
+
+        Route::get('/utilisateurs-stagiaires', [AdminController::class, 'indexStagiaire'])->name('admin.users.stagiaires');
+        Route::get('/sujets/{sujet}/stagiaires-for-enrollment', [SujetController::class, 'getStagiairesForEnrollment']);
     });
 
 
     // --- Groupe de routes pour Administrateurs UNIQUEMENT ---
     Route::middleware('role:Administrateur')->group(function () {
-        // Routes des promotions (directement sous le middleware Admin)
-        Route::get('/promotions', [PromotionController::class, 'index'])->name('promotions.index');
-        Route::post('/promotions', [PromotionController::class, 'store'])->name('promotions.store');
-        Route::put('/promotions/{promotion}', [PromotionController::class, 'update'])->name('promotions.update');
-        Route::delete('/promotions/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
+        Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
         // Préfixe 'admin' pour les routes spécifiques au panneau d'administration
         Route::prefix('admin')->group(function () {
             // AdminController - Gestion des utilisateurs, etc.
-            Route::get('/', [AdminController::class, 'index'])->name('admin.index');
-            Route::get('/create', [AdminController::class, 'create'])->name('admin.create');
-            Route::post('/store', [AdminController::class, 'store'])->name('admin.store');
-            Route::get('/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
-            Route::put('/update/{id}', [AdminController::class, 'update'])->name('admin.update');
-            Route::delete('/delete/{id}', [AdminController::class, 'delete'])->name('admin.delete');
-
+            Route::get('/lister', [AdminController::class, 'index'])->name('admin.index');
+          
             Route::get('/utilisateurs-superviseurs', [AdminController::class, 'index'])->name('admin.users.superviseurs');
-            Route::get('/utilisateurs-stagiaires', [AdminController::class, 'indexStagiaire'])->name('admin.users.stagiaires');
 
             // CRUD pour Pays, Villes (gestion complète, pas seulement AJAX), Rôles
-            // Note: 'villes.by_pays' est gérée en dehors de ce préfixe 'admin' pour l'AJAX
             Route::resource('pays', PaysController::class)->except(['show']);
-            Route::resource('villes', VilleController::class)->except(['show', 'getVilles']); 
+            Route::resource('villes', VilleController::class)->except(['show', 'getVilles']);
             Route::resource('roles', RoleController::class)->except(['show']);
         });
     });
@@ -132,7 +146,12 @@ Route::middleware(['auth'])->group(function () {
     // --- Groupe de routes pour Superviseurs UNIQUEMENT ---
     Route::middleware('role:Superviseur')->group(function () {
         Route::get('/superviseur/dashboard', [SuperviseurController::class, 'index'])->name('superviseur.dashboard');
-        // Autres routes spécifiques au superviseur
+        // Route pour la liste des stagiaires gérés par le superviseur, réutilisant AdminController::indexStagiaire
+        Route::get('/superviseur/stagiaires', [AdminController::class, 'indexStagiaire'])->name('superviseur.stagiaires.index');
+
+        // Les routes promotions, groupes, sujets, et stagiaires/import ont été déplacées
+        // dans le groupe 'Administrateur,Superviseur' plus haut pour éviter la duplication.
+        // NE PAS LES DÉFINIR ICI À NOUVEAU.
     });
 
 
@@ -194,7 +213,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/page/file-manager', function () { return view('pages.page-file-manager'); });
     Route::get('/page/pricing', function () { return view('pages.page-pricing'); });
     Route::get('/landing', function () { return view('pages.landing'); });
-    Route::get('/profile', function () { return view('pages.profile'); });
+    // Route::get('/profile', function () { return view('pages.profile'); });
     Route::get('/calendar', function () { return view('pages.calendar'); });
     Route::get('/settings', function () { return view('pages.settings'); });
     Route::get('/helper', function () { return view('pages.helper'); });
