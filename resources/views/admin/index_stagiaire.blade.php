@@ -1,29 +1,24 @@
 @extends('layout.default')
-
 @section('title', 'Gestion des Stagiaires')
-
 @section('content')
 <div class="min-h-screen bg-gray-50 flex flex-col items-center p-4 sm:p-6 lg:p-8">
     <div class="max-w-full w-full bg-white rounded-3xl shadow-xl overflow-hidden animate-fade-in md:max-w-7xl">
         <div class="relative p-8 md:p-10 lg:p-12">
             {{-- Decorative element at the top --}}
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-green-600 rounded-t-3xl"></div> {{-- Couleurs adaptées aux stagiaires --}}
-
             <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 text-center mb-6 mt-4 leading-tight">
                 Gestion des <span class="text-blue-600">Stagiaires</span>
             </h1>
             <p class="text-center text-gray-600 mb-8 text-lg">
                 Visualisez, ajoutez, modifiez et supprimez les comptes des stagiaires.
             </p>
-
             {{-- Messages de session --}}
             @if(Session::has('success'))
                 <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-6 flex items-center space-x-3 shadow-md border border-green-200">
-                    <svg class="h-7 w-7 text-green-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    <svg class="h-7 w-7 text-green-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 =0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                     <span class="font-semibold text-lg">{{ Session::get('success') }}</span>
                 </div>
             @endif
-
             @if ($errors->any())
                 <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow-md border border-red-200">
                     <p class="font-bold mb-3 flex items-center space-x-2 text-lg">
@@ -37,13 +32,63 @@
                     </ul>
                 </div>
             @endif
-
             {{-- Bouton Ajouter un Stagiaire --}}
             <div class="mb-8 text-center">
                 <button type="button" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-semibold rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out uppercase tracking-wider" data-bs-toggle="modal" data-bs-target="#addUserModal">
                     <i class="fas fa-plus-circle mr-2"></i> Ajouter un nouveau Stagiaire
                 </button>
             </div>
+
+            {{-- FORMULAIRE DE FILTRE NOUVEAU --}}
+            <div class="bg-gray-50 p-6 rounded-xl shadow-md mb-8 border border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Filtrer les Stagiaires</h3>
+                <form action="{{ route('admin.users.stagiaires') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label for="filter_nom" class="block text-sm font-medium text-gray-700 mb-1">Nom ou Prénom</label>
+                        <input type="text" id="filter_nom" name="nom" value="{{ request('nom') }}"
+                               class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="filter_statut_id" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                        <select id="filter_statut_id" name="statut_id"
+                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="">Tous les statuts</option>
+                            @foreach($statuts as $statut)
+                                <option value="{{ $statut->id }}" {{ request('statut_id') == $statut->id ? 'selected' : '' }}>{{ $statut->nom }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filter_groupe_id" class="block text-sm font-medium text-gray-700 mb-1">Groupe</label>
+                        <select id="filter_groupe_id" name="groupe_id"
+                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="">Tous les groupes</option>
+                            @foreach($groupes as $groupe)
+                                <option value="{{ $groupe->id }}" {{ request('groupe_id') == $groupe->id ? 'selected' : '' }}>{{ $groupe->nom }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filter_promotion_id" class="block text-sm font-medium text-gray-700 mb-1">Promotion</label>
+                        <select id="filter_promotion_id" name="promotion_id"
+                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="">Toutes les promotions</option>
+                            @foreach($promotions as $promotion)
+                                <option value="{{ $promotion->id }}" {{ request('promotion_id') == $promotion->id ? 'selected' : '' }}>{{ $promotion->titre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end space-x-3">
+                        <button type="submit" class="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-semibold rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                            <i class="fas fa-filter mr-2"></i> Appliquer les filtres
+                        </button>
+                        <a href="{{ route('admin.users.stagiaires') }}" class="inline-flex items-center px-5 py-2.5 border border-gray-300 text-base font-semibold rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                            <i class="fas fa-undo mr-2"></i> Réinitialiser
+                        </a>
+                    </div>
+                </form>
+            </div>
+            {{-- FIN FORMULAIRE DE FILTRE --}}
 
             {{-- Tableau des Stagiaires --}}
             <div class="overflow-x-auto shadow-md rounded-xl border border-gray-200 mb-8">
@@ -64,12 +109,15 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Université</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Faculté</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Titre Formation</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Groupe</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Promotion</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Sujets</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Statut</th>
                             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-blue-800 uppercase tracking-wider">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                        @forelse ($admins as $stagiaire) {{-- Renommé $admin en $stagiaire pour clarté --}}
+                        @forelse ($admins as $stagiaire)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $loop->iteration }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->nom }}</td>
@@ -92,6 +140,15 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->universite }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->faculte }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->titre_formation }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->groupe?->nom }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->promotion?->titre }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                @forelse($stagiaire->sujets as $sujet)
+                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-1 mr-1">{{ $sujet->titre }}</span>
+                                @empty
+                                    <span class="px-2 bg-danger inline-flex text-light leading-5 font-semibold rounded-full">Non Inscrit</span>
+                                @endforelse
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     @if($stagiaire->statut?->nom == 'Actif') bg-blue-100 text-blue-800
@@ -121,7 +178,10 @@
                                         data-universite="{{ $stagiaire->universite }}"
                                         data-faculte="{{ $stagiaire->faculte }}"
                                         data-titre_formation="{{ $stagiaire->titre_formation }}"
-                                        data-statut_id="{{ $stagiaire->statut_id }}">
+                                        data-statut_id="{{ $stagiaire->statut_id }}"
+                                        data-groupe_id="{{ $stagiaire->groupe_id }}"
+                                        data-promotion_id="{{ $stagiaire->promotion_id }}"
+                                        data-sujet_ids="{{ json_encode($stagiaire->sujets->pluck('id')->toArray()) }}">
                                         <i class="fas fa-edit"></i> Modifier
                                     </button>
                                     <button type="button" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
@@ -135,25 +195,22 @@
                         </tr>
                         @empty
                         <tr>
-                            <td class="px-6 py-4 text-center text-gray-500" colspan="16">Aucun stagiaire trouvé.</td>
+                            <td class="px-6 py-4 text-center text-gray-500" colspan="19">Aucun stagiaire trouvé.</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
             {{-- Pagination --}}
             <div class="mt-8">
                 <div class="flex justify-center">
-                    {{-- Utilise la pagination par défaut de Bootstrap 5 car les classes sont déjà définies --}}
-                    {{ $admins->links('pagination::bootstrap-5') }}
+                    {{-- Utilise la pagination par défaut de Bootstrap 5 en lui passant les paramètres de filtre actuels --}}
+                    {{ $admins->appends(request()->query())->links('pagination::bootstrap-5') }}
                 </div>
             </div>
-
         </div>
     </div>
 </div>
-
 {{-- Modal Ajouter un Utilisateur --}}
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -220,16 +277,13 @@
                         </div>
                         <div>
                             <label for="role_id_add" class="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
-                            <select id="role_id_add" name="role_id" required
+                            {{-- Le rôle est fixe à "Stagiaire" sur cette page --}}
+                            <select id="role_id_add" name="role_id" required disabled
                                 class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                <option value="">Sélectionner un rôle</option>
-                                @foreach($roles as $role)
-                                    {{-- Afficher seulement le rôle Stagiaire ici --}}
-                                    @if($role->nom == 'Stagiaire')
-                                        <option value="{{ $role->id }}" {{ old('role_id', $stagiaireId) == $role->id ? 'selected' : '' }}>{{ $role->nom }}</option>
-                                    @endif
-                                @endforeach
+                                <option value="{{ $stagiaireId }}" selected>Stagiaire</option>
                             </select>
+                            {{-- Champ caché pour s'assurer que role_id est envoyé --}}
+                            <input type="hidden" name="role_id" value="{{ $stagiaireId }}">
                         </div>
                         <div>
                             <label for="statut_id_add" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
@@ -242,27 +296,67 @@
                             </select>
                         </div>
                     </div>
-
                     {{-- Champs spécifiques au Stagiaire --}}
-                    <div id="stagiaire_fields_add" class="space-y-4 border border-blue-200 rounded-xl p-4 bg-blue-50 mt-6 hidden">
+                    <div id="stagiaire_fields_add" class="space-y-4 border border-blue-200 rounded-xl p-4 bg-blue-50 mt-6">
                         <p class="text-blue-800 font-semibold">Informations spécifiques au stagiaire :</p>
-                        <div>
-                            <label for="universite_add" class="block text-sm font-medium text-gray-700 mb-1">Université</label>
-                            <input type="text" id="universite_add" name="universite" value="{{ old('universite') }}"
-                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="faculte_add" class="block text-sm font-medium text-gray-700 mb-1">Faculté</label>
-                            <input type="text" id="faculte_add" name="faculte" value="{{ old('faculte') }}"
-                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="titre_formation_add" class="block text-sm font-medium text-gray-700 mb-1">Titre de Formation</label>
-                            <input type="text" id="titre_formation_add" name="titre_formation" value="{{ old('titre_formation') }}"
-                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="universite_add" class="block text-sm font-medium text-gray-700 mb-1">Université</label>
+                                <input type="text" id="universite_add" name="universite" value="{{ old('universite') }}"
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="faculte_add" class="block text-sm font-medium text-gray-700 mb-1">Faculté</label>
+                                <input type="text" id="faculte_add" name="faculte" value="{{ old('faculte') }}"
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="titre_formation_add" class="block text-sm font-medium text-gray-700 mb-1">Titre de Formation</label>
+                                <input type="text" id="titre_formation_add" name="titre_formation" value="{{ old('titre_formation') }}"
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                            {{-- NOUVEAU: Champ Promotion --}}
+                            <div>
+                                <label for="promotion_id_add" class="block text-sm font-medium text-gray-700 mb-1">Promotion</label>
+                                <select name="promotion_id" id="promotion_id_add" 
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                    <option value="">Sélectionner une promotion</option>
+                                    @foreach($promotions as $promo)
+                                        <option value="{{ $promo->id }}" {{ old('promotion_id') == $promo->id ? 'selected' : '' }}>{{ $promo->titre }}</option>
+                                    @endforeach
+                                </select>
+                                @error('promotion_id') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
+                            </div>
+                            {{-- NOUVEAU: Champ Groupe --}}
+                            <div>
+                                <label for="groupe_id_add" class="block text-sm font-medium text-gray-700 mb-1">Groupe</label>
+                                <select name="groupe_id" id="groupe_id_add" 
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                    <option value="">Sélectionner un groupe</option>
+                                    @foreach($groupes as $groupe)
+                                        <option value="{{ $groupe->id }}" {{ old('groupe_id') == $groupe->id ? 'selected' : '' }}>{{ $groupe->nom }}</option>
+                                    @endforeach
+                                </select>
+                                @error('groupe_id') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
+                            </div>
+                            {{-- NOUVEAU: Champ Sujets (sélection multiple) --}}
+                            <!-- <div class="md:col-span-2">
+                                <label for="sujet_ids_add" class="block text-sm font-medium text-gray-700 mb-1">Sujets (sélection multiple)</label>
+                                <select name="sujet_ids[]" id="sujet_ids_add" multiple
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    style="min-height: 120px;">
+                                    @foreach($sujets as $sujet)
+                                        <option value="{{ $sujet->id }}" 
+                                            {{ in_array($sujet->id, old('sujet_ids', [])) ? 'selected' : '' }}>
+                                            {{ $sujet->titre }} (Promo: {{ $sujet->promotion->titre ?? 'N/A' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('sujet_ids') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
+                                @error('sujet_ids.*') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
+                            </div> -->
                         </div>
                     </div>
-
                     <div class="flex justify-end space-x-4 mt-8">
                         <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="py-3 px-4 rounded-lg text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">Ajouter</button>
@@ -272,7 +366,6 @@
         </div>
     </div>
 </div>
-
 {{-- Modal Modifier un Utilisateur (Unique) --}}
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -345,16 +438,12 @@
                         </div>
                         <div>
                             <label for="role_id_edit" class="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
-                            <select id="role_id_edit" name="role_id" required
+                            {{-- Le rôle est fixe à "Stagiaire" sur cette page --}}
+                            <select id="role_id_edit" name="role_id" required disabled
                                 class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
-                                <option value="">Sélectionner un rôle</option>
-                                @foreach($roles as $role)
-                                    {{-- Afficher seulement le rôle Stagiaire ici --}}
-                                    @if($role->nom == 'Stagiaire')
-                                        <option value="{{ $role->id }}">{{ $role->nom }}</option>
-                                    @endif
-                                @endforeach
+                                <option value="{{ $stagiaireId }}" selected>Stagiaire</option>
                             </select>
+                            <input type="hidden" name="role_id" value="{{ $stagiaireId }}">
                         </div>
                         <div>
                             <label for="statut_id_edit" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
@@ -367,27 +456,66 @@
                             </select>
                         </div>
                     </div>
-
                     {{-- Champs spécifiques au Stagiaire --}}
-                    <div id="stagiaire_fields_edit" class="space-y-4 border border-yellow-200 rounded-xl p-4 bg-yellow-50 mt-6 hidden">
+                    <div id="stagiaire_fields_edit" class="space-y-4 border border-yellow-200 rounded-xl p-4 bg-yellow-50 mt-6">
                         <p class="text-yellow-800 font-semibold">Informations spécifiques au stagiaire :</p>
-                        <div>
-                            <label for="universite_edit" class="block text-sm font-medium text-gray-700 mb-1">Université</label>
-                            <input type="text" id="universite_edit" name="universite"
-                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="faculte_edit" class="block text-sm font-medium text-gray-700 mb-1">Faculté</label>
-                            <input type="text" id="faculte_edit" name="faculte"
-                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="titre_formation_edit" class="block text-sm font-medium text-gray-700 mb-1">Titre de Formation</label>
-                            <input type="text" id="titre_formation_edit" name="titre_formation"
-                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="universite_edit" class="block text-sm font-medium text-gray-700 mb-1">Université</label>
+                                <input type="text" id="universite_edit" name="universite"
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="faculte_edit" class="block text-sm font-medium text-gray-700 mb-1">Faculté</label>
+                                <input type="text" id="faculte_edit" name="faculte"
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="titre_formation_edit" class="block text-sm font-medium text-gray-700 mb-1">Titre de Formation</label>
+                                <input type="text" id="titre_formation_edit" name="titre_formation"
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                            </div>
+                            {{-- NOUVEAU: Champ Promotion --}}
+                            <div>
+                                <label for="promotion_id_edit" class="block text-sm font-medium text-gray-700 mb-1">Promotion</label>
+                                <select name="promotion_id" id="promotion_id_edit" 
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                                    <option value="">Sélectionner une promotion</option>
+                                    @foreach($promotions as $promo)
+                                        <option value="{{ $promo->id }}">{{ $promo->titre }}</option>
+                                    @endforeach
+                                </select>
+                                @error('promotion_id') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
+                            </div>
+                            {{-- NOUVEAU: Champ Groupe --}}
+                            <div>
+                                <label for="groupe_id_edit" class="block text-sm font-medium text-gray-700 mb-1">Groupe</label>
+                                <select name="groupe_id" id="groupe_id_edit" 
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                                    <option value="">Sélectionner un groupe</option>
+                                    @foreach($groupes as $groupe)
+                                        <option value="{{ $groupe->id }}">{{ $groupe->nom }}</option>
+                                    @endforeach
+                                </select>
+                                @error('groupe_id') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
+                            </div>
+                            {{-- NOUVEAU: Champ Sujets (sélection multiple) --}}
+                            <!-- <div class="md:col-span-2">
+                                <label for="sujet_ids_edit" class="block text-sm font-medium text-gray-700 mb-1">Sujets (sélection multiple)</label>
+                                <select name="sujet_ids[]" id="sujet_ids_edit" multiple
+                                    class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                                    style="min-height: 120px;">
+                                    @foreach($sujets as $sujet)
+                                        <option value="{{ $sujet->id }}">
+                                            {{ $sujet->titre }} (Promo: {{ $sujet->promotion->titre ?? 'N/A' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('sujet_ids') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
+                                @error('sujet_ids.*') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
+                            </div> -->
                         </div>
                     </div>
-
                     <div class="flex justify-end space-x-4 mt-8">
                         <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="py-3 px-4 rounded-lg text-lg font-semibold text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out">Modifier</button>
@@ -397,7 +525,6 @@
         </div>
     </div>
 </div>
-
 {{-- Modal de confirmation de suppression --}}
 <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -419,17 +546,13 @@
         </div>
     </div>
 </div>
-
 @endsection
-
 @section('my_js')
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
     // Cache pour les villes par pays afin d'éviter les requêtes répétées
     const cityCache = {};
-
     /**
      * Charge et peuple la liste déroulante des villes en fonction du pays sélectionné.
      * Utilise un cache pour les données déjà récupérées.
@@ -442,19 +565,16 @@
             citySelect.empty().append('<option value="">Sélectionner un pays d\'abord</option>').prop('disabled', true);
             return;
         }
-
         // Utiliser le cache si les données sont déjà là
         if (cityCache[countryId]) {
             populateCitySelect(cityCache[countryId], citySelect, selectedCityId);
             return;
         }
-
         citySelect.prop('disabled', true).html('<option>Chargement…</option>');
-
         // Requête AJAX pour récupérer les villes
         // IMPORTANT: La route doit correspondre à ce qui est défini dans routes/web.php
         // Par exemple: Route::get('/villes/by-pays/{pays_id}', [VilleController::class, 'getVilles'])->name('villes.by_pays');
-        $.getJSON(`/villes/by-pays/${countryId}`, function(data) { // Corrected route
+        $.getJSON(`/villes/by-pays/${countryId}`, function(data) {
             cityCache[countryId] = data; // Stocker dans le cache
             populateCitySelect(data, citySelect, selectedCityId);
         }).fail(function() {
@@ -462,7 +582,6 @@
             console.error("Erreur lors du chargement des villes pour le pays ID: " + countryId);
         });
     }
-
     /**
      * Peuple un élément select jQuery avec des options de ville.
      * @param {Array} data - Tableau d'objets ville ({id, nom}).
@@ -481,49 +600,31 @@
     // Récupération de l'ID du rôle Stagiaire depuis le Blade
     const STAGIAIRE_ROLE_ID = @json($stagiaireId);
 
-    /**
-     * Affiche ou masque les champs spécifiques au stagiaire en fonction du rôle sélectionné.
-     * @param {jQuery} roleSelect - L'élément jQuery du select de rôle.
-     * @param {jQuery} container - L'élément jQuery du conteneur des champs stagiaire.
-     */
-    function toggleStagiaireFields(roleSelect, container) {
-        if (parseInt(roleSelect.val()) === STAGIAIRE_ROLE_ID) {
-            container.slideDown(); // Afficher avec une animation
-            // Optionnel: rendre les champs requis via JS si nécessaire
-            // container.find('input').prop('required', true);
-        } else {
-            container.slideUp(); // Masquer avec une animation
-            container.find('input').val(''); // Effacer les valeurs si le rôle change
-            // Optionnel: rendre les champs non requis via JS
-            // container.find('input').prop('required', false);
-        }
-    }
-
-
     document.addEventListener('DOMContentLoaded', function() {
         // Gérer le modal "Ajouter un utilisateur"
         $('#addUserModal').on('show.bs.modal', function() {
             const modal = $(this);
             const form = modal.find('form');
-
             // Nettoyer les erreurs de validation précédentes
             form.find('.is-invalid').removeClass('is-invalid');
             form.find('.text-red-500.text-sm.mt-1').remove();
-
             form[0].reset(); // Réinitialise le formulaire
-            toggleStagiaireFields(modal.find('#role_id_add'), modal.find('#stagiaire_fields_add'));
-            // Charger les villes pour le pays présélectionné (si old('pays_id') existe)
+
+            // Pré-sélectionner le rôle Stagiaire et cacher les champs spécifiques à Stagiaire
+            // Dans cette page, le rôle est toujours 'Stagiaire', donc nous l'affichons toujours.
+            modal.find('#role_id_add').val(STAGIAIRE_ROLE_ID);
+            modal.find('#stagiaire_fields_add').show(); // Afficher les champs spécifiques au stagiaire
+
+            // Réinitialiser les champs spécifiques au stagiaire
+            modal.find('#universite_add').val('');
+            modal.find('#faculte_add').val('');
+            modal.find('#titre_formation_add').val('');
+            modal.find('#groupe_id_add').val('');
+            modal.find('#promotion_id_add').val('');
+            modal.find('#sujet_ids_add').find('option').prop('selected', false);
+
+            // Charger les villes pour le pays présélectionné (s'il old('pays_id') existe)
             loadCities(modal.find('#pays_id_add').val(), modal.find('#ville_id_add'), {{ old('ville_id') ?? 'null' }});
-
-            // Pré-sélectionner le rôle Stagiaire si la page est dédiée aux stagiaires
-            const roleSelectAdd = modal.find('#role_id_add');
-            roleSelectAdd.val(STAGIAIRE_ROLE_ID);
-            toggleStagiaireFields(roleSelectAdd, modal.find('#stagiaire_fields_add'));
-        });
-
-        // Écouteur de changement sur le rôle (modal Ajouter)
-        $('#role_id_add').on('change', function() {
-            toggleStagiaireFields($(this), $('#stagiaire_fields_add'));
         });
 
         // Écouteur de changement sur le pays (modal Ajouter)
@@ -531,20 +632,17 @@
             loadCities($(this).val(), $('#ville_id_add'));
         });
 
-
         // Gérer le modal "Modifier l'utilisateur" (modale unique)
         $('#editUserModal').on('show.bs.modal', function(event) {
             const button = $(event.relatedTarget); // Bouton qui a déclenché le modal
             const userId = button.data('id');
             const form = $('#editUserForm');
-
             // Nettoyer les erreurs de validation précédentes
             form.find('.is-invalid').removeClass('is-invalid');
             form.find('.text-red-500.text-sm.mt-1').remove();
 
             // Remplir les champs du formulaire avec les données de l'utilisateur
             form.attr('action', `/admin/update/${userId}`); // Mise à jour de l'action du formulaire
-
             $('#id_edit').val(button.data('id'));
             $('#nom_edit').val(button.data('nom'));
             $('#prenom_edit').val(button.data('prenom'));
@@ -556,20 +654,28 @@
             $('#pays_id_edit').val(button.data('pays_id'));
             $('#role_id_edit').val(button.data('role_id'));
             $('#statut_id_edit').val(button.data('statut_id'));
+            
+            // Champs spécifiques au stagiaire
             $('#universite_edit').val(button.data('universite'));
             $('#faculte_edit').val(button.data('faculte'));
             $('#titre_formation_edit').val(button.data('titre_formation'));
+            $('#groupe_id_edit').val(button.data('groupe_id')); // Présélectionner le groupe
+            $('#promotion_id_edit').val(button.data('promotion_id')); // Présélectionner la promotion
+            
+            // Pour les sujets (multi-select)
+            const sujetIds = button.data('sujet_ids'); // Récupérer le tableau d'IDs
+            const sujetSelectEdit = $('#sujet_ids_edit');
+            sujetSelectEdit.find('option').prop('selected', false); // Désélectionner toutes les options
+            if (Array.isArray(sujetIds)) {
+                sujetIds.forEach(function(sujetId) {
+                    sujetSelectEdit.find('option[value="' + sujetId + '"]').prop('selected', true);
+                });
+            }
 
-            // Gérer les champs spécifiques au stagiaire
-            toggleStagiaireFields($('#role_id_edit'), $('#stagiaire_fields_edit'));
-
+            $('#stagiaire_fields_edit').show(); // Afficher les champs spécifiques au stagiaire
+            
             // Charger les villes pour le pays sélectionné dans le modal d'édition
             loadCities(button.data('pays_id'), $('#ville_id_edit'), button.data('ville_id'));
-        });
-
-        // Écouteur de changement sur le rôle (modal Modifier)
-        $('#role_id_edit').on('change', function() {
-            toggleStagiaireFields($(this), $('#stagiaire_fields_edit'));
         });
 
         // Écouteur de changement sur le pays (modal Modifier)
@@ -577,58 +683,56 @@
             loadCities($(this).val(), $('#ville_id_edit'));
         });
 
-
         // Gérer le modal "Supprimer l'utilisateur"
         $('#deleteUserModal').on('show.bs.modal', function(event) {
             const button = $(event.relatedTarget); // Bouton qui a déclenché le modal
             const userId = button.data('user-id');
             const userName = button.data('user-name');
-
             $('#userNameToDelete').text(userName); // Affiche le nom de l'utilisateur à supprimer
             const deleteForm = $('#deleteUserForm');
             deleteForm.attr('action', `/admin/delete/${userId}`); // Définit l'action du formulaire de suppression
         });
-
 
         // Gestion des erreurs de validation après soumission (si la page se recharge avec des erreurs)
         @if ($errors->any())
             var openAddModal = false;
             var openEditModal = false;
             var editUserId = null;
-
-            // Déterminer si les erreurs proviennent du formulaire d'ajout
-            if ("{{ old('email') }}" && "{{ old('password') }}") { // Check for typical fields in add form
+            // Déterminer si les erreurs proviennent du formulaire d'ajout ou d'édition
+            @if(Session::has('open_add_modal') && Session::get('open_add_modal'))
                 openAddModal = true;
-            } else {
-                // Tente de déterminer si les erreurs proviennent du formulaire d'édition
-                @if(Session::has('edit_user_id'))
-                    openEditModal = true;
-                    editUserId = "{{ Session::get('edit_user_id') }}";
-                @else
-                    // Fallback: si l'email n'est pas "old", mais qu'il y a des erreurs, on peut essayer d'ouvrir l'edit modal
-                    @foreach($errors->messages() as $field => $messages)
-                        // Si un champ pertinent pour Stagiaire est en erreur
-                        if (['nom', 'prenom', 'telephone', 'cin', 'adresse', 'pays_id', 'ville_id', 'role_id', 'statut_id', 'universite', 'faculte', 'titre_formation'].includes('{{$field}}')) {
-                            openEditModal = true;
-                            break;
-                        }
-                    @endforeach
-                @endif
-            }
+            @elseif(Session::has('edit_user_id'))
+                openEditModal = true;
+                editUserId = "{{ Session::get('edit_user_id') }}";
+            @endif
 
             if (openAddModal) {
                 var addUserModal = new bootstrap.Modal(document.getElementById('addUserModal'));
                 addUserModal.show();
-                // Assurez-vous que les champs stagiaires sont visibles si le rôle stagiaire était sélectionné (ou est présélectionné par défaut)
-                toggleStagiaireFields($('#addUserModal').find('#role_id_add'), $('#addUserModal').find('#stagiaire_fields_add'));
+                // Assurez-vous que les champs stagiaires sont visibles et pré-remplis avec old()
+                $('#stagiaire_fields_add').show();
+
+                // Pré-sélectionner les sujets à partir de old('sujet_ids')
+                const oldSujetIdsAdd = @json(old('sujet_ids', []));
+                const sujetSelectAdd = $('#sujet_ids_add');
+                if (oldSujetIdsAdd.length > 0) {
+                    sujetSelectAdd.find('option').prop('selected', false); // Désélectionner tout
+                    oldSujetIdsAdd.forEach(function(sujetId) {
+                        sujetSelectAdd.find('option[value="' + sujetId + '"]').prop('selected', true);
+                    });
+                }
+
+
             } else if (openEditModal) {
-                // Re-populate the edit modal with old input if available
                 var editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
                 editUserModal.show();
-
                 const form = $('#editUserForm');
+                
                 // Re-populating ID is crucial for the form action to be correct on re-submission
-                $('#id_edit').val("{{ old('id') }}");
+                const oldId = "{{ old('id') }}";
+                $('#id_edit').val(oldId);
+                form.attr('action', `/admin/update/${oldId}`);
+
                 $('#nom_edit').val("{{ old('nom') }}");
                 $('#prenom_edit').val("{{ old('prenom') }}");
                 $('#email_edit').val("{{ old('email') }}");
@@ -637,24 +741,30 @@
                 $('#code_edit').val("{{ old('code') }}");
                 $('#adresse_edit').val("{{ old('adresse') }}");
                 $('#pays_id_edit').val("{{ old('pays_id') }}");
-                $('#role_id_edit').val("{{ old('role_id') }}");
+                $('#role_id_edit').val("{{ old('role_id') }}"); // Ceci sera toujours Stagiaire sur cette page
                 $('#statut_id_edit').val("{{ old('statut_id') }}");
                 $('#universite_edit').val("{{ old('universite') }}");
                 $('#faculte_edit').val("{{ old('faculte') }}");
                 $('#titre_formation_edit').val("{{ old('titre_formation') }}");
+                $('#groupe_id_edit').val("{{ old('groupe_id') }}"); // Pré-remplir groupe
+                $('#promotion_id_edit').val("{{ old('promotion_id') }}"); // Pré-remplir promotion
 
-                toggleStagiaireFields($('#role_id_edit'), $('#stagiaire_fields_edit'));
-                loadCities($('#pays_id_edit').val(), $('#ville_id_edit'), "{{ old('ville_id') }}");
-
-                // Set form action correctly for re-submission of failed edit
-                if ("{{ old('id') }}") {
-                    form.attr('action', `/admin/update/${{ old('id') }}`);
+                // Pré-remplir les sujets à partir de old('sujet_ids')
+                const oldSujetIdsEdit = @json(old('sujet_ids', []));
+                const sujetSelectEdit = $('#sujet_ids_edit');
+                sujetSelectEdit.find('option').prop('selected', false); // Désélectionner tout
+                if (oldSujetIdsEdit.length > 0) {
+                    oldSujetIdsEdit.forEach(function(sujetId) {
+                        sujetSelectEdit.find('option[value="' + sujetId + '"]').prop('selected', true);
+                    });
                 }
-            }
+                
+                $('#stagiaire_fields_edit').show(); // Afficher les champs spécifiques au stagiaire
 
+                loadCities($('#pays_id_edit').val(), $('#ville_id_edit'), "{{ old('ville_id') }}");
+            }
             // Afficher les erreurs de validation spécifiques aux champs du formulaire des modales
             @foreach ($errors->messages() as $field => $messages)
-                // Pour l'ajout
                 let inputAdd = document.getElementById('{{ $field }}_add');
                 if (inputAdd) {
                     inputAdd.classList.add('is-invalid');
@@ -663,8 +773,6 @@
                     feedbackDiv.textContent = '{{ implode(", ", $messages) }}';
                     inputAdd.parentNode.appendChild(feedbackDiv);
                 }
-
-                // Pour l'édition
                 let inputEdit = document.getElementById('{{ $field }}_edit');
                 if (inputEdit) {
                     inputEdit.classList.add('is-invalid');

@@ -7,6 +7,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 // Ligne suivante non nécessaire pour le modèle, car Auth est un Facade,
 // mais inoffensive si présente. Souvent utilisée dans les contrôleurs/vues.
 // use Illuminate\Support\Facades\Auth;
@@ -25,7 +27,7 @@ class User extends Authenticatable
     protected $fillable = [
         'nom', 'prenom', 'email', 'password', 'cin', 'code',
         'telephone', 'adresse', 'universite', 'faculte', 'titre_formation',
-        'pays_id', 'ville_id', 'groupe_id', 'role_id', 'statut_id', 'email_log_id',
+        'pays_id', 'ville_id', 'groupe_id', 'role_id', 'statut_id', 'email_log_id','promotion_id'
     ];
 
     protected $hidden = [
@@ -127,6 +129,13 @@ class User extends Authenticatable
     public function isAdministrateur() // <--- NOUVEAU NOM DE LA MÉTHODE
     {
         return $this->hasRole('Administrateur'); // Le rôle dans la BDD est 'Administrateur'
+    }
+
+
+
+   public function promotion()
+    {
+        return $this->belongsTo(Promotion::class);
     }
 
     public function isSuperviseur()
