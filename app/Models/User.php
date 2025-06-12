@@ -143,4 +143,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Note::class, 'stagiaire_id');
     }
+
+    public function fichiers()
+{
+    return $this->hasMany(Fichier::class, 'id_stagiaire');
+}
+
 }

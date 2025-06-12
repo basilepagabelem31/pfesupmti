@@ -244,5 +244,22 @@ Route::middleware(['auth'])->group(function () {
 }); // FIN DU GROUPE PRINCIPAL middleware('auth')
 
 
+Route::middleware(['auth', 'role:Administrateur'])->group(function () {
+    Route::get('/admin/profile', [AdminController::class, 'profile'])->name('admin.profile');
+    Route::put('/admin/profile/{id}', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
+    
+});
+
+Route::middleware(['auth', 'role:Superviseur'])->group(function () {
+    Route::get('/superviseur/profile', [SuperviseurController::class, 'profile'])->name('superviseur.profile');
+    Route::put('/superviseur/profile/{id}', [SuperviseurController::class, 'updateProfile'])->name('superviseur.profile.update');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/stagiaires/profiles', [StagiaireController::class, 'profiles'])->name('stagiaires.profiles');
+    Route::put('/stagiaires/profiles/{id}', [StagiaireController::class, 'update'])->name('stagiaires.profiles.update');
+});
+
+
 // Inclusion des routes d'authentification par défaut de Laravel Breeze/Jetstream
 require __DIR__.'/auth.php';
