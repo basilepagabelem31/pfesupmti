@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
+    protected $table = 'users';
 
     protected static function booted()
     {
@@ -43,9 +44,7 @@ class User extends Authenticatable
     public function ville() { return $this->belongsTo(Ville::class); }
     public function groupe() { return $this->belongsTo(Groupe::class); }
     public function role() { return $this->belongsTo(Role::class, 'role_id'); }
-    public function statut() { return $this->belongsTo(Statut::class); }
     public function emailLog() { return $this->belongsTo(EmailLog::class); }
-    public function absences() { return $this->hasMany(Absence::class); }
     public function sujets() { return $this->belongsToMany(Sujet::class, 'sujet_user'); }
 
     /**
@@ -143,4 +142,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Note::class, 'stagiaire_id');
     }
+
+    //gestion des reunions et absences
+    public function statut()
+    {
+        return $this->belongsTo(Statut::class, 'statut_id');
+    }
+
+    public function isActive(): bool
+    {
+        return $this->statut && $this->statut->nom === 'Actif';
+    }
+
+    public function absences()
+    {
+        return $this->hasMany(Absence::class, 'stagiaire_id');
+    } 
 }

@@ -12,10 +12,13 @@ use App\Http\Controllers\SuperviseurController;
 use App\Http\Controllers\GroupeController;
 use App\Http\Controllers\SujetController;
 use App\Http\Controllers\DemandeCoequipierController;
+use App\Http\Controllers\EmailLogController;
 use App\Http\Controllers\FichierController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\ReunionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -183,6 +186,21 @@ Route::middleware(['auth'])->group(function () {
     })->name('notifications.markAsRead');
     });
 
+    //gestion des absences et reunions gere pour le superviseur 
+   Route::middleware(['auth','role:Superviseur'])->group(function(){
+    Route::get('/reunions', [ReunionController::class, 'index'])->name('reunions.index');
+    Route::post('/reunions', [ReunionController::class, 'store'])->name('reunions.store');
+    Route::get('/reunions/{id}', [ReunionController::class, 'show'])->name('reunions.show');
+    Route::post('/reunions/{id}/cloture', [ReunionController::class, 'cloturer'])->name('reunions.cloture');
+    Route::post('/reunions/{reunionId}/presence/{stagiaireId}', [ReunionController::class, 'updatePresence'])->name('reunions.updatePresence');
+ 
+});
+    //gestion des groupes 
+    Route::get('/groupes/{id}/stagiaires', [GroupeController::class, 'getStagiaires'])->name('groupes.stagiaires');
+
+
+   
+
     
 
 
@@ -229,7 +247,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/page/search-results', function () { return view('pages.page-search-results'); });
     Route::get('/page/coming-soon', function () { return view('pages.page-coming-soon'); });
     Route::get('/page/error', function () { return view('pages.page-error'); });
-    Route::get('/page/login', function () { return view('pages.page-login'); });
+    //Route::get('/page/login', function () { return view('pages.page-login'); });
     Route::get('/page/register', function () { return view('pages.page-register'); });
     Route::get('/page/messenger', function () { return view('pages.page-messenger'); });
     Route::get('/page/data-management', function () { return view('pages.page-data-management'); });
