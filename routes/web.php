@@ -172,16 +172,23 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/notes/{id}', [NoteController::class, 'destroy'])->name('notes.destroy');
     });
     //suite pour la gestion des notes 
-    Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/stagiaire/{id}', [NoteController::class, 'ficheStagiaire'])->name('notes.fiche_stagiaire');
-    //suppime la notification apres avoir clique sur le bouton voir avec les stagiaires
+    
+    // Route pour marquer une notification spécifique comme lue
     Route::post('/notifications/{id}/marque-lu', function($id) {
-    $notification = Auth::user()->unreadNotifications()->findOrFail($id);
-    $stagiaire_id = $notification->data['stagiaire_id'];
-    $notification->markAsRead();
-    return redirect()->route('notes.fiche_stagiaire', $stagiaire_id);
+        $notification = Auth::user()->unreadNotifications()->findOrFail($id);
+        $stagiaire_id = $notification->data['stagiaire_id']; // Assurez-vous que 'stagiaire_id' est dans les data de la notification
+        $notification->markAsRead();
+        return redirect()->route('notes.fiche_stagiaire', $stagiaire_id)->with('success', 'Notification marquée comme lue.');
     })->name('notifications.markAsRead');
-    });
+
+    // NOUVELLE ROUTE : Marquer toutes les notifications comme lues
+    Route::post('/notifications/mark-all-read', function() {
+        Auth::user()->unreadNotifications->markAsRead();
+        return back()->with('success', 'Toutes les notifications ont été marquées comme lues.');
+    })->name('notifications.markAllAsRead');
+});
 
     
 

@@ -132,9 +132,10 @@
                 <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Mes Notes</h2>
                 <p class="text-gray-600 mb-4 flex-grow">Consultez les notes attribuées à vos performances.</p>
                 <div class="flex justify-center mt-auto">
-                    <a href="/stagiaire/notes" class="inline-flex items-center justify-center px-4 py-2 bg-gray-700 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        <i class="fas fa-pencil-alt mr-2"></i> Voir les notes
-                    </a>
+                   <!-- Exemple dans le tableau de bord du stagiaire ou sa page de profil -->
+<a href="{{ route('notes.fiche_stagiaire', Auth::user()->id) }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-semibold rounded-xl shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+    <i class="fas fa-scroll mr-2"></i> Mes Notes
+</a>
                 </div>
             </div>
         </div>

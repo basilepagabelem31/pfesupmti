@@ -92,6 +92,27 @@
             </div>
         </div>
 
+
+
+
+             {{-- NOUVELLE CARTE : Gestion des Notes --}}
+        <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-rose-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="flex justify-center items-center mb-4">
+                    <div class="p-4 rounded-full bg-rose-100 text-rose-600">
+                        <i class="fas fa-clipboard-list fa-3x"></i> {{-- Icône changée pour notes --}}
+                    </div>
+                </div>
+                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion des Notes</h2>
+                <p class="text-gray-600 mb-4 flex-grow">Ajoutez, modifiez et consultez les notes des stagiaires.</p>
+                <div class="flex justify-center mt-auto">
+                    <a href="{{ route('notes.liste_stagiaires') }}" class="inline-flex items-center justify-center px-4 py-2 bg-rose-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <i class="fas fa-scroll mr-2"></i> Gérer les Notes
+                    </a>
+                </div>
+            </div>
+        </div>
+
         {{-- Carte pour la gestion des Fichiers --}}
         <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-yellow-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
             <div class="p-6 flex flex-col flex-grow">

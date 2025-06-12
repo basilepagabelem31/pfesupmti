@@ -7,7 +7,7 @@
     <!--pour la notification -->
   @if(Auth::check() && Auth::user()->unreadNotifications->count())
     <div class="alert alert-info text-center" id="notification-alert">
-        <h5>Notifications :</h5>
+        <h5>Notifications:</h5>
         <ul>
             @foreach(Auth::user()->unreadNotifications as $notification)
                 <li>

@@ -49,6 +49,24 @@
             </div>
         </div>
 
+        {{-- NOUVELLE CARTE : Gestion des Notes --}}
+        <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-rose-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="flex justify-center items-center mb-4">
+                    <div class="p-4 rounded-full bg-rose-100 text-rose-600">
+                        <i class="fas fa-clipboard-list fa-3x"></i> {{-- Icône changée pour notes --}}
+                    </div>
+                </div>
+                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion des Notes</h2>
+                <p class="text-gray-600 mb-4 flex-grow">Ajoutez, modifiez et consultez les notes des stagiaires.</p>
+                <div class="flex justify-center mt-auto">
+                    <a href="{{ route('notes.liste_stagiaires') }}" class="inline-flex items-center justify-center px-4 py-2 bg-rose-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <i class="fas fa-scroll mr-2"></i> Gérer les Notes
+                    </a>
+                </div>
+            </div>
+        </div>
+
         {{-- Carte : Gestion des Rôles --}}
         <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-purple-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
             <div class="p-6 flex flex-col flex-grow">
@@ -104,6 +122,7 @@
         </div>
 
         {{-- Carte : Gestion des Sujets --}}
+        {{-- J'ai conservé cette carte distincte pour la gestion des sujets --}}
         <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-teal-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
             <div class="p-6 flex flex-col flex-grow">
                 <div class="flex justify-center items-center mb-4">
@@ -149,9 +168,9 @@
                 </div>
                 <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Importer Stagiaires</h2>
                 <p class="text-gray-600 mb-4 flex-grow">Importez de nouveaux stagiaires en masse via un fichier CSV.</p>
-                <div class="flex justify-center mt-auto">
+                <div class="flex justify-center mt-auto bg-primary">
                     <a href="{{ route('stagiaires.import.form') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-gray-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        <i class="fas fa-upload mr-2"></i> Importer
+                        <i class="fas fa-upload mr-2 "></i> Importer
                     </a>
                 </div>
             </div>
@@ -165,7 +184,7 @@
                         <i class="fas fa-handshake fa-3x"></i>
                     </div>
                 </div>
-                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Demandes de Coéquipiers</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion des Coéquipiers</h2>
                 <p class="text-gray-600 mb-4 flex-grow">Consultez et gérez les demandes de coéquipiers des stagiaires.</p>
                 <div class="flex justify-center mt-auto">
                     <a href="{{ route('demande_coequipiers.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-orange-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition ease-in-out duration-150">
@@ -204,6 +223,7 @@
                 <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Réunions & Absences</h2>
                 <p class="text-gray-600 mb-4 flex-grow">Planifiez les réunions et suivez la présence des stagiaires.</p>
                 <div class="flex justify-center mt-auto">
+                    {{-- Assurez-vous que cette route existe --}}
                     <a href="/admin/reunions" class="inline-flex items-center justify-center px-4 py-2 bg-fuchsia-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <i class="fas fa-clipboard-list mr-2"></i> Gérer
                     </a>
@@ -222,6 +242,7 @@
                 <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Paramètres & Logs</h2>
                 <p class="text-gray-600 mb-4 flex-grow">Configurez le système et consultez les journaux d'activité.</p>
                 <div class="flex justify-center mt-auto">
+                    {{-- Assurez-vous que cette route existe --}}
                     <a href="/admin/email-config" class="inline-flex items-center justify-center px-4 py-2 bg-gray-700 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <i class="fas fa-wrench mr-2"></i> Gérer
                     </a>
