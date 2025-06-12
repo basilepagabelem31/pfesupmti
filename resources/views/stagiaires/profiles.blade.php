@@ -22,7 +22,8 @@
     <p><strong>Pays :</strong> {{ $user->pays->nom ?? 'Non renseigné' }}</p>
     <p><strong>Université :</strong> {{ $user->universite ?? 'Non renseignée' }}</p>
     <p><strong>Faculté :</strong> {{ $user->faculte ?? 'Non renseignée' }}</p>
-    <p><strong>Titre de formation :</strong> {{ $user->formation ?? 'Non renseigné' }}</p>
+    <p><strong>Titre de formation :</strong> {{ $user->titre_formation ?? 'Non renseigné' }}</p>
+    
 </div>
 
 {{--  Section : Notes --}}
@@ -76,6 +77,7 @@
                 <label>Email :</label>
                 <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
             </div>
+
             <div class="mb-3">
                 <label>Téléphone :</label>
                 <input type="text" name="telephone" class="form-control" value="{{ old('telephone', $user->telephone) }}">
@@ -89,23 +91,40 @@
                 <input type="text" name="adresse" class="form-control" value="{{ old('adresse', $user->adresse) }}">
             </div>
             <div class="mb-3">
-                <label>Pays :</label>
-                <select name="pays_id" class="form-select">
-                    <option value="">Sélectionner un pays</option>
-                    @foreach($pays as $p)
-                        <option value="{{ $p->id }}" {{ old('pays_id', $user->pays_id) == $p->id ? 'selected' : '' }}>{{ $p->nom }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="mb-3">
-                <label>Ville :</label>
-                <select name="ville_id" class="form-select">
-                    <option value="">Sélectionner une ville</option>
-                    @foreach($villes as $v)
-                        <option value="{{ $v->id }}" {{ old('ville_id', $user->ville_id) == $v->id ? 'selected' : '' }}>{{ $v->nom }}</option>
-                    @endforeach
-                </select>
-            </div>
+    <label>Université :</label>
+    <input type="text" name="universite" class="form-control" value="{{ old('universite', $user->universite) }}">
+</div>
+<div class="mb-3">
+    <label>Faculté :</label>
+    <input type="text" name="faculte" class="form-control" value="{{ old('faculte', $user->faculte) }}">
+</div>
+<div class="mb-3">
+    <label>Titre de formation :</label>
+    <input type="text" name="titre_formation" class="form-control" value="{{ old('titre_formation', $user->titre_formation) }}">
+</div>
+<hr class="my-4">
+
+<h4 class="text-lg font-medium text-gray-700 mb-3">Modifier mon mot de passe</h4>
+
+<div class="mb-3">
+    <label>Mot de passe actuel :</label>
+    <input type="password" name="current_password" class="form-control">
+</div>
+
+<div class="mb-3">
+    <label>Nouveau mot de passe :</label>
+    <input type="password" name="new_password" class="form-control">
+</div>
+
+<div class="mb-3">
+    <label>Confirmer le nouveau mot de passe :</label>
+    <input type="password" name="new_password_confirmation" class="form-control">
+</div>
+
+  @if(Session::get('password_changed'))
+    <div class="alert alert-success mt-3">Mot de passe modifié avec succès.</div>
+@endif
+         
 
             <button type="submit" class="btn btn-success w-full">Mettre à jour mon profil</button>
         </form>

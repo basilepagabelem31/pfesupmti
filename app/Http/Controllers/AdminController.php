@@ -288,10 +288,10 @@ class AdminController extends Controller
 {
     $user = auth()->user();
     $pays = Pays::all(); 
-    $villes = Ville::all();
+    $villes = Ville::where('pays_id', $user->pays_id)->get();
     $statuts = Statut::all(); 
 
-    return view('admin.profile', compact('user', 'pays', 'villes', 'statuts'));
+    return view('admin.profile', compact('user'));
 }
 
 
@@ -305,13 +305,26 @@ public function updateProfile(Request $request, $id)
         'telephone' => 'nullable|string',
         'cin' => 'required|string|unique:users,cin,' . $id,
         'adresse' => 'nullable|string',
-        'pays_id' => 'required|exists:pays,id',
-        'ville_id' => 'required|exists:villes,id',
+        
     ]);
+$validatedData = $request->only(['nom', 'prenom', 'email', 'telephone', 'cin', 'adresse']);
 
     $user = User::findOrFail($id);
-    $user->update($validatedData);
+
+// Si mot de passe renseigné, on le prépare ici
+if ($request->filled('new_password')) {
+    $user->password = Hash::make($request->new_password);
+}
+
+// Met à jour tous les autres champs
+$user->fill($validatedData);
+
+// Sauvegarde tout en une seule fois
+$user->save();
+
+  
 
     return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
 }
+
 }

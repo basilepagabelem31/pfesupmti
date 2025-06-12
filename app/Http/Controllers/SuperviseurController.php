@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Pays;
 use App\Models\Ville;
 use App\Models\Statut;
+use Illuminate\Support\Facades\Hash;
 class SuperviseurController extends Controller
 {
     //
@@ -20,11 +21,8 @@ class SuperviseurController extends Controller
     public function profile()
     {
         $user = Auth::user();
-        $pays = Pays::all();
-        $villes = Ville::all();
-        $statuts = Statut::all();
-
-        return view('supervisseur.profile', compact('user', 'pays', 'villes', 'statuts'));
+       
+        return view('supervisseur.profile', compact('user'));
     }
 
     public function updateProfile(Request $request, $id)
@@ -41,13 +39,28 @@ class SuperviseurController extends Controller
             'telephone' => 'nullable|string',
             'cin' => 'required|string|unique:users,cin,' . $id,
             'adresse' => 'nullable|string',
-            'pays_id' => 'required|exists:pays,id',
-            'ville_id' => 'required|exists:villes,id',
+            'current_password' => ['nullable', 'current_password'],
+            'new_password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $user->update($validatedData);
+       $validatedData = $request->only(['nom', 'prenom', 'email', 'telephone', 'cin', 'adresse']);
 
-        return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
-    }
+    $user = User::findOrFail($id);
+
+// Si mot de passe renseigné, on le prépare ici
+if ($request->filled('new_password')) {
+    $user->password = Hash::make($request->new_password);
+}
+
+// Met à jour tous les autres champs
+$user->fill($validatedData);
+
+// Sauvegarde tout en une seule fois
+$user->save();
+
+  
+
+    return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
+}
 
 }
