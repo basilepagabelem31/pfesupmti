@@ -10,7 +10,7 @@
 
     <div class="max-w-xl mx-auto bg-white shadow-lg rounded-xl border border-gray-200 p-6">
 
-        {{-- ✅ Informations actuelles --}}
+        {{--  Informations actuelles --}}
 <div class="mb-6 text-gray-700">
     <p><strong>Nom :</strong> {{ $user->nom }}</p>
     <p><strong>Prénom :</strong> {{ $user->prenom }}</p>
@@ -25,7 +25,7 @@
     <p><strong>Titre de formation :</strong> {{ $user->formation ?? 'Non renseigné' }}</p>
 </div>
 
-{{-- ✅ Section : Notes --}}
+{{--  Section : Notes --}}
 @if($user->notes->isEmpty())
     <div class="alert alert-info text-center">Aucune note pour le moment.</div>
 @else
@@ -39,7 +39,7 @@
     </div>
 @endif
 
-{{-- ✅ Section : Fichiers --}}
+{{--  Section : Fichiers --}}
 @if($user->fichiers->isEmpty())
     <div class="alert alert-info text-center">Aucun fichier disponible.</div>
 @else
@@ -59,7 +59,7 @@
 @endif
 
 
-        {{-- ✅ Formulaire de modification --}}
+        {{--  Formulaire de modification --}}
         <form method="POST" action="{{ route('stagiaires.profiles.update', $user->id) }}">
             @csrf
             @method('PUT')

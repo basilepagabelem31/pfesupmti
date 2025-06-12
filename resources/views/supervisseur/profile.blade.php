@@ -8,10 +8,10 @@
         <div class="alert alert-success text-center">{{ Session::get('success') }}</div>
     @endif
 
-    {{-- ✅ Conteneur centré avec largeur réduite --}}
+    {{--  Conteneur centré avec largeur réduite --}}
     <div class="max-w-xl mx-auto bg-white shadow-lg rounded-xl border border-gray-200 p-6">
 
-        {{-- ✅ Informations du superviseur --}}
+        {{--  Informations du superviseur --}}
         <div class="mb-6 text-gray-700">
             <p><strong>Nom :</strong> {{ Auth::user()->nom }}</p>
             <p><strong>Prénom :</strong> {{ Auth::user()->prenom }}</p>
@@ -23,7 +23,7 @@
             <p><strong>Pays :</strong> {{ Auth::user()->pays->nom ?? 'Non renseigné' }}</p>
         </div>
 
-        {{-- ✅ Formulaire de mise à jour du profil --}}
+        {{--  Formulaire de mise à jour du profil --}}
         @if(Auth::user()->id == $user->id)
             <form id="form_edit_profile" action="{{ route('superviseur.profile.update', $user->id) }}" method="POST">
                 @csrf

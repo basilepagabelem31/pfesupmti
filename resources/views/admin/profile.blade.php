@@ -8,10 +8,10 @@
         <div class="alert alert-success text-center">{{ Session::get('success') }}</div>
     @endif
 
-    {{-- ✅ Conteneur centré avec largeur réduite --}}
+    {{--  Conteneur centré avec largeur réduite --}}
     <div class="max-w-xl mx-auto bg-white shadow-lg rounded-xl border border-gray-200 p-6">
 
-        {{-- ✅ Informations de l'Administrateur --}}
+        {{--  Informations de l'Administrateur --}}
         <div class="mb-6 text-gray-700">
             <p><strong>Nom :</strong> {{ Auth::user()->nom }}</p>
             <p><strong>Prénom :</strong> {{ Auth::user()->prenom }}</p>
@@ -23,7 +23,7 @@
             <p><strong>Pays :</strong> {{ Auth::user()->pays->nom ?? 'Non renseigné' }}</p>
         </div>
 
-        {{-- ✅ Formulaire de mise à jour du profil --}}
+        {{--  Formulaire de mise à jour du profil --}}
         <form id="form_edit_profile" action="{{ route('admin.profile.update', $user->id) }}" method="POST">
             @csrf
             @method('PUT')
@@ -53,7 +53,7 @@
                 <input type="text" name="adresse" class="form-control" value="{{ old('adresse', $user->adresse) }}">
             </div>
 
-            {{-- ✅ Sélection dynamique des pays et villes --}}
+            {{--  Sélection dynamique des pays et villes --}}
             <div class="mb-3">
                 <label>Pays :</label>
                 <select name="pays_id" class="form-select" required>
@@ -79,7 +79,7 @@
     </div>
 </div>
 
-{{-- ✅ Script AJAX pour charger les villes dynamiquement --}}
+{{--  Script AJAX pour charger les villes dynamiquement --}}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     fetch('/api/villes')
