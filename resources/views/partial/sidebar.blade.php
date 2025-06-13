@@ -93,6 +93,13 @@
                             <span class="menu-text">Rôles</span>
                         </a>
                     </div>
+                     {{--  Ajout du lien Profil --}}
+    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.profile'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+        <a href="{{ route('admin.profile') }}" class="menu-link">
+            <span class="menu-icon"><i class="fas fa-user-circle"></i></span> {{-- Icône Profil --}}
+            <span class="menu-text">Mon Profil</span>
+        </a>
+    </div>
                     {{-- FIN des nouveaux boutons directs pour la gestion des utilisateurs --}}
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('promotions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
@@ -271,6 +278,12 @@
                             <span class="menu-text">Gestion de Coéquipiers</span>
                         </a>
                     </div>
+                   <div class="menu-item {{ ($currentUrl === trim(parse_url(route('superviseur.profile'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+    <a href="{{ route('superviseur.profile') }}" class="menu-link">
+        <span class="menu-icon"><i class="fas fa-user-circle"></i></span> {{-- Icône Profil --}}
+        <span class="menu-text">Mon Profil</span>
+    </a>
+</div>
 
                     {{-- Section pour Réunions et Absences (nécessite des routes définies) --}}
                     <div class="menu-item {{ (Str::startsWith($currentUrl, ['reunions', 'absences'])) ? 'active' : '' }} has-sub">
@@ -306,12 +319,13 @@
                         </a>
                     </div>
 
-                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('profile.edit'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('profile.edit') }}" class="menu-link">
-                            <span class="menu-icon"><i class="fas fa-user-circle"></i></span>
-                            <span class="menu-text">Mon Profil</span>
-                        </a>
-                    </div> 
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('stagiaires.profiles'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+    <a href="{{ route('stagiaires.profiles') }}" class="menu-link">
+        <span class="menu-icon"><i class="fas fa-user-circle"></i></span>
+        <span class="menu-text">Mon Profil</span>
+    </a>
+</div>
+
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('fichiers.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
                         <a href="{{ route('fichiers.index') }}" class="menu-link">

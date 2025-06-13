@@ -343,4 +343,48 @@ class AdminController extends Controller
     {
         return Role::where('nom', 'Stagiaire')->value('id');
     }
+
+    public function profile()
+{
+    $user = auth()->user();
+    $pays = Pays::all(); 
+    $villes = Ville::where('pays_id', $user->pays_id)->get();
+    $statuts = Statut::all(); 
+
+    return view('admin.profile', compact('user'));
+}
+
+
+
+public function updateProfile(Request $request, $id)
+{
+    $validatedData = $request->validate([
+        'nom' => 'required|string',
+        'prenom' => 'required|string',
+        'email' => 'required|email|unique:users,email,' . $id,
+        'telephone' => 'nullable|string',
+        'cin' => 'required|string|unique:users,cin,' . $id,
+        'adresse' => 'nullable|string',
+        
+    ]);
+$validatedData = $request->only(['nom', 'prenom', 'email', 'telephone', 'cin', 'adresse']);
+
+    $user = User::findOrFail($id);
+
+// Si mot de passe renseigné, on le prépare ici
+if ($request->filled('new_password')) {
+    $user->password = Hash::make($request->new_password);
+}
+
+// Met à jour tous les autres champs
+$user->fill($validatedData);
+
+// Sauvegarde tout en une seule fois
+$user->save();
+
+  
+
+    return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
+}
+
 }
