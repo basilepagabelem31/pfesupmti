@@ -215,7 +215,13 @@
                             </div>
                         </div>
                     </div>
-
+                {{-- Bouton pour les Logs Système --}}
+<div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.logs.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+    <a href="{{ route('admin.logs.index') }}" class="menu-link">
+        <i class="fas fa-clipboard-list me-2"></i> {{-- Ajout de l'icône ici --}}
+        <span class="menu-text">Logs Système</span>
+    </a>
+</div>
                 {{-- --- Menu pour le Superviseur --- --}}
                 @elseif ($user->isSuperviseur())
 

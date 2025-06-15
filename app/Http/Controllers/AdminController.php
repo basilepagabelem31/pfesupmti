@@ -10,19 +10,25 @@ use App\Models\Ville;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Auth; // Importez le facade Auth
+use Illuminate\Support\Facades\Auth; 
+use App\helper\LogHelper; 
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
+        // Log l'accès au tableau de bord de l'admin
+        LogHelper::logAction(
+            'Accès au tableau de bord Administrateur',
+            'L\'utilisateur ' . Auth::user()->nom . ' ' . Auth::user()->prenom . ' (ID: ' . Auth::id() . ') a accédé au tableau de bord administrateur.',
+            Auth::id()
+        );
         return view('admin.dashboard');
     }
 
     public function create()
     {
-        // Cette méthode est utilisée pour afficher le formulaire de création, souvent via une modale.
-        // Les variables nécessaires pour les listes déroulantes (rôles, statuts, pays, villes) doivent être passées.
+        // Aucune action de création réelle ici, juste l'affichage du formulaire. Pas besoin de loguer.
         $roles = Role::all();
         $statuts = Statut::all();
         $pays = Pays::all();
@@ -35,6 +41,7 @@ class AdminController extends Controller
     }
 
     public function index(){
+        // Pas besoin de loguer l'affichage d'une liste
         $admins = User::with(['pays','ville','role','statut'])
         ->whereHas('role',function($q){
             $q->whereIn('nom',['Administrateur','Superviseur']);
@@ -51,6 +58,7 @@ class AdminController extends Controller
 
     public function indexStagiaire()
     {
+        // Pas besoin de loguer l'affichage d'une liste
         $admins = User::with(['pays','ville','role','statut'])
             ->whereHas('role', function($q){
                 $q->where('nom', 'Stagiaire');
@@ -90,44 +98,43 @@ class AdminController extends Controller
             $validated['password'] = Hash::make($validated['password']);
             $admin = User::create($validated);
 
+            // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA CREATION
+            $creator = Auth::user(); // L'utilisateur (Super Admin/Superviseur) qui crée le compte
+            $roleNom = $admin->role ? $admin->role->nom : 'N/A'; // Récupérer le nom du rôle
+
+            LogHelper::logAction(
+                'Création de compte utilisateur',
+                'Le ' . $creator->role->nom . ' ' . $creator->nom . ' ' . $creator->prenom . ' (ID: ' . $creator->id . ') a créé le compte de ' . $roleNom . ' : ' . $admin->prenom . ' ' . $admin->nom . ' (ID: ' . $admin->id . ', Email: ' . $admin->email . ').',
+                Auth::id()
+            );
+
             $role = $admin->role ? $admin->role->nom : null ;
             if ($role === 'Administrateur'|| $role === 'Superviseur'){
                 return redirect()->route('admin.index')->with('success', 'Admin/Superviseur a été bien créé.');
             }else {
-                // Correction de la route de redirection pour les stagiaires
                 return redirect()->route('admin.users.stagiaires')->with('success', 'Stagiaire a été bien créé.');
             }
         } catch (ValidationException $e) {
             return redirect()->back()
                 ->withInput($request->except('password'))
                 ->withErrors($e->errors())
-                ->with('open_add_modal', true); // Indicateur pour rouvrir la modale d'ajout
+                ->with('open_add_modal', true);
         }
     }
 
-    /**
-     * Affiche le formulaire d'édition d'un utilisateur.
-     * Le superviseur ne peut éditer que les stagiaires.
-     * L'administrateur peut éditer tous les utilisateurs.
-     *
-     * @param User $user Le modèle User à éditer (Laravel Model Binding)
-     * @return \Illuminate\View\View|\Illuminate\Http\Response
-     */
     public function edit(User $user)
     {
+        // Pas besoin de loguer l'affichage du formulaire d'édition.
         $loggedInUser = Auth::user();
 
-        // Si l'utilisateur connecté est un superviseur et que l'utilisateur à éditer n'est PAS un stagiaire
         if ($loggedInUser->isSuperviseur() && !$user->isStagiaire()) {
             abort(403, "Vous n'êtes pas autorisé à modifier ce type d'utilisateur.");
         }
 
-        // Si l'utilisateur connecté est un stagiaire, il ne peut pas utiliser cette route.
         if ($loggedInUser->isStagiaire()) {
             abort(403, "Accès non autorisé.");
         }
 
-        // Récupération des données pour le formulaire d'édition
         $roles = Role::all();
         $statuts = Statut::all();
         $pays = Pays::all();
@@ -136,36 +143,20 @@ class AdminController extends Controller
         ])->orderBy('nom')->get(['id','nom']);
         $stagiaireId = Role::where('nom','Stagiaire')->value('id');
 
-        // Déterminer la vue à retourner en fonction du rôle de l'utilisateur à éditer
         if ($user->isStagiaire()) {
-            // Si l'utilisateur à éditer est un stagiaire, retournez la vue de gestion des stagiaires
-            // Cette vue devrait avoir une modale d'édition prête à s'ouvrir avec $user comme données
             return view('admin.index_stagiaire', compact('user', 'roles', 'statuts', 'pays', 'paysVilles', 'stagiaireId'));
         } else {
-            // Sinon (admin ou superviseur), retournez la vue de gestion des admins/superviseurs
-            // Cette vue devrait avoir une modale d'édition prête à s'ouvrir avec $user comme données
             return view('admin.index', compact('user', 'roles', 'statuts', 'pays', 'paysVilles', 'stagiaireId'));
         }
     }
 
-    /**
-     * Met à jour un utilisateur.
-     * Le superviseur ne peut mettre à jour que les stagiaires.
-     * L'administrateur peut mettre à jour tous les utilisateurs.
-     *
-     * @param Request $request
-     * @param User $user Le modèle User à mettre à jour (Laravel Model Binding)
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function update(Request $request, User $user)
     {
         $loggedInUser = Auth::user();
 
-        // Si l'utilisateur connecté est un superviseur et que l'utilisateur à mettre à jour n'est PAS un stagiaire
         if ($loggedInUser->isSuperviseur() && !$user->isStagiaire()) {
             abort(403, "Vous n'êtes pas autorisé à modifier ce type d'utilisateur.");
         }
-        // Empêcher un stagiaire d'accéder à cette méthode via une route non protégée.
         if ($loggedInUser->isStagiaire()) {
             abort(403, "Accès non autorisé.");
         }
@@ -174,7 +165,7 @@ class AdminController extends Controller
             $rules = [
                 "nom"=> "required|string",
                 "prenom" => "required|string",
-                "password" => "nullable|min:8", // Mot de passe facultatif, mais min 8 caractères si fourni
+                "password" => "nullable|min:8",
                 "email" => "required|email|unique:users,email," . $user->id,
                 "telephone" => "required|string",
                 "cin" => "required|string|unique:users,cin," . $user->id,
@@ -184,17 +175,14 @@ class AdminController extends Controller
                 "statut_id" =>"required|exists:statuts,id",
             ];
 
-            // Les superviseurs ne peuvent pas changer le rôle. Seuls les admins le peuvent.
             if ($loggedInUser->isAdministrateur()) {
                 $rules['role_id'] = "required|exists:roles,id";
             } else {
-                // Si ce n'est pas un administrateur, assurez-vous que role_id n'est pas dans la requête ou est ignoré
                 $request->request->remove('role_id');
             }
 
-            // Règles spécifiques aux stagiaires si l'utilisateur en cours de modification est un stagiaire
             if ($user->isStagiaire()) {
-                $stagiaireRoleId = Role::where('nom', 'Stagiaire')->value('id'); // Assurez-vous d'avoir l'ID du rôle Stagiaire
+                $stagiaireRoleId = Role::where('nom', 'Stagiaire')->value('id');
                 $rules['universite'] = 'required_if:role_id,' . $stagiaireRoleId . '|nullable|string|max:255';
                 $rules['faculte'] = 'required_if:role_id,' . $stagiaireRoleId . '|nullable|string|max:255';
                 $rules['titre_formation'] = 'required_if:role_id,' . $stagiaireRoleId . '|nullable|string|max:255';
@@ -202,7 +190,6 @@ class AdminController extends Controller
                 $rules['id_sujet'] = 'nullable|exists:sujets,id';
                 $rules['id_promotion'] = 'nullable|exists:promotions,id';
             } else {
-                // Si l'utilisateur n'est pas un stagiaire, assurez-vous que ces champs ne sont pas traités
                 $request->request->remove('universite');
                 $request->request->remove('faculte');
                 $request->request->remove('titre_formation');
@@ -213,6 +200,10 @@ class AdminController extends Controller
 
             $validatedData = $request->validate($rules);
 
+            // Sauvegarder les données originales pour le log
+            $oldData = $user->getOriginal();
+            $oldRole = $user->role ? $user->role->nom : 'N/A'; // Ancien rôle
+
             if (!empty($validatedData['password'])) {
                 $validatedData['password'] = Hash::make($validatedData['password']);
             } else {
@@ -220,6 +211,39 @@ class AdminController extends Controller
             }
 
             $user->update($validatedData);
+
+            // Recharger l'utilisateur pour avoir les nouvelles données et le nouveau rôle
+            $user->load('role');
+            $newRole = $user->role ? $user->role->nom : 'N/A';
+
+            // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA MODIFICATION
+            $modifier = Auth::user(); // L'utilisateur (Super Admin/Superviseur) qui modifie
+            $logMessage = 'Le ' . $modifier->role->nom . ' ' . $modifier->nom . ' ' . $modifier->prenom . ' (ID: ' . $modifier->id . ') a modifié le compte de ' . ($user->prenom ?? '') . ' ' . ($user->nom ?? '') . ' (ID: ' . $user->id . ', Email: ' . $user->email . '). ';
+
+            // Comparaison des champs clés pour un log plus détaillé
+            $changes = [];
+            foreach (['nom', 'prenom', 'email', 'telephone', 'cin', 'adresse', 'pays_id', 'ville_id', 'statut_id'] as $field) {
+                if (isset($validatedData[$field]) && $oldData[$field] != $validatedData[$field]) {
+                    $changes[] = $field . ": '" . $oldData[$field] . "' -> '" . $validatedData[$field] . "'";
+                }
+            }
+            if ($loggedInUser->isAdministrateur() && $oldRole !== $newRole) {
+                $changes[] = "Rôle: '" . $oldRole . "' -> '" . $newRole . "'";
+            }
+
+            if (!empty($changes)) {
+                $logMessage .= 'Changements: ' . implode(', ', $changes) . '.';
+            } else {
+                $logMessage .= 'Aucun changement significatif de données de profil (ou seulement le mot de passe).';
+            }
+
+
+            LogHelper::logAction(
+                'Modification de compte utilisateur',
+                $logMessage,
+                Auth::id()
+            );
+
 
             $role = $user->role ? $user->role->nom : null ;
             if ($role === 'Administrateur' || $role === 'Superviseur'){
@@ -231,47 +255,45 @@ class AdminController extends Controller
             return redirect()->back()
                 ->withInput($request->except('password'))
                 ->withErrors($e->errors())
-                ->with('edit_user_id', $user->id); // Flasher l'ID de l'utilisateur qui était en cours d'édition
+                ->with('edit_user_id', $user->id);
         }
     }
 
-    /**
-     * Supprime un utilisateur.
-     * Le superviseur ne peut supprimer que les stagiaires.
-     * L'administrateur peut supprimer tous les utilisateurs (sauf lui-même).
-     *
-     * @param User $user Le modèle User à supprimer (Laravel Model Binding)
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function delete(User $user)
     {
         $loggedInUser = Auth::user();
 
-        // Empêcher l'utilisateur de se supprimer lui-même
         if ($user->id === $loggedInUser->id) {
             return redirect()->back()->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
         }
 
-        // Si l'utilisateur connecté est un superviseur et que l'utilisateur à supprimer n'est PAS un stagiaire
         if ($loggedInUser->isSuperviseur() && !$user->isStagiaire()) {
             abort(403, "Vous n'êtes pas autorisé à supprimer ce type d'utilisateur.");
         }
-        // Empêcher un stagiaire d'accéder à cette méthode via une route non protégée.
         if ($loggedInUser->isStagiaire()) {
             abort(403, "Accès non autorisé.");
         }
 
-        // Si l'utilisateur est un administrateur et tente de supprimer un autre administrateur,
-        // vous pourriez vouloir ajouter une vérification pour le "dernier administrateur"
         if ($loggedInUser->isAdministrateur() && $user->isAdministrateur() && User::whereHas('role', function($q) { $q->where('nom', 'Administrateur'); })->count() <= 1) {
             return redirect()->back()->with('error', "Impossible de supprimer le dernier compte administrateur.");
         }
 
-        $role = $user->role ? $user->role->nom : null; // Récupère le rôle avant la suppression
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA SUPPRESSION
+        $deleter = Auth::user(); // L'utilisateur (Super Admin/Superviseur) qui supprime
+        $deletedUserName = $user->prenom . ' ' . $user->nom;
+        $deletedUserId = $user->id;
+        $deletedUserEmail = $user->email;
+        $deletedUserRole = $user->role ? $user->role->nom : 'N/A'; // Récupérer le rôle avant suppression
 
         $user->delete();
 
-        // Redirection en fonction du rôle de l'utilisateur supprimé
+        LogHelper::logAction(
+            'Suppression de compte utilisateur',
+            'Le ' . $deleter->role->nom . ' ' . $deleter->nom . ' ' . $deleter->prenom . ' (ID: ' . $deleter->id . ') a supprimé le compte de ' . $deletedUserRole . ' : ' . $deletedUserName . ' (ID: ' . $deletedUserId . ', Email: ' . $deletedUserEmail . ').',
+            Auth::id()
+        );
+
+        $role = $deletedUserRole; // Utiliser la variable déjà capturée
         if ($role === 'Administrateur' || $role === 'Superviseur') {
             return redirect()->route('admin.index')->with('success', 'Utilisateur (Admin/Superviseur) supprimé avec succès.');
         } else {
@@ -285,46 +307,79 @@ class AdminController extends Controller
     }
 
     public function profile()
-{
-    $user = auth()->user();
-    $pays = Pays::all(); 
-    $villes = Ville::where('pays_id', $user->pays_id)->get();
-    $statuts = Statut::all(); 
+    {
+        $user = auth()->user();
+        $pays = Pays::all();
+        $villes = Ville::where('pays_id', $user->pays_id)->get();
+        $statuts = Statut::all();
 
-    return view('admin.profile', compact('user'));
-}
+        return view('admin.profile', compact('user'));
+    }
 
+    public function updateProfile(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'nom' => 'required|string',
+            'prenom' => 'required|string',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'telephone' => 'nullable|string',
+            'cin' => 'required|string|unique:users,cin,' . $id,
+            'adresse' => 'nullable|string',
+        ]);
 
+        $user = User::findOrFail($id);
 
-public function updateProfile(Request $request, $id)
-{
-    $validatedData = $request->validate([
-        'nom' => 'required|string',
-        'prenom' => 'required|string',
-        'email' => 'required|email|unique:users,email,' . $id,
-        'telephone' => 'nullable|string',
-        'cin' => 'required|string|unique:users,cin,' . $id,
-        'adresse' => 'nullable|string',
-        
-    ]);
-$validatedData = $request->only(['nom', 'prenom', 'email', 'telephone', 'cin', 'adresse']);
+        // Sauvegarder les données originales pour le log
+        $oldData = $user->getOriginal();
 
-    $user = User::findOrFail($id);
+        // Si mot de passe renseigné, on le prépare ici
+        if ($request->filled('new_password')) {
+            $user->password = Hash::make($request->new_password);
+        }
 
-// Si mot de passe renseigné, on le prépare ici
-if ($request->filled('new_password')) {
-    $user->password = Hash::make($request->new_password);
-}
+        // Met à jour tous les autres champs
+        $user->fill($request->only(['nom', 'prenom', 'email', 'telephone', 'cin', 'adresse']));
 
-// Met à jour tous les autres champs
-$user->fill($validatedData);
+        // Sauvegarde tout en une seule fois
+        $user->save();
 
-// Sauvegarde tout en une seule fois
-$user->save();
+        // Recharger l'utilisateur pour avoir les nouvelles données
+        $user->fresh();
 
-  
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA MISE A JOUR DE SON PROPRE PROFIL PAR L'ADMIN
+        $logMessage = 'Le Super Admin ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . ') a modifié son propre profil. ';
 
-    return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
-}
+        $changes = [];
+        foreach (['nom', 'prenom', 'email', 'telephone', 'cin', 'adresse'] as $field) {
+            if ($oldData[$field] != $user->{$field}) {
+                $changes[] = $field . ": '" . ($oldData[$field] ?? 'null') . "' -> '" . ($user->{$field} ?? 'null') . "'";
+            }
+        }
+        if ($request->filled('new_password')) {
+            $changes[] = "Mot de passe: modifié";
+        }
 
+        if (!empty($changes)) {
+            $logMessage .= 'Changements: ' . implode(', ', $changes) . '.';
+        } else {
+            $logMessage .= 'Aucun changement significatif de données de profil.';
+        }
+
+        LogHelper::logAction(
+            'Modification de son propre profil (Super Admin)',
+            $logMessage,
+            $user->id // L'ID de l'utilisateur qui a effectué l'action
+        );
+
+        return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
+    }
+
+    public function show(User $admin) // Utilisez 'User' si tous vos utilisateurs sont dans la même table
+    {
+        // Assurez-vous que l'utilisateur est bien un administrateur/super admin, si nécessaire
+        if (!$admin->isAdministrateur()) { // Adapter si vous avez isSuperAdmin()
+            abort(404);
+        }
+        return view('admin.admins.show', compact('admin'));
+    }
 }

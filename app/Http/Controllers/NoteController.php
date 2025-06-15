@@ -8,10 +8,10 @@ use App\Notifications\NoteAdded;
 use App\Notifications\NoteUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\helper\LogHelper;
 
 class NoteController extends Controller
 {
-    
     // Liste des stagiaires avec résumé des notes
     public function listeStagiaires()
     {
@@ -28,11 +28,9 @@ class NoteController extends Controller
         $stagiaire = User::findOrFail($id);
         $user = Auth::user();
 
-        // Vérifie si l'utilisateur est le stagiaire concerné ou un de ses coéquipiers
         $isStagiaire = $user->id == $stagiaire->id;
         $isCoequipier = $stagiaire->getAllCoequipiers()->pluck('id')->contains($user->id);
 
-        //  laisser l'accès aux admins/superviseurs
         $isAdmin = $user->role->nom === 'Administrateur';
         $isSuperviseur = $user->role->nom === 'Superviseur';
 
@@ -56,6 +54,7 @@ class NoteController extends Controller
         ]);
 
         $user = Auth::user();
+        $stagiaireCible = User::find($request->stagiaire_id); // Le stagiaire original de la note
 
         // Note principale
         $note = Note::create([
@@ -65,13 +64,12 @@ class NoteController extends Controller
             'stagiaire_id' => $request->stagiaire_id,
             'donneur_id' => $user->id,
         ]);
-        // Notification principale
         $note->stagiaire->notify(new NoteAdded($note));
 
+        $coequipiersAffectes = []; // Pour le log
         // Propagation aux coéquipiers si demandé
         if ($request->filled('propager')) {
-            $stagiaire = User::find($request->stagiaire_id);
-            foreach ($stagiaire->getAllCoequipiers() as $coequipier) {
+            foreach ($stagiaireCible->getAllCoequipiers() as $coequipier) {
                 $copie = Note::create([
                     'valeur' => $request->valeur,
                     'visibilite' => $request->visibilite,
@@ -80,8 +78,24 @@ class NoteController extends Controller
                     'donneur_id' => $user->id,
                 ]);
                 $coequipier->notify(new NoteAdded($copie));
+                $coequipiersAffectes[] = $coequipier->prenom . ' ' . $coequipier->nom . ' (ID: ' . $coequipier->id . ')';
             }
         }
+
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR L'AJOUT
+        $donneurInfo = $user->role->nom . ' ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . ')';
+        $cibleInfo = $stagiaireCible->prenom . ' ' . $stagiaireCible->nom . ' (ID: ' . $stagiaireCible->id . ')';
+
+        $message = 'Le ' . $donneurInfo . ' a ajouté une note pour le stagiaire ' . $cibleInfo . '. Contenu: "' . Str::limit($request->valeur, 100) . '". Visibilité: ' . $request->visibilite . '.';
+        if (!empty($coequipiersAffectes)) {
+            $message .= ' Propagée aux coéquipiers: ' . implode(', ', $coequipiersAffectes) . '.';
+        }
+
+        LogHelper::logAction(
+            'Ajout de note',
+            $message,
+            Auth::id()
+        );
 
         return back()->with('success', 'Note ajoutée avec succès !');
     }
@@ -91,7 +105,6 @@ class NoteController extends Controller
     {
         $note = Note::findOrFail($id);
 
-        // Seul le donneur de la note peut modifier
         if (Auth::id() !== $note->donneur_id) {
             abort(403);
         }
@@ -103,7 +116,6 @@ class NoteController extends Controller
     {
         $note = Note::findOrFail($id);
 
-        // Seul le donneur de la note peut modifier
         if (Auth::id() !== $note->donneur_id) {
             abort(403);
         }
@@ -113,28 +125,65 @@ class NoteController extends Controller
             'visibilite' => 'required|in:all,donneur,donneur + stagiaire,superviseurs- stagiaire',
         ]);
 
+        // Capture les anciennes valeurs pour le log
+        $oldValeur = $note->valeur;
+        $oldVisibilite = $note->visibilite;
+
         // On recherche toutes les notes équivalentes (stagiaire + coéquipiers)
-        Note::where('donneur_id', $note->donneur_id)
-        ->where('date_note', $note->date_note)
-        ->where('valeur', $note->valeur)
-        ->where('visibilite', $note->visibilite)
-        ->update([
+        // en utilisant les critères de recherche basés sur la note originale
+        $notesToUpdate = Note::where('donneur_id', $note->donneur_id)
+            ->where('date_note', $note->date_note)
+            ->where('valeur', $note->valeur) // Ancienne valeur pour trouver les notes "groupées"
+            ->where('visibilite', $note->visibilite); // Ancienne visibilité
+
+        $notesUpdatedCollection = $notesToUpdate->get(); // Récupérer la collection avant la mise à jour pour les notifications et logs
+
+        $notesToUpdate->update([
             'valeur' => $request->valeur,
             'visibilite' => $request->visibilite,
         ]);
-        // Récupère toutes les notes concernées après update (pour notification)
-        $notes = Note::where('donneur_id', $note->donneur_id)
-            ->where('date_note', $note->date_note)
-            ->where('valeur', $request->valeur)
-            ->where('visibilite', $request->visibilite)
-            ->get();
 
         // Envoie une notification à chaque stagiaire concerné
-        foreach ($notes as $n) {
+        foreach ($notesUpdatedCollection as $n) {
+            // Mettre à jour l'instance $n pour qu'elle reflète les nouvelles valeurs avant de notifier
+            $n->valeur = $request->valeur;
+            $n->visibilite = $request->visibilite;
             $n->stagiaire->notify(new NoteUpdated($n));
         }
 
-    return redirect()->route('notes.fiche_stagiaire', $note->stagiaire_id)->with('success', 'Note modifiée chez le stagiaire et ses coéquipiers !');
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA MODIFICATION
+        $user = Auth::user();
+        $donneurInfo = $user->role->nom . ' ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . ')';
+        $cibleInfo = $note->stagiaire->prenom . ' ' . $note->stagiaire->nom . ' (ID: ' . $note->stagiaire->id . ')';
+
+        $changes = [];
+        if ($oldValeur !== $request->valeur) {
+            $changes[] = 'Valeur: "' . Str::limit($oldValeur, 50) . '" -> "' . Str::limit($request->valeur, 50) . '"';
+        }
+        if ($oldVisibilite !== $request->visibilite) {
+            $changes[] = 'Visibilité: "' . $oldVisibilite . '" -> "' . $request->visibilite . '"';
+        }
+
+        $affectedStagiaires = $notesUpdatedCollection->pluck('stagiaire.prenom', 'stagiaire.nom')->map(function($prenom, $nom){
+            return $prenom . ' ' . $nom;
+        })->unique()->implode(', ');
+
+
+        $message = 'Le ' . $donneurInfo . ' a modifié une note. Note originale pour le stagiaire ' . $cibleInfo . '. ';
+        if (!empty($changes)) {
+            $message .= 'Changements: ' . implode(', ', $changes) . '. ';
+        } else {
+            $message .= 'Aucun changement significatif détecté (peut-être seulement des détails internes). ';
+        }
+        $message .= 'Notes affectées pour les stagiaires: ' . $affectedStagiaires . '.';
+
+        LogHelper::logAction(
+            'Modification de note',
+            $message,
+            Auth::id()
+        );
+
+        return redirect()->route('notes.fiche_stagiaire', $note->stagiaire_id)->with('success', 'Note modifiée chez le stagiaire et ses coéquipiers !');
     }
 
     // Suppression d'une note
@@ -142,10 +191,15 @@ class NoteController extends Controller
     {
         $note = Note::findOrFail($id);
 
-        // Seul le donneur de la note peut supprimer
         if (Auth::id() !== $note->donneur_id) {
             abort(403);
         }
+
+        // Récupérer les informations pour le log avant la suppression
+        $donneurInfo = Auth::user()->role->nom . ' ' . Auth::user()->prenom . ' ' . Auth::user()->nom . ' (ID: ' . Auth::id() . ')';
+        $originalStagiaireInfo = $note->stagiaire->prenom . ' ' . $note->stagiaire->nom . ' (ID: ' . $note->stagiaire->id . ')';
+        $noteContenu = Str::limit($note->valeur, 100);
+        $noteVisibilite = $note->visibilite;
 
         // Récupérer tous les id des stagiaires concernés (stagiaire + coéquipiers)
         $stagiaire = $note->stagiaire;
@@ -153,11 +207,24 @@ class NoteController extends Controller
         $ids = $coequipiers->pluck('id')->toArray();
         $ids[] = $stagiaire->id;
 
+        // Pour le log, lister les stagiaires dont les notes vont être supprimées
+        $affectedStagiairesNames = User::whereIn('id', $ids)->get()->pluck('full_name')->implode(', ');
+
+
         // Supprime toutes les notes du groupe même si valeur/visibilité ont changé
         Note::where('donneur_id', $note->donneur_id)
             ->where('date_note', $note->date_note)
             ->whereIn('stagiaire_id', $ids)
             ->delete();
+
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA SUPPRESSION
+        $message = 'Le ' . $donneurInfo . ' a supprimé une note (contenu initial: "' . $noteContenu . '", visibilité initiale: "' . $noteVisibilite . '"). Note originale pour le stagiaire ' . $originalStagiaireInfo . '. Notes supprimées pour les stagiaires: ' . $affectedStagiairesNames . '.';
+
+        LogHelper::logAction(
+            'Suppression de note',
+            $message,
+            Auth::id()
+        );
 
         return redirect()->route('notes.fiche_stagiaire', $note->stagiaire_id)
             ->with('success', 'Note supprimée avec succès chez le stagiaire et ses coéquipiers !');

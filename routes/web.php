@@ -16,7 +16,7 @@ use App\Http\Controllers\FichierController;
 use App\Http\Controllers\NoteController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-
+use App\Http\Controllers\Admin\LogController; 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -259,6 +259,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/stagiaires/profiles', [StagiaireController::class, 'profiles'])->name('stagiaires.profiles');
     Route::put('/stagiaires/profiles/{id}', [StagiaireController::class, 'update'])->name('stagiaires.profiles.update');
 });
+
+// Le middleware 'can:isAdmin' vérifiera que l'utilisateur est un "Admin"
+    Route::middleware(['can:isAdmin'])->group(function () {
+        Route::get('/admin/logs', [LogController::class, 'index'])->name('admin.logs.index');
+        
+    });
 
 
 // Inclusion des routes d'authentification par défaut de Laravel Breeze/Jetstream
