@@ -8,6 +8,7 @@ use App\Models\Absence;
 use App\Models\EmailLog;
 use App\Models\Groupe;
 use App\Models\Reunion;
+use App\Services\AbsenceEmailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -95,53 +96,44 @@ class ReunionController extends Controller
         ]);
     }
 
-   public function cloturer(string $id)
+    public function cloturer(string $id)
 {
     $reunion = Reunion::with('absences.stagiaire')->findOrFail($id);
-    $reunion->status = true;//pour dire que la reunion est cloture 
+    $reunion->status = true; // Marquer la réunion comme clôturée
     $reunion->save();
 
-    $emailsSent = 0;
-    $emailErrors = [];
+    $emailService = new \App\Services\AbsenceEmailService();
 
     foreach ($reunion->absences as $absence) {
-        if ($absence->statut === 'Absent' && $absence->stagiaire->isActive()) {
-            try {
-                Mail::to($absence->stagiaire->email)
-                    ->send(new AbsenceNotificationMail($absence));
+        $stagiaire = $absence->stagiaire;
+        if ($absence->statut !== 'Absent' || !$stagiaire || !$stagiaire->isActive()) continue;
 
-                EmailLog::create([
-                    'to_email' => $absence->stagiaire->email,
-                    'subject' => 'Notification d\'absence',
-                    'body' => view('emails.absence_notification', ['absence' => $absence])->render(),
-                    'status' => 'sent',
-                    'absence_id' => $absence->id,
-                ]);
+        // Appel d'une méthode qui retourne un entier (à adapter selon ta logique)
+        $consecutive = $this->countConsecutiveAbsences($stagiaire->id);
 
-                $emailsSent++;
-            } catch (\Exception $e) {
-                EmailLog::create([
-                    'to_email' => $absence->stagiaire->email,
-                    'subject' => 'Notification d\'absence',
-                    'body' => view('emails.absence_notification', ['absence' => $absence])->render(),
-                    'status' => 'failed',
-                    'error_message' => $e->getMessage(),
-                    'absence_id' => $absence->id,
-                ]);
+        $emailService->sendAbsenceEmail($stagiaire, $reunion, $consecutive);
+    }
 
-                $emailErrors[] = $absence->stagiaire->email;
-            }
+    return back()->with('success', 'Réunion clôturée et emails envoyés si nécessaire.');
+}
+
+/**
+ * Retourne le nombre d'absences consécutives pour un stagiaire (à placer dans ce controller)
+ */
+protected function countConsecutiveAbsences($stagiaire_id)
+{
+    $absences = \App\Models\Absence::where('stagiaire_id', $stagiaire_id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    $consecutive = 0;
+    foreach ($absences as $absence) {
+        if ($absence->statut === 'Absent') {
+            $consecutive++;
+        } else {
+            break;
         }
     }
-
-    $message = "Réunion clôturée avec succès. ";
-    if ($emailsSent > 0) {
-        $message .= "$emailsSent email(s) envoyé(s) aux absents.";
-    }
-    if (count($emailErrors) > 0) {
-        $message .= " Échec d'envoi pour " . count($emailErrors) . " email(s).";
-    }
-
-    return back()->with('success', $message);
+    return $consecutive;
 }
 }

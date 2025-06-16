@@ -60,7 +60,7 @@
                                 <td>{{ $reunion->groupe->nom }}</td>
                                 <td>{{ $reunion->date->format('d/m/Y') }}</td>
                                 <td>{{ $reunion->heure_debut }} - {{ $reunion->heure_fin }}</td>
-                                <td>{{ $reunion->note ?? '-' }}</td>
+                                <td>{{ $reunion->note ?? 'aucune note donné' }}</td>
                                 <td>
                                     @if($reunion->status)
                                         <span class="badge bg-success">Clôturée</span>

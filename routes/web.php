@@ -13,6 +13,8 @@ use App\Http\Controllers\GroupeController;
 use App\Http\Controllers\SujetController;
 use App\Http\Controllers\DemandeCoequipierController;
 use App\Http\Controllers\EmailLogController;
+use App\Http\Controllers\EmailSettingsController;
+use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\FichierController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ReunionController;
@@ -187,16 +189,29 @@ Route::middleware(['auth'])->group(function () {
     });
 
     //gestion des absences et reunions gere pour le superviseur 
-   Route::middleware(['auth','role:Superviseur'])->group(function(){
+   Route::middleware(['auth','role:Administrateur,Superviseur'])->group(function(){
     Route::get('/reunions', [ReunionController::class, 'index'])->name('reunions.index');
     Route::post('/reunions', [ReunionController::class, 'store'])->name('reunions.store');
     Route::get('/reunions/{id}', [ReunionController::class, 'show'])->name('reunions.show');
     Route::post('/reunions/{id}/cloture', [ReunionController::class, 'cloturer'])->name('reunions.cloture');
     Route::post('/reunions/{reunionId}/presence/{stagiaireId}', [ReunionController::class, 'updatePresence'])->name('reunions.updatePresence');
+    Route::get('/reunion/consecutive-absences/{stagiaire_id}', [ReunionController::class, 'getConsecutiveAbsences']);
  
 });
-    //gestion des groupes 
+    //gestion des groupes pour la reunion et absence 
     Route::get('/groupes/{id}/stagiaires', [GroupeController::class, 'getStagiaires'])->name('groupes.stagiaires');
+
+    //Gestion des emails en relation avec la reunion 
+    Route::middleware(['auth','role:Administrateur'])->name('admin.')->group(function(){
+        Route::get('/admin/email-settings', [EmailSettingsController::class, 'index'])->name('email-settings.index');
+        Route::post('/admin/email-settings/update', [EmailSettingsController::class, 'update'])->name('email-settings.update');
+
+        Route::get('/admin/email-templates', [EmailTemplateController::class, 'index'])->name('email_templates.index');
+        Route::post('/admin/email-templates', [EmailTemplateController::class, 'store'])->name('email_templates.store');
+        Route::post('/admin/email-templates/{id}', [EmailTemplateController::class, 'update'])->name('email_templates.update');
+    });
+
+
 
 
    

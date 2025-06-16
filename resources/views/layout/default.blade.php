@@ -2,6 +2,7 @@
 <html lang="{{ app()->getLocale() }}"{{ (!empty($htmlAttribute)) ? $htmlAttribute : '' }}>
 <head>
     @include('partial.head')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="{{ (!empty($bodyClass)) ? $bodyClass : '' }}">
     <!--pour la notification -->
