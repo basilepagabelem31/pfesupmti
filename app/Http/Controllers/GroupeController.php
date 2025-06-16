@@ -9,6 +9,15 @@ use Illuminate\Support\Str; // Pour la génération du code
 
 class GroupeController extends Controller
 {
+
+    //recuperer les stagiaires lie a un groupe 
+     public function getStagiaires($id)
+    {
+        $groupe = Groupe::findOrFail($id);
+        $stagiaires = $groupe->stagiaires;
+
+        return response()->json($stagiaires);
+    }
     /**
      * Display a listing of the resource.
      */
