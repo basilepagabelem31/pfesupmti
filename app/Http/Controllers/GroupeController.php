@@ -10,13 +10,16 @@ use Illuminate\Support\Str; // Pour la génération du code
 class GroupeController extends Controller
 {
 
-    //recuperer les stagiaires lie a un groupe 
-     public function getStagiaires($id)
+    //recuperer les stagiaires actif dans le groupe  
+    public function stagiairesActifs($groupeId)
     {
-        $groupe = Groupe::findOrFail($id);
-        $stagiaires = $groupe->stagiaires;
-
-        return response()->json($stagiaires);
+        $stagiaires = Groupe::findOrFail($groupeId)
+            ->stagiaires()
+            ->whereHas('statut', function($q) {
+                $q->where('nom', 'Actif');
+            })
+            ->get();
+            return response()->json($stagiaires);
     }
     /**
      * Display a listing of the resource.

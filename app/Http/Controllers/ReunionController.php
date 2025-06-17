@@ -25,7 +25,7 @@ class ReunionController extends Controller
             $query->whereDate('date', $date);
         }
 
-        $reunions = $query->get();
+        $reunions = $query->paginate(10);
         $groupes = Groupe::all();
 
         return view('reunions.index', compact('reunions', 'groupes', 'date'));
@@ -74,15 +74,24 @@ class ReunionController extends Controller
 
     public function updatePresence(Request $request, $reunionId, $stagiaireId)
     {
+        // On récupère l'absence existante si elle existe
+        $absence = Absence::where('reunion_id', $reunionId)
+            ->where('stagiaire_id', $stagiaireId)
+            ->first();
+
+        // On prépare les valeurs à mettre à jour
+        $newStatut = $request->input('statut', $absence ? $absence->statut : null);
+        $newNote = $request->input('note', $absence ? $absence->note : null);
+
         $absence = Absence::updateOrCreate(
             [
                 'reunion_id' => $reunionId,
                 'stagiaire_id' => $stagiaireId,
             ],
             [
-                'statut' => $request->input('statut'),
-                'note' => $request->input('note'),
-                'valide_par' => Auth::user()->id,//par defaut le superviseur 
+                'statut' => $newStatut,
+                'note' => $newNote,
+                'valide_par' => Auth::user()->id, // par defaut le superviseur 
             ]
         );
 
@@ -106,11 +115,21 @@ class ReunionController extends Controller
 
     foreach ($reunion->absences as $absence) {
         $stagiaire = $absence->stagiaire;
+        // On ne traite que les stagiaires actifs et absents à cette réunion
         if ($absence->statut !== 'Absent' || !$stagiaire || !$stagiaire->isActive()) continue;
 
         // Appel d'une méthode qui retourne un entier (à adapter selon ta logique)
         $consecutive = $this->countConsecutiveAbsences($stagiaire->id);
 
+        // Cas d'abandon (3 absences consécutives ou plus, et pas déjà "abandonné")
+           if ($consecutive >= 3 && $stagiaire->statut_id != 2) {
+                $stagiaire->statut_id = 2; // statut "abandonné"
+                $stagiaire->save();
+                $emailService->sendAbandonEmail($stagiaire, $reunion);
+                continue; // PAS d'email d'absence_triple !
+            }
+
+         // Sinon, email d'absence classique (simple ou double uniquement)
         $emailService->sendAbsenceEmail($stagiaire, $reunion, $consecutive);
     }
 
@@ -122,7 +141,7 @@ class ReunionController extends Controller
  */
 protected function countConsecutiveAbsences($stagiaire_id)
 {
-    $absences = \App\Models\Absence::where('stagiaire_id', $stagiaire_id)
+    $absences = Absence::where('stagiaire_id', $stagiaire_id)
         ->orderBy('created_at', 'desc')
         ->get();
 

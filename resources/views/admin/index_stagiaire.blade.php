@@ -140,7 +140,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->universite }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->faculte }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->titre_formation }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->groupe?->nom }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->groupe ? $stagiaire->groupe->nom : 'Non-defini'}}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $stagiaire->promotion?->titre }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">
                                 @forelse($stagiaire->sujets as $sujet)

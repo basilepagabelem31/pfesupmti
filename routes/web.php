@@ -206,7 +206,7 @@ Route::middleware(['auth'])->group(function () {
  
 });
     //gestion des groupes pour la reunion et absence 
-    Route::get('/groupes/{id}/stagiaires', [GroupeController::class, 'getStagiaires'])->name('groupes.stagiaires');
+   Route::get('/groupes/{groupe}/stagiaires', [GroupeController::class, 'stagiairesActifs'])->name('groupes.stagiaires');
 
     //Gestion des emails en relation avec la reunion 
     Route::middleware(['auth','role:Administrateur'])->name('admin.')->group(function(){
@@ -215,7 +215,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/admin/email-templates', [EmailTemplateController::class, 'index'])->name('email_templates.index');
         Route::post('/admin/email-templates', [EmailTemplateController::class, 'store'])->name('email_templates.store');
-        Route::post('/admin/email-templates/{id}', [EmailTemplateController::class, 'update'])->name('email_templates.update');
+        Route::put('/admin/email-templates/{id}', [EmailTemplateController::class, 'update'])->name('email_templates.update');
     });
 
 

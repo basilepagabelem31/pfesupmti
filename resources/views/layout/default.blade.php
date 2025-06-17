@@ -3,6 +3,7 @@
 <head>
     @include('partial.head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
 </head>
 <body class="{{ (!empty($bodyClass)) ? $bodyClass : '' }}">
     <!--pour la notification -->
@@ -58,6 +59,7 @@
     @include('partial.scroll-top-btn')
     @include('partial.theme-panel')
     @include('partial.scripts')
+   
 </body>
 @yield('my_js')
 
