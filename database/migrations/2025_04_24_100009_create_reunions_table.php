@@ -17,7 +17,6 @@ return new class extends Migration
             $table ->time("heure_debut");
             $table->time("heure_fin");
             $table->boolean("status")->default(false);
-           
             $table -> foreignId("note")->constrained("notes")->onDelete("cascade");
             $table -> foreignId("groupe_id")->constrained("groupes")->onDelete("cascade");
 

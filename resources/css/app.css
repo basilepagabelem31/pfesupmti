@@ -9,3 +9,5 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import 'select2/dist/css/select2.css';

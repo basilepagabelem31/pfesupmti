@@ -11,7 +11,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         {{-- Laissez ce lien Font Awesome CDN si vous préférez ne pas l'importer via Vite dans app.css --}}
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -19,7 +19,35 @@
         {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> --}}
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+        {{-- SECTION DE NOTIFICATION BANNIÈRE --}}
+        @if(Auth::check() && Auth::user()->unreadNotifications->count())
+            {{-- Utilisation des mêmes classes Tailwind pour le positionnement et le style --}}
+            <div class="fixed top-0 left-0 w-full z-50 bg-blue-100 text-blue-800 p-4 shadow-lg text-center animate-slide-down border-b border-blue-300" id="notification-alert">
+                <h5 class="font-bold text-lg mb-2">Notifications :</h5>
+                <ul class="list-none p-0 m-0 space-y-2">
+                    @foreach(Auth::user()->unreadNotifications as $notification)
+                        <li class="flex items-center justify-center text-base">
+                            @if(isset($notification->data['type']) && $notification->data['type'] === 'ajout')
+                                <span class="bg-green-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Ajout</span>
+                            @elseif(isset($notification->data['type']) && $notification->data['type'] === 'modification')
+                                <span class="bg-yellow-500 text-gray-900 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Modification</span>
+                            @endif
+                            {{ $notification->data['message'] }}
+                            <form action="{{ route('notifications.markAsRead', $notification->id) }}" method="POST" class="inline ml-3">
+                                @csrf
+                                <button type="submit" class="text-blue-700 hover:text-blue-900 font-semibold text-sm px-3 py-1 rounded-md bg-blue-200 hover:bg-blue-300 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Voir
+                                </button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        {{-- FIN DE LA SECTION DE NOTIFICATION BANNIÈRE --}}
+
+        {{-- Ajout de la classe mt-XX au div principal pour pousser le contenu vers le bas --}}
+        <div class="min-h-screen bg-gray-100 {{ Auth::check() && Auth::user()->unreadNotifications->count() ? 'mt-32 sm:mt-24 md:mt-20 lg:mt-16' : '' }}">
             @include('layouts.navigation')
 
             @isset($header)
@@ -39,5 +67,21 @@
         {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
 
         @stack('scripts')
+         {{-- Add a specific style block for the notification animation (copied from default layout) --}}
+        <style>
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            .animate-slide-down {
+                animation: slideDown 0.5s ease-out forwards;
+            }
+        </style>
     </body>
 </html>

@@ -15,9 +15,7 @@ class Groupe extends Model
         'code',
         'nom',
         'description',
-        'jour',          // Le champ 'jour' de votre migration
-        'heure_debut',   // Le champ 'heure_debut' de votre migration
-        'heure_fin',     // Le champ 'heure_fin' de votre migration
+            // Le champ 'heure_fin' de votre migration
     ];
 
     /**

@@ -13,24 +13,33 @@
     <div class="brand">
         <div class="desktop-toggler">
             <button type="button" class="menu-toggler" @if (empty($appSidebarHide))data-toggle="sidebar-minify"@endif>
-                <span class="bar"></span>
-                <span class="bar"></span>
+                <!-- <span class="bar"></span>
+                <span class="bar"></span> -->
             </button>
         </div>
 
-        <a href="/" class="brand-logo">
-            <img src="/assets/img/logo.png" class="invert-dark" alt="" height="20" />
-        </a>
+        <a href="/" class="group block text-center py-4 px-2 no-underline">
+    <h1 class="text-xl sm:text-xl lg:text-xl font-extrabold text-gray-900 leading-tight tracking-tight
+               inline-block bg-clip-text text-transparent
+               bg-gradient-to-r from-blue-600 to-teal-500
+               group-hover:from-teal-500 group-hover:to-blue-600 transition-all duration-300 ease-in-out
+               shadow-text-subtle">
+        Gestionnaire <span class="text-blue-700 group-hover:text-teal-600 transition-colors duration-300 ease-in-out">Stagiaires</span>
+    </h1>
+    <!-- Effet de texte subtil (peut nécessiter un style CSS personnalisé si Tailwind ne gère pas 'text-shadow' directement) -->
+    <style>
+        .shadow-text-subtle {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</a>
     </div>
     <!-- END brand -->
 
     <!-- BEGIN menu -->
     <div class="menu">
         <form class="menu-search" method="POST" name="header_search_form">
-            <div class="menu-search-icon"><i class="fa fa-search"></i></div>
-            <div class="menu-search-input">
-                <input type="text" class="form-control" placeholder="Search menu..." />
-            </div>
+           
         </form>
 
         {{-- Section des Notifications (pour tous les utilisateurs) --}}
@@ -124,29 +133,42 @@
             <a href="#" data-bs-toggle="dropdown" data-display="static" class="menu-link">
                 <div class="menu-img online">
                     {{-- Assurez-vous que l'image de l'utilisateur est accessible ou utilisez une icône par défaut --}}
-                    <img src="/assets/img/user/user.jpg" alt="User Image" class="ms-100 mh-100 rounded-circle" />
+                    <img src="/assets/img/user/user.png" alt="User Image" class="ms-100 mh-100 rounded-circle" />
                 </div>
                 <div class="menu-text">@if(Auth::check()){{ Auth::user()->email }}@else Guest @endif</div> {{-- Affiche l'email de l'utilisateur connecté --}}
             </a>
             <div class="dropdown-menu dropdown-menu-end me-lg-3">
-                @if(Auth::check())
-                    <a class="dropdown-item d-flex align-items-center" href="/profile">Edit Profile <i class="fa fa-user-circle fa-fw ms-auto text-body text-opacity-50"></i></a>
-                    <a class="dropdown-item d-flex align-items-center" href="/email/inbox">Inbox <i class="fa fa-envelope fa-fw ms-auto text-body text-opacity-50"></i></a>
-                    <a class="dropdown-item d-flex align-items-center" href="/calendar">Calendar <i class="fa fa-calendar-alt fa-fw ms-auto text-body text-opacity-50"></i></a>
-                    <a class="dropdown-item d-flex align-items-center" href="/settings">Setting <i class="fa fa-wrench fa-fw ms-auto text-body text-opacity-50"></i></a>
-                    <div class="dropdown-divider"></div>
-                    
-                    {{-- Bouton de Déconnexion sécurisé --}}
-                    <a class="dropdown-item d-flex align-items-center" href="{{ route('logout') }}" 
-                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        Déconnexion <i class="fa fa-sign-out-alt fa-fw ms-auto text-body text-opacity-50"></i>
-                    </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                        @csrf
-                    </form>
-                @else
-                    <a class="dropdown-item d-flex align-items-center" href="{{ route('login') }}">Connexion <i class="fa fa-sign-in-alt fa-fw ms-auto text-body text-opacity-50"></i></a>
-                @endif
+
+               @auth
+    {{-- --- Menu pour le Super Administrateur --- --}}
+    @if (Auth::user()->isAdministrateur())
+        <a class="dropdown-item d-flex align-items-center" href="{{ route('admin.profile') }}">
+            Profile <i class="fa fa-user-circle fa-fw ms-auto text-body text-opacity-50"></i>
+        </a>
+    @elseif (Auth::user()->isSuperviseur())
+        <a class="dropdown-item d-flex align-items-center" href="{{ route('superviseur.profile') }}">
+            Profile <i class="fa fa-user-circle fa-fw ms-auto text-body text-opacity-50"></i>
+        </a>
+    @elseif (Auth::user()->isStagiaire())
+        <a class="dropdown-item d-flex align-items-center" href="{{ route('stagiaires.profiles') }}">
+            Profile <i class="fa fa-user-circle fa-fw ms-auto text-body text-opacity-50"></i>
+        </a>
+    @endif
+                 <div class="dropdown-divider"></div>
+
+    {{-- Déconnexion --}}
+    <a class="dropdown-item d-flex align-items-center" href="{{ route('logout') }}" 
+       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        Déconnexion <i class="fa fa-sign-out-alt fa-fw ms-auto text-body text-opacity-50"></i>
+    </a>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+@else
+    <a class="dropdown-item d-flex align-items-center" href="{{ route('login') }}">
+        Connexion <i class="fa fa-sign-in-alt fa-fw ms-auto text-body text-opacity-50"></i>
+    </a>
+@endauth
             </div>
         </div>
     </div>

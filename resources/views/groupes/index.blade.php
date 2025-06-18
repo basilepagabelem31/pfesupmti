@@ -53,9 +53,6 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-teal-800 uppercase tracking-wider">Code</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-teal-800 uppercase tracking-wider">Nom</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-teal-800 uppercase tracking-wider">Description</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-teal-800 uppercase tracking-wider">Jour</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-teal-800 uppercase tracking-wider">Heure Début</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-teal-800 uppercase tracking-wider">Heure Fin</th>
                             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-teal-800 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -65,10 +62,6 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $groupe->code }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $groupe->nom }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $groupe->description }}</td>
-                                {{-- Afficher le jour de la semaine en français --}}
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ \Carbon\Carbon::parse($groupe->jour)->isoFormat('dddd') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ \Carbon\Carbon::parse($groupe->heure_debut)->format('H:i') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ \Carbon\Carbon::parse($groupe->heure_fin)->format('H:i') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex items-center justify-center space-x-2">
                                         <button type="button" class="px-3 py-1.5 rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out"
@@ -77,9 +70,7 @@
                                                 data-code="{{ $groupe->code }}"
                                                 data-nom="{{ $groupe->nom }}"
                                                 data-description="{{ $groupe->description }}"
-                                                data-jour="{{ $groupe->jour }}" {{-- Passe la date au format YYYY-MM-DD --}}
-                                                data-heure_debut="{{ \Carbon\Carbon::parse($groupe->heure_debut)->format('H:i') }}"
-                                                data-heure_fin="{{ \Carbon\Carbon::parse($groupe->heure_fin)->format('H:i') }}">
+                                                >
                                             <i class="fas fa-edit"></i> Modifier
                                         </button>
 
@@ -132,30 +123,9 @@
                             <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div>
-                        <label for="create_jour" class="block text-sm font-medium text-gray-700 mb-1">Jour</label>
-                        <input type="date" id="create_jour" name="jour" value="{{ old('jour') }}" required
-                               class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        @error('jour')
-                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="create_heure_debut" class="block text-sm font-medium text-gray-700 mb-1">Heure de début</label>
-                        <input type="time" id="create_heure_debut" name="heure_debut" value="{{ old('heure_debut') }}" required
-                               class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        @error('heure_debut')
-                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="create_heure_fin" class="block text-sm font-medium text-gray-700 mb-1">Heure de fin</label>
-                        <input type="time" id="create_heure_fin" name="heure_fin" value="{{ old('heure_fin') }}" required
-                               class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        @error('heure_fin')
-                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+                   
+                  
+                 
                     <div class="flex justify-end space-x-4 mt-8">
                         <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="py-3 px-4 rounded-lg text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">Ajouter</button>
@@ -200,30 +170,9 @@
                             <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div>
-                        <label for="edit_jour" class="block text-sm font-medium text-gray-700 mb-1">Jour</label>
-                        <input type="date" id="edit_jour" name="jour" required
-                               class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
-                        @error('jour')
-                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="edit_heure_debut" class="block text-sm font-medium text-gray-700 mb-1">Heure de début</label>
-                        <input type="time" id="edit_heure_debut" name="heure_debut" required
-                               class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
-                        @error('heure_debut')
-                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="edit_heure_fin" class="block text-sm font-medium text-gray-700 mb-1">Heure de fin</label>
-                        <input type="time" id="edit_heure_fin" name="heure_fin" required
-                               class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
-                        @error('heure_fin')
-                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+                  
+                 
+                  
                     <div class="flex justify-end space-x-4 mt-8">
                         <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="py-3 px-4 rounded-lg text-lg font-semibold text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out">Modifier</button>
@@ -236,8 +185,7 @@
 @endsection
 
 @section('my_js')
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -250,9 +198,7 @@
                 var code = button.getAttribute('data-code');
                 var nom = button.getAttribute('data-nom');
                 var description = button.getAttribute('data-description');
-                var jour = button.getAttribute('data-jour'); // Ceci sera une date au format YYYY-MM-DD
-                var heureDebut = button.getAttribute('data-heure_debut');
-                var heureFin = button.getAttribute('data-heure_fin');
+       
 
                 var modalTitle = editGroupeModalElement.querySelector('.modal-title');
                 var modalForm = editGroupeModalElement.querySelector('form');
@@ -268,9 +214,7 @@
                 editGroupeModalElement.querySelector('#edit_code').value = code;
                 editGroupeModalElement.querySelector('#edit_nom').value = nom;
                 editGroupeModalElement.querySelector('#edit_description').value = description;
-                editGroupeModalElement.querySelector('#edit_jour').value = jour; // Affecte directement la date YYYY-MM-DD à l'input type="date"
-                editGroupeModalElement.querySelector('#edit_heure_debut').value = heureDebut;
-                editGroupeModalElement.querySelector('#edit_heure_fin').value = heureFin;
+  
             });
         }
 
@@ -282,7 +226,7 @@
 
             // Déterminer quelle modale était censée être ouverte (simple heuristique)
             // Si des erreurs existent pour des champs de la modale de création
-            @if ($errors->has('nom') || $errors->has('description') || $errors->has('jour') || $errors->has('heure_debut') || $errors->has('heure_fin'))
+            @if ($errors->has('nom') || $errors->has('description'))
                 createModalErrors = true;
             @endif
 

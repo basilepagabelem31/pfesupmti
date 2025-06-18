@@ -172,7 +172,7 @@ class StagiairesImport implements ToModel, WithHeadingRow, WithValidation, Skips
             'nom'         => ['required', 'string', 'max:255'],
             'prenom'      => ['required', 'string', 'max:255'],
             'telephone'   => ['required', 'string', 'max:255'], // Ajoutez vos validations
-            'code_groupe' => ['required', 'string', 'exists:groupes,code'], // Vérifie si le code_groupe existe
+            'code_groupe' => ['nullable', 'string', 'exists:groupes,code'], // Vérifie si le code_groupe existe
             'code_pays'   => ['nullable', 'string', 'exists:pays,code'], // Optionnel, mais doit exister si présent
             'code_ville'  => [
                 'nullable',

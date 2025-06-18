@@ -1,4 +1,4 @@
-@php
+<?php
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Str; // Pour Str::startsWith
 
@@ -34,7 +34,7 @@
         }
         return $html;
     };
-@endphp
+?>
 
 <!-- BEGIN #sidebar -->
 <div id="sidebar" class="app-sidebar">
@@ -49,7 +49,6 @@
     <div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
         <div class="menu">
 
-            <div class="menu-header">Navigation</div>
 
             <!-- --- Dashboard commun (redirige en fonction du rôle) --- -->
             
@@ -144,7 +143,7 @@
                         </a>
                     </div>
 
-                    <div class="menu-item {{ (Str::startsWith($currentUrl, ['pays', 'villes'])) ? 'active' : '' }} has-sub">
+                    <!-- <div class="menu-item {{ (Str::startsWith($currentUrl, ['pays', 'villes'])) ? 'active' : '' }} has-sub">
                         <a href="#" class="menu-link">
                             <span class="menu-icon"><i class="fas fa-globe-americas"></i></span>
                             <span class="menu-text">Gestion Géographique</span>
@@ -162,7 +161,7 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     {{-- Section pour Réunions et Absences (nécessite des routes définies) --}}
                     <div class="menu-item {{ (Str::startsWith($currentUrl, ['reunions', 'absences'])) ? 'active' : '' }} has-sub">
@@ -357,10 +356,10 @@
             <div class="menu-item mt-4"> {{-- Ajoute une petite marge au-dessus --}}
                 <form method="POST" action="{{ route('logout') }}" class="menu-link">
                     @csrf
-                    <button type="submit" class="menu-link w-full text-left p-0 border-0 bg-transparent">
+                    <!-- <button type="submit" class="menu-link w-full text-left p-0 border-0 bg-transparent">
                         <span class="menu-icon"><i class="fas fa-sign-out-alt"></i></span>
                         <span class="menu-text">Déconnexion</span>
-                    </button>
+                    </button> -->
                 </form>
             </div>
             @endif

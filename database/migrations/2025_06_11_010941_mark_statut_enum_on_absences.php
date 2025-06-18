@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('groupes', function (Blueprint $table) {
-            $table->id();
-            $table->string("code")->unique(); // Code unique comme demandé
-            $table->string("nom");
-            $table->text("description");    
-            $table->timestamps();
+        Schema::table('absences', function (Blueprint $table) {
+             $table->enum('statut', ['Présent','Assisté','Absent'])
+              ->default('Absent')
+              ->change();
         });
     }
 
@@ -25,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('groupes');
+        Schema::table('absences', function (Blueprint $table) {
+             $table->string('statut')->change();
+        });
     }
 };

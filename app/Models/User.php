@@ -7,15 +7,27 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasMany; // Reste si HasMany est utilisé ailleurs
 
-// Ligne suivante non nécessaire pour le modèle, car Auth est un Facade,
-// mais inoffensive si présente. Souvent utilisée dans les contrôleurs/vues.
-// use Illuminate\Support\Facades\Auth;
+// Assurez-vous que tous ces modèles sont bien importés !
+use App\Models\Pays;
+use App\Models\Ville;
+use App\Models\Groupe;
+use App\Models\Role;
+use App\Models\EmailLog;
+use App\Models\Sujet;
+use App\Models\DemandeCoequipier;
+use App\Models\Fichier; // Ceci est crucial pour la relation fichiersPossedes
+use App\Models\Promotion;
+use App\Models\Note; // Ceci est crucial pour la relation notes
+use App\Models\Statut;
+use App\Models\Absence;
+
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
+    protected $table = 'users';
 
     protected static function booted()
     {
@@ -45,9 +57,7 @@ class User extends Authenticatable
     public function ville() { return $this->belongsTo(Ville::class); }
     public function groupe() { return $this->belongsTo(Groupe::class); }
     public function role() { return $this->belongsTo(Role::class, 'role_id'); }
-    public function statut() { return $this->belongsTo(Statut::class); }
     public function emailLog() { return $this->belongsTo(EmailLog::class); }
-    public function absences() { return $this->hasMany(Absence::class); }
     public function sujets() { return $this->belongsToMany(Sujet::class, 'sujet_user'); }
 
     /**
@@ -97,7 +107,7 @@ class User extends Authenticatable
         return $this->coequipiersAsStagiaire1->merge($this->coequipiersAsStagiaire2);
     }
 
-    // --- NOUVELLES RELATIONS POUR LES FICHIERS ---
+    // --- RELATIONS POUR LES FICHIERS ---
     /**
      * Relation : Un utilisateur peut posséder plusieurs fichiers (en tant que stagiaire propriétaire).
      */
@@ -114,7 +124,7 @@ class User extends Authenticatable
         return $this->hasMany(Fichier::class, 'id_superviseur_televerseur');
     }
 
-    // --- FIN DES NOUVELLES RELATIONS POUR LES FICHIERS ---
+    // --- FIN DES RELATIONS POUR LES FICHIERS ---
 
     // Méthodes pour vérifier le rôle de l'utilisateur
     public function hasRole($role)
@@ -122,18 +132,17 @@ class User extends Authenticatable
         return $this->role && $this->role->nom == $role;
     }
 
+    
     /**
      * Vérifie si l'utilisateur est un administrateur.
      * Renommée de isSuperAdmin() pour correspondre au rôle 'Administrateur'.
      */
-    public function isAdministrateur() // <--- NOUVEAU NOM DE LA MÉTHODE
+    public function isAdministrateur()
     {
-        return $this->hasRole('Administrateur'); // Le rôle dans la BDD est 'Administrateur'
+        return $this->hasRole('Administrateur');
     }
 
-
-
-   public function promotion()
+    public function promotion()
     {
         return $this->belongsTo(Promotion::class);
     }
@@ -148,14 +157,24 @@ class User extends Authenticatable
         return $this->hasRole('Stagiaire');
     }
 
-     public function notes()
+    public function notes()
     {
         return $this->hasMany(Note::class, 'stagiaire_id');
     }
 
-    public function fichiers()
-{
-    return $this->hasMany(Fichier::class, 'id_stagiaire');
-}
+    // GESTION DES REUNIONS ET ABSENCES
+    public function statut()
+    {
+        return $this->belongsTo(Statut::class, 'statut_id');
+    }
 
+    public function isActive(): bool
+    {
+        return $this->statut && $this->statut->nom === 'Actif';
+    }
+
+    public function absences()
+    {
+        return $this->hasMany(Absence::class, 'stagiaire_id');
+    }
 }

@@ -14,27 +14,23 @@ class StatutSeeder extends Seeder
      */
     public function run(): void
     {
-        //
-
         DB::table('statuts')->insert([
             [
-                "nom" => "Active",
-                "description"=>"Le statut est actif",
-                'created_at' => now(),
-                'updated_at' => now(),
+                'nom' => 'Actif',
+                'description' => 'Le stagiaire est actif et peut recevoir des notifications.'
             ],
             [
-                "nom" => "Desactive",
-                "description"=>"Le statut est désactivé",
-                'created_at' => now(),
-                'updated_at' => now(),
+                'nom' => 'Abandonné',
+                'description' => 'Le stagiaire a abandonné la formation.'
             ],
             [
-                "nom" => "Archive",
-                "description"=>"Le statut est archive",
-                'created_at' => now(),
-                'updated_at' => now(),
+                'nom' => 'Archivé',
+                'description' => 'Le stagiaire est archivé et inactif.'
             ],
+            [
+                'nom' => 'Terminé',
+                'description' => 'Le stagiaire a terminé la formation.'
+            ]
         ]);
     }
 }
