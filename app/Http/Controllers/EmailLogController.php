@@ -8,9 +8,8 @@ class EmailLogController extends Controller
 {
     public function index()
     {
-        // Récupérer les logs d'emails avec pagination
-        $emailLogs = EmailLog::with(['absence.stagiaire', 'absence.reunion'])->latest()->paginate(15);
-
-        return view('email_logs.index', compact('emailLogs'));
+        $logs=EmailLog::with('user','template')->orderBy('created_at','desc')->paginate('5');
+        
+        return view('admin.email_logs.index',compact('logs'));
     }
 }

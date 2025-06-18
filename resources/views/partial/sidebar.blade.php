@@ -101,6 +101,34 @@
     </div>
                     {{-- FIN des nouveaux boutons directs pour la gestion des utilisateurs --}}
 
+                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.email-settings.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('admin.email-settings.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-envelope-circle-check"></i></span>
+                            <span class="menu-text"> Gestion des Emails Settings</span>
+                        </a>
+                    </div>
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.email_templates.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('admin.email_templates.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-envelope"></i></span>
+                            <span class="menu-text">Gestion des Emails Templates</span>
+                        </a>
+                    </div>
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('reunions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('reunions.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-chalkboard"></i></span>
+                            <span class="menu-text">Gestion des Reunions</span>
+                        </a>
+                    </div>
+
+                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('notes.liste_stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('notes.liste_stagiaires') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-notes-medical"></i></span>
+                            <span class="menu-text">Gestion des Notes</span>
+                        </a>
+                    </div>
+
+
+
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('promotions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
                         <a href="{{ route('promotions.index') }}" class="menu-link">
                             <span class="menu-icon"><i class="fas fa-graduation-cap"></i></span>
@@ -241,6 +269,19 @@
                             <span class="menu-text">Gestion Stagiaires</span>
                         </a>
                     
+                    </div>
+
+                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('reunions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('reunions.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-chalkboard"></i></span>
+                            <span class="menu-text">Gestion des Reunions</span>
+                        </a>
+                    </div>
+                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('notes.liste_stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('notes.liste_stagiaires') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-notes-medical"></i></span>
+                            <span class="menu-text">Gestion des Notes</span>
+                        </a>
                     </div>
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('promotions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">

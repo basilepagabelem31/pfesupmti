@@ -1,9 +1,6 @@
-/* resources/js/app.js */
-
-// Importe les scripts de base de Laravel (ex: Axios pour les requêtes HTTP)
+// Importe les scripts de base de Laravel (par exemple : Bootstrap JS, Axios)
 import './bootstrap';
 
-// Importe toutes les fonctionnalités JavaScript de Bootstrap
 import * as bootstrap from 'bootstrap';
 
 import $ from 'jquery';

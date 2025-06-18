@@ -140,7 +140,7 @@ class StagiairesImport implements ToModel, WithHeadingRow, WithValidation, Skips
             }
 
             // 5. Statut par défaut (Actif)
-            $statutActif = Statut::where('nom', 'Active')->first();
+            $statutActif = Statut::where('nom', 'Actif')->first();
             if ($statutActif) {
                 $user->statut_id = $statutActif->id;
             } else {

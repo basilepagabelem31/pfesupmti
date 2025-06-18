@@ -13,8 +13,8 @@
     <div class="brand">
         <div class="desktop-toggler">
             <button type="button" class="menu-toggler" @if (empty($appSidebarHide))data-toggle="sidebar-minify"@endif>
-                <!-- <span class="bar"></span>
-                <span class="bar"></span> -->
+                <span class="bar"></span>
+                <span class="bar"></span>
             </button>
         </div>
 
