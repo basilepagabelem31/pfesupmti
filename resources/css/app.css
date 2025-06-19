@@ -9,4 +9,4 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tu peux ajouter ici tes propres styles personnalisés */
+@import 'select2/dist/css/select2.css';

@@ -29,6 +29,8 @@ class FichierController extends Controller
 
         $currentStagiaire = null;
         $currentTeleverseur = null;
+        $currentSearchQuery = $request->input('search_query', ''); // Initialise la requête de recherche
+
         $stagiairesFilterList = collect(); // Initialise pour la vue superviseur/admin
         $televerseursFilterList = collect(); // Initialise pour la vue superviseur/admin
 
@@ -42,29 +44,51 @@ class FichierController extends Controller
             $televerseursFilterList = User::whereHas('fichiersTeleverses', function($q) use ($user) {
                 $q->where('id_stagiaire', $user->id);
             })->orWhere('id', $user->id)->get();
-            // Le filtre "Téléversé par" ne sera pas affiché pour les stagiaires dans la vue.
-            // Cependant, la liste est passée pour la colonne "Téléversé par" du tableau.
+
+            // Applique le filtre de recherche textuel pour le stagiaire (recherche par nom du téléverseur)
+            if (!empty($currentSearchQuery)) {
+                $query->whereHas('televerseur', function ($subQuery) use ($currentSearchQuery) {
+                    $subQuery->where('prenom', 'like', '%' . $currentSearchQuery . '%')
+                             ->orWhere('nom', 'like', '%' . $currentSearchQuery . '%');
+                });
+            }
 
             $fichiers = $query->get();
 
             // Retourne la vue spécifique pour les stagiaires
-            return view('fichiers.index_stagiaire', compact('fichiers', 'sujets', 'currentStagiaire', 'televerseursFilterList'));
+            return view('fichiers.index_stagiaire', compact('fichiers', 'sujets', 'currentStagiaire', 'televerseursFilterList', 'currentSearchQuery'));
 
         } elseif ($user->isSuperviseur() || $user->isAdministrateur()) {
             // Superviseur/Admin peuvent voir tous les fichiers ou filtrer par stagiaire ou téléverseur
 
             // Peuple la liste déroulante des stagiaires pour le filtre
+            // Renommé 'nom' en 'prenom' pour le tri
             $stagiairesFilterList = User::whereHas('role', function ($q) {
                 $q->where('nom', 'Stagiaire');
-            })->get();
+            })->orderBy('prenom')->orderBy('nom')->get();
 
             // Peuple la liste déroulante des téléverseurs pour le filtre (tous les utilisateurs qui ont téléversé des fichiers)
-            $televerseursFilterList = User::whereHas('fichiersTeleverses')->get();
+            // Renommé 'nom' en 'prenom' pour le tri
+            $televerseursFilterList = User::whereHas('fichiersTeleverses')
+                                        ->orderBy('prenom')->orderBy('nom')->get();
 
+            // Applique le filtre de recherche textuel (nom/prénom du stagiaire ou du téléverseur)
+            if (!empty($currentSearchQuery)) {
+                $query->where(function ($q) use ($currentSearchQuery) {
+                    $q->whereHas('stagiaire', function ($subQuery) use ($currentSearchQuery) {
+                        $subQuery->where('prenom', 'like', '%' . $currentSearchQuery . '%')
+                                 ->orWhere('nom', 'like', '%' . $currentSearchQuery . '%');
+                    })->orWhereHas('televerseur', function ($subQuery) use ($currentSearchQuery) {
+                        $subQuery->where('prenom', 'like', '%' . $currentSearchQuery . '%')
+                                 ->orWhere('nom', 'like', '%' . $currentSearchQuery . '%');
+                    });
+                });
+            }
 
             // Applique le filtre par stagiaire si présent dans la requête
-            if ($request->filled('stagiaire')) {
-                $stagiaireId = $request->input('stagiaire');
+            // IMPORTANT : Changé 'stagiaire' à 'stagiaire_id' pour correspondre au nom du champ dans la vue
+            if ($request->filled('stagiaire_id')) {
+                $stagiaireId = $request->input('stagiaire_id');
                 $stagiaireFiltered = User::find($stagiaireId);
                 if ($stagiaireFiltered && $stagiaireFiltered->isStagiaire()) {
                     $query->where('id_stagiaire', $stagiaireFiltered->id);
@@ -85,7 +109,7 @@ class FichierController extends Controller
             $fichiers = $query->get();
 
             // Retourne la vue spécifique pour les superviseurs/administrateurs
-            return view('fichiers.index_superviseur', compact('fichiers', 'stagiairesFilterList', 'currentStagiaire', 'sujets', 'televerseursFilterList', 'currentTeleverseur'));
+            return view('fichiers.index_superviseur', compact('fichiers', 'stagiairesFilterList', 'currentStagiaire', 'sujets', 'televerseursFilterList', 'currentTeleverseur', 'currentSearchQuery'));
         }
 
         abort(403, 'Accès non autorisé.');

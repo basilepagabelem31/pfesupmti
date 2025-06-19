@@ -18,10 +18,10 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             StatutSeeder::class,
             UserSeeder::class ,
-            AdminUserSeeder::class,
-            GroupeSeeder::class,
-            StagiaireSeeder::class,
-            TestSeeder::class,
+            // AdminUserSeeder::class,
+            // GroupeSeeder::class,
+            // StagiaireSeeder::class,
+            // TestSeeder::class,
         ]);
     }
 }

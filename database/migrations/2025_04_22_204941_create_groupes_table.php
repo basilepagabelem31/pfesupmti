@@ -15,10 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string("code")->unique(); // Code unique comme demandé
             $table->string("nom");
-            $table->text("description");
-            $table->date("jour"); // Date du jour
-            $table->time("heure_debut"); // Heure de début
-            $table->time("heure_fin");   // Heure de fin
+            $table->text("description");    
             $table->timestamps();
         });
     }

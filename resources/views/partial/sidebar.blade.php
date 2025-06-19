@@ -1,4 +1,4 @@
-@php
+<?php
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Str; // Pour Str::startsWith
 
@@ -34,7 +34,7 @@
         }
         return $html;
     };
-@endphp
+?>
 
 <!-- BEGIN #sidebar -->
 <div id="sidebar" class="app-sidebar">
@@ -49,7 +49,6 @@
     <div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
         <div class="menu">
 
-            <div class="menu-header">Navigation</div>
 
             <!-- --- Dashboard commun (redirige en fonction du rôle) --- -->
             
@@ -93,6 +92,13 @@
                             <span class="menu-text">Rôles</span>
                         </a>
                     </div>
+                     {{--  Ajout du lien Profil --}}
+    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.profile'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+        <a href="{{ route('admin.profile') }}" class="menu-link">
+            <span class="menu-icon"><i class="fas fa-user-circle"></i></span> {{-- Icône Profil --}}
+            <span class="menu-text">Mon Profil</span>
+        </a>
+    </div>
                     {{-- FIN des nouveaux boutons directs pour la gestion des utilisateurs --}}
 
                      <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.email-settings.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
@@ -165,7 +171,7 @@
                         </a>
                     </div>
 
-                    <div class="menu-item {{ (Str::startsWith($currentUrl, ['pays', 'villes'])) ? 'active' : '' }} has-sub">
+                    <!-- <div class="menu-item {{ (Str::startsWith($currentUrl, ['pays', 'villes'])) ? 'active' : '' }} has-sub">
                         <a href="#" class="menu-link">
                             <span class="menu-icon"><i class="fas fa-globe-americas"></i></span>
                             <span class="menu-text">Gestion Géographique</span>
@@ -183,7 +189,7 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     {{-- Section pour Réunions et Absences (nécessite des routes définies) --}}
                     <div class="menu-item {{ (Str::startsWith($currentUrl, ['reunions', 'absences'])) ? 'active' : '' }} has-sub">
@@ -312,6 +318,12 @@
                             <span class="menu-text">Gestion de Coéquipiers</span>
                         </a>
                     </div>
+                   <div class="menu-item {{ ($currentUrl === trim(parse_url(route('superviseur.profile'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+    <a href="{{ route('superviseur.profile') }}" class="menu-link">
+        <span class="menu-icon"><i class="fas fa-user-circle"></i></span> {{-- Icône Profil --}}
+        <span class="menu-text">Mon Profil</span>
+    </a>
+</div>
 
                     {{-- Section pour Réunions et Absences (nécessite des routes définies) --}}
                     <div class="menu-item {{ (Str::startsWith($currentUrl, ['reunions', 'absences'])) ? 'active' : '' }} has-sub">
@@ -347,12 +359,13 @@
                         </a>
                     </div>
 
-                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('profile.edit'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('profile.edit') }}" class="menu-link">
-                            <span class="menu-icon"><i class="fas fa-user-circle"></i></span>
-                            <span class="menu-text">Mon Profil</span>
-                        </a>
-                    </div> 
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('stagiaires.profiles'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+    <a href="{{ route('stagiaires.profiles') }}" class="menu-link">
+        <span class="menu-icon"><i class="fas fa-user-circle"></i></span>
+        <span class="menu-text">Mon Profil</span>
+    </a>
+</div>
+
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('fichiers.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
                         <a href="{{ route('fichiers.index') }}" class="menu-link">
@@ -384,10 +397,10 @@
             <div class="menu-item mt-4"> {{-- Ajoute une petite marge au-dessus --}}
                 <form method="POST" action="{{ route('logout') }}" class="menu-link">
                     @csrf
-                    <button type="submit" class="menu-link w-full text-left p-0 border-0 bg-transparent">
+                    <!-- <button type="submit" class="menu-link w-full text-left p-0 border-0 bg-transparent">
                         <span class="menu-icon"><i class="fas fa-sign-out-alt"></i></span>
                         <span class="menu-text">Déconnexion</span>
-                    </button>
+                    </button> -->
                 </form>
             </div>
             @endif

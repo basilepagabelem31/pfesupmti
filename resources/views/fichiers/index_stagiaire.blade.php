@@ -50,8 +50,8 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Description</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Type</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Téléversé par</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider text-center">Modifiable</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider text-center">Supprimable</th>
+                                <!-- <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider text-center">Modifiable</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider text-center">Supprimable</th> -->
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Date</th>
                                 <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-indigo-800 uppercase tracking-wider">Actions</th>
                             </tr>
@@ -69,23 +69,23 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $fichier->televerseur->prenom }} {{ $fichier->televerseur->nom }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                             {{ $fichier->peut_modifier ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             {{ $fichier->peut_modifier ? 'Oui' : 'Non' }}
                                         </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    </td> -->
+                                    <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                             {{ $fichier->peut_supprimer ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             {{ $fichier->peut_supprimer ? 'Oui' : 'Non' }}
                                         </span>
-                                    </td>
+                                    </td> -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $fichier->created_at->format('d/m/Y H:i') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         <div class="flex items-center justify-center space-x-2">
                                             <a href="{{ route('fichiers.download', $fichier) }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                                                <i class="fas fa-download mr-1"></i> Télécharger
+                                                <i class="fas fa-download mr-1"></i> 
                                             </a>
                                             {{-- Seul le stagiaire propriétaire peut modifier si la permission est vraie --}}
                                             @if (Auth::user()->id === $fichier->id_stagiaire && $fichier->peut_modifier)
@@ -98,7 +98,7 @@
                                                 data-sujet_id="{{ $fichier->sujet_id }}"
                                                 data-peut_modifier="{{ $fichier->peut_modifier ? '1' : '0' }}"
                                                 data-peut_supprimer="{{ $fichier->peut_supprimer ? '1' : '0' }}">
-                                                <i class="fas fa-edit mr-1"></i> Modifier
+                                                <i class="fas fa-edit mr-1"></i> 
                                             </button>
                                             @endif
                                             {{-- Seul le stagiaire propriétaire peut supprimer si la permission est vraie --}}
@@ -107,7 +107,7 @@
                                                 data-bs-toggle="modal" data-bs-target="#deleteFileModal"
                                                 data-file-id="{{ $fichier->id }}"
                                                 data-file-name="{{ $fichier->nom_fichier }}">
-                                                <i class="fas fa-trash-alt mr-1"></i> Supprimer
+                                                <i class="fas fa-trash-alt mr-1"></i> 
                                             </button>
                                             @endif
                                         </div>
@@ -270,8 +270,7 @@
 @endsection
 
 @section('my_js')
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

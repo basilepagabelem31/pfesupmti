@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -106,6 +107,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/edit/{user}', [AdminController::class, 'edit'])->name('admin.edit');
         Route::put('/update/{user}', [AdminController::class, 'update'])->name('admin.update');
         Route::delete('/delete/{user}', [AdminController::class, 'delete'])->name('admin.delete');
+         Route::get('/stagiaires/{user}', [AdminController::class, 'showStagiaireDetails'])->name('admin.stagiaires.show');
+
     });
         // Promotions (déplacées ici pour être accessibles aux deux rôles)
         Route::get('/promotions', [PromotionController::class, 'index'])->name('promotions.index');
@@ -153,7 +156,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:Superviseur')->group(function () {
         Route::get('/superviseur/dashboard', [SuperviseurController::class, 'index'])->name('superviseur.dashboard');
         // Route pour la liste des stagiaires gérés par le superviseur, réutilisant AdminController::indexStagiaire
-        Route::get('/superviseur/stagiaires', [AdminController::class, 'indexStagiaire'])->name('superviseur.stagiaires.index');
+    Route::get('/superviseur/stagiaires', [AdminController::class, 'indexStagiaire'])->name('superviseur.stagiaires.index');
 
         // Les routes promotions, groupes, sujets, et stagiaires/import ont été déplacées
         // dans le groupe 'Administrateur,Superviseur' plus haut pour éviter la duplication.
@@ -196,19 +199,19 @@ Route::middleware(['auth'])->group(function () {
 });
 
     //gestion des absences et reunions gere pour le superviseur 
-   Route::middleware(['auth','role:Administrateur,Superviseur'])->group(function(){
+   Route::middleware(['auth','role:Superviseur'])->group(function(){
     Route::get('/reunions', [ReunionController::class, 'index'])->name('reunions.index');
     Route::post('/reunions', [ReunionController::class, 'store'])->name('reunions.store');
     Route::get('/reunions/{id}', [ReunionController::class, 'show'])->name('reunions.show');
     Route::post('/reunions/{id}/cloture', [ReunionController::class, 'cloturer'])->name('reunions.cloture');
     Route::post('/reunions/{reunionId}/presence/{stagiaireId}', [ReunionController::class, 'updatePresence'])->name('reunions.updatePresence');
-    Route::get('/reunion/consecutive-absences/{stagiaire_id}', [ReunionController::class, 'getConsecutiveAbsences']);
  
 });
-    //gestion des groupes pour la reunion et absence 
-   Route::get('/groupes/{groupe}/stagiaires', [GroupeController::class, 'stagiairesActifs'])->name('groupes.stagiaires');
+    //gestion des groupes 
+    Route::get('/groupes/{id}/stagiaires', [GroupeController::class, 'getStagiaires'])->name('groupes.stagiaires');
 
-    //Gestion des emails en relation avec la reunion 
+
+     //Gestion des emails en relation avec la reunion 
     Route::middleware(['auth','role:Administrateur'])->name('admin.')->group(function(){
         Route::get('/admin/email-settings', [EmailSettingsController::class, 'index'])->name('email-settings.index');
         Route::post('/admin/email-settings/update', [EmailSettingsController::class, 'update'])->name('email-settings.update');
@@ -217,11 +220,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/email-templates', [EmailTemplateController::class, 'store'])->name('email_templates.store');
         Route::put('/admin/email-templates/{id}', [EmailTemplateController::class, 'update'])->name('email_templates.update');
     });
-
-
-
-
-   
 
     
 
@@ -282,6 +280,23 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/helper', function () { return view('pages.helper'); });
 
 }); // FIN DU GROUPE PRINCIPAL middleware('auth')
+
+
+Route::middleware(['auth', 'role:Administrateur'])->group(function () {
+    Route::get('/admin/profile', [AdminController::class, 'profile'])->name('admin.profile');
+    Route::put('/admin/profile/{id}', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
+    
+});
+
+Route::middleware(['auth', 'role:Superviseur'])->group(function () {
+    Route::get('/superviseur/profile', [SuperviseurController::class, 'profile'])->name('superviseur.profile');
+    Route::put('/superviseur/profile/{id}', [SuperviseurController::class, 'updateProfile'])->name('superviseur.profile.update');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/stagiaires/profiles', [StagiaireController::class, 'profiles'])->name('stagiaires.profiles');
+    Route::put('/stagiaires/profiles/{id}', [StagiaireController::class, 'update'])->name('stagiaires.profiles.update');
+});
 
 
 // Inclusion des routes d'authentification par défaut de Laravel Breeze/Jetstream

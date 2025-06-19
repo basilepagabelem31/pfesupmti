@@ -84,7 +84,7 @@
                     <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">nom</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire)</span></li>
                     <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">prenom</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire)</span></li>
                     <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">telephone</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire)</span></li>
-                    <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">code_groupe</code> <span class="ml-2 text-red-500 text-xs">(Obligatoire)</span></li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> <code class="font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm font-semibold">code_groupe</code> <span class="ml-2 text-red-500 text-xs">(Optionnel)</span></li>
                 </ul>
                 <p class="text-gray-600 text-base mb-3 font-semibold">Exemple de ligne CSV :</p>
                 <pre class="bg-gray-100 p-5 rounded-xl text-gray-800 text-sm overflow-x-auto whitespace-pre-wrap break-words border border-gray-300 shadow-inner">
@@ -104,5 +104,6 @@ jean.dupont@example.com,AB12345,Dupont,Jean,0612345678,G001</pre>
     // Votre JavaScript ici
 </script>
 @endpush --}}
+
 @endsection
 

@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class AdminController extends Controller
 {
@@ -77,10 +79,11 @@ class AdminController extends Controller
 
         // Appliquer les filtres basés sur la requête GET
         if ($request->filled('nom')) {
-            $nom = $request->input('nom');
-            $query->where(function($q) use ($nom) {
-                $q->where('nom', 'like', '%' . $nom . '%')
-                  ->orWhere('prenom', 'like', '%' . $nom . '%');
+            $searchTerm = $request->input('nom');
+            $query->where(function(Builder $q) use ($searchTerm) { // Utiliser Builder pour les clauses de groupe
+                $q->where('nom', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('prenom', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('code', 'like', '%' . $searchTerm . '%'); // NOUVEAU : Inclure le champ 'code' dans la recherche
             });
         }
 
@@ -97,7 +100,7 @@ class AdminController extends Controller
         }
 
         // Exécutez la requête paginée (avec 10 résultats par page, ajustable)
-        $admins = $query->paginate(10);
+        $admins = $query->paginate(10); // Le nom de variable 'admins' peut être changé pour 'stagiaires' si plus approprié
 
         // Passer les données nécessaires pour les filtres et les modales aux vues
         $roles = Role::all();
@@ -146,7 +149,7 @@ class AdminController extends Controller
                 $rules['faculte'] = 'required|string|max:255';
                 $rules['titre_formation'] = 'required|string|max:255';
                 $rules['groupe_id'] = 'nullable|exists:groupes,id';
-                $rules['promotion_id'] = 'required|exists:promotions,id';
+                $rules['promotion_id'] = 'nullable|exists:promotions,id';
             }
 
             $validated = $request->validate($rules);
@@ -251,7 +254,7 @@ class AdminController extends Controller
                 $rules['universite'] = 'required|string|max:255';
                 $rules['faculte'] = 'required|string|max:255';
                 $rules['titre_formation'] = 'required|string|max:255';
-                $rules['groupe_id'] = 'nullable|exists:groupes,id';
+                $rules['groupe_id'] = 'required|exists:groupes,id';
                 $rules['promotion_id'] = 'required|exists:promotions,id';
                 $rules['sujet_ids'] = 'nullable|array';
                 $rules['sujet_ids.*'] = 'exists:sujets,id';
@@ -339,8 +342,100 @@ class AdminController extends Controller
         }
     }
 
+
+
+
+public function showStagiaireDetails(User $user)
+    {
+        // Assurez-vous que l'utilisateur est bien un stagiaire
+        if (!$user->isStagiaire()) {
+            abort(404, 'Stagiaire non trouvé ou accès non autorisé.');
+        }
+
+        // Charger toutes les relations nécessaires pour la page de détails
+        // J'utilise `with` pour charger les relations Eager Loading afin d'éviter les problèmes N+1.
+        $user->load([
+            'notes',
+            'fichiersPossedes',
+            'fichiersTeleverses', // Fichiers téléversés PAR ce stagiaire
+            // Note: `fichiersRecus` n'est pas une relation explicite dans votre modèle User fourni,
+            // mais `fichiersPossedes` (via `id_stagiaire`) couvre généralement les fichiers associés à ce stagiaire,
+            // qu'ils soient téléversés par lui ou pour lui. Si vous avez besoin de distinguer les fichiers
+            // téléversés par un superviseur POUR ce stagiaire, il faudrait une relation spécifique ou filtrer `fichiersPossedes`
+            // par `id_superviseur_televerseur`. Pour l'instant, je m'appuie sur `fichiersPossedes` et `fichiersTeleverses`.
+            'pays',
+            'ville',
+            'statut',
+            'groupe',
+            'promotion',
+            'sujets',
+            'role',
+        ]);
+
+        // Pour les coéquipiers : trouver d'autres stagiaires dans le même groupe (s'il y en a un)
+        $coequipiers = collect();
+        if ($user->groupe_id) { // Vérifier si le stagiaire a un groupe assigné
+            $coequipiers = User::where('groupe_id', $user->groupe_id)
+                               ->where('id', '!=', $user->id) // Exclure le stagiaire actuel
+                               ->whereHas('role', function ($query) {
+                                   $query->where('nom', 'Stagiaire'); // S'assurer que ce sont bien des stagiaires
+                               })
+                               ->get();
+        }
+
+        return view('admin.stagiaires.show', compact('user', 'coequipiers'));
+    }
+
+
+
+
     public function getStagiaireRoleId()
     {
         return Role::where('nom', 'Stagiaire')->value('id');
     }
+
+
+    public function profile()
+{
+    $user = auth()->user();
+    $pays = Pays::all(); 
+    $villes = Ville::where('pays_id', $user->pays_id)->get();
+    $statuts = Statut::all(); 
+
+    return view('admin.profile', compact('user'));
+}
+
+
+
+public function updateProfile(Request $request, $id)
+{
+    $validatedData = $request->validate([
+        'nom' => 'required|string',
+        'prenom' => 'required|string',
+        'email' => 'required|email|unique:users,email,' . $id,
+        'telephone' => 'nullable|string',
+        'cin' => 'required|string|unique:users,cin,' . $id,
+        'adresse' => 'nullable|string',
+        
+    ]);
+$validatedData = $request->only(['nom', 'prenom', 'email', 'telephone', 'cin', 'adresse']);
+
+    $user = User::findOrFail($id);
+
+// Si mot de passe renseigné, on le prépare ici
+if ($request->filled('new_password')) {
+    $user->password = Hash::make($request->new_password);
+}
+
+// Met à jour tous les autres champs
+$user->fill($validatedData);
+
+// Sauvegarde tout en une seule fois
+$user->save();
+
+  
+
+    return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
+}
+
 }

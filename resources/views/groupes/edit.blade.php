@@ -31,27 +31,9 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="mb-3">
-                        <label for="edit_jour" class="form-label">Jour</label>
-                        <input type="date" class="form-control @error('jour') is-invalid @enderror" id="edit_jour" name="jour" required>
-                        @error('jour')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_heure_debut" class="form-label">Heure de Début</label>
-                        <input type="time" class="form-control @error('heure_debut') is-invalid @enderror" id="edit_heure_debut" name="heure_debut" required>
-                        @error('heure_debut')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_heure_fin" class="form-label">Heure de Fin</label>
-                        <input type="time" class="form-control @error('heure_fin') is-invalid @enderror" id="edit_heure_fin" name="heure_fin" required>
-                        @error('heure_fin')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                  
+                  
+                
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

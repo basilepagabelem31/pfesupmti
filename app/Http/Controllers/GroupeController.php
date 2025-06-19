@@ -53,9 +53,6 @@ class GroupeController extends Controller
         $request->validate([
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'jour' => 'required|date', // Validation comme date
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
         ]);
 
         // Génération automatique du code unique (exemple: XXXYYY)
@@ -92,19 +89,11 @@ public function update(Request $request, Groupe $groupe)
         $validatedData = $request->validate([
             'nom' => 'required|string|max:255|unique:groupes,nom,' . $groupe->id,
             'description' => 'nullable|string',
-            'jour' => 'required|date',
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
+        
         ], [
             'nom.required' => 'Le nom du groupe est obligatoire.',
             'nom.unique' => 'Ce nom de groupe existe déjà.',
-            'jour.required' => 'Le jour est obligatoire.',
-            'jour.date' => 'Le jour doit être une date valide.',
-            'heure_debut.required' => 'L\'heure de début est obligatoire.',
-            'heure_debut.date_format' => 'Le format de l\'heure de début doit être HH:MM.',
-            'heure_fin.required' => 'L\'heure de fin est obligatoire.',
-            'heure_fin.date_format' => 'Le format de l\'heure de fin doit être HH:MM.',
-            'heure_fin.after' => 'L\'heure de fin doit être postérieure à l\'heure de début.',
+            
         ]);
 
         // Si la validation passe, procédez à la mise à jour
