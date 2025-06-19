@@ -101,31 +101,7 @@
     </div>
                     {{-- FIN des nouveaux boutons directs pour la gestion des utilisateurs --}}
 
-                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.email-settings.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('admin.email-settings.index') }}" class="menu-link">
-                            <span class="menu-icon"><i class="fa-solid fa-envelope-circle-check"></i></span>
-                            <span class="menu-text"> Gestion des Emails Settings</span>
-                        </a>
-                    </div>
-                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.email_templates.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('admin.email_templates.index') }}" class="menu-link">
-                            <span class="menu-icon"><i class="fa-solid fa-envelope"></i></span>
-                            <span class="menu-text">Gestion des Emails Templates</span>
-                        </a>
-                    </div>
-                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('reunions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('reunions.index') }}" class="menu-link">
-                            <span class="menu-icon"><i class="fa-solid fa-chalkboard"></i></span>
-                            <span class="menu-text">Gestion des Reunions</span>
-                        </a>
-                    </div>
-
-                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('notes.liste_stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('notes.liste_stagiaires') }}" class="menu-link">
-                            <span class="menu-icon"><i class="fa-solid fa-notes-medical"></i></span>
-                            <span class="menu-text">Gestion des Notes</span>
-                        </a>
-                    </div>
+                    
 
 
 
@@ -192,26 +168,30 @@
                     </div> -->
 
                     {{-- Section pour Réunions et Absences (nécessite des routes définies) --}}
-                    <div class="menu-item {{ (Str::startsWith($currentUrl, ['reunions', 'absences'])) ? 'active' : '' }} has-sub">
-                        <a href="#" class="menu-link">
-                            <span class="menu-icon"><i class="fas fa-calendar-alt"></i></span>
-                            <span class="menu-text">Réunions & Absences</span>
-                            <span class="menu-caret"><b class="caret"></b></span>
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.email-settings.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('admin.email-settings.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-envelope-circle-check"></i></span>
+                            <span class="menu-text"> Gestion des Emails Settings</span>
                         </a>
-                        <div class="menu-submenu">
-                            {{-- Placeholder: Ajoutez la route réelle pour la liste des réunions --}}
-                            <div class="menu-item {{ ($currentUrl === '/reunions/index') ? 'active' : '' }}"> {{-- Exemple de route --}}
-                                <a href="/reunions/index" class="menu-link"> {{-- Remplacez par route('reunions.index') si définie --}}
-                                    <span class="menu-text">Planifier & Suivre Réunions</span>
-                                </a>
-                            </div>
-                            {{-- Placeholder: Ajoutez la route réelle pour la gestion des absences --}}
-                            <div class="menu-item {{ ($currentUrl === '/absences/manage') ? 'active' : '' }}"> {{-- Exemple de route --}}
-                                <a href="/absences/manage" class="menu-link"> {{-- Remplacez par route('absences.manage') si définie --}}
-                                    <span class="menu-text">Gestion des Absences</span>
-                                </a>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('admin.email_templates.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('admin.email_templates.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-envelope"></i></span>
+                            <span class="menu-text">Gestion des Emails Templates</span>
+                        </a>
+                    </div>
+                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('reunions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('reunions.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-chalkboard"></i></span>
+                            <span class="menu-text">Gestion des Reunions</span>
+                        </a>
+                    </div>
+
+                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('notes.liste_stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('notes.liste_stagiaires') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-notes-medical"></i></span>
+                            <span class="menu-text">Gestion des Notes</span>
+                        </a>
                     </div>
 
                     {{-- Section pour Paramètres et Logs --}}
@@ -271,18 +251,7 @@
                     
                     </div>
 
-                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('reunions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('reunions.index') }}" class="menu-link">
-                            <span class="menu-icon"><i class="fa-solid fa-chalkboard"></i></span>
-                            <span class="menu-text">Gestion des Reunions</span>
-                        </a>
-                    </div>
-                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('notes.liste_stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-                        <a href="{{ route('notes.liste_stagiaires') }}" class="menu-link">
-                            <span class="menu-icon"><i class="fa-solid fa-notes-medical"></i></span>
-                            <span class="menu-text">Gestion des Notes</span>
-                        </a>
-                    </div>
+                    
 
                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('promotions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
                         <a href="{{ route('promotions.index') }}" class="menu-link">
@@ -319,33 +288,24 @@
                         </a>
                     </div>
                    <div class="menu-item {{ ($currentUrl === trim(parse_url(route('superviseur.profile'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
-    <a href="{{ route('superviseur.profile') }}" class="menu-link">
-        <span class="menu-icon"><i class="fas fa-user-circle"></i></span> {{-- Icône Profil --}}
-        <span class="menu-text">Mon Profil</span>
-    </a>
-</div>
+                        <a href="{{ route('superviseur.profile') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fas fa-user-circle"></i></span> {{-- Icône Profil --}}
+                            <span class="menu-text">Mon Profil</span>
+                        </a>
+                    </div>
 
                     {{-- Section pour Réunions et Absences (nécessite des routes définies) --}}
-                    <div class="menu-item {{ (Str::startsWith($currentUrl, ['reunions', 'absences'])) ? 'active' : '' }} has-sub">
-                        <a href="#" class="menu-link">
-                            <span class="menu-icon"><i class="fas fa-calendar-check"></i></span>
-                            <span class="menu-text">Réunions & Absences</span>
-                            <span class="menu-caret"><b class="caret"></b></span>
+                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('reunions.index'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('reunions.index') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-chalkboard"></i></span>
+                            <span class="menu-text">Gestion des Reunions</span>
                         </a>
-                        <div class="menu-submenu">
-                            {{-- Placeholder: Ajoutez la route réelle pour la liste des réunions --}}
-                            <div class="menu-item {{ ($currentUrl === '/superviseur/reunions') ? 'active' : '' }}">
-                                <a href="/superviseur/reunions" class="menu-link"> {{-- Remplacez par route('superviseur.reunions.index') si définie --}}
-                                    <span class="menu-text">Planifier & Suivre</span>
-                                </a>
-                            </div>
-                            {{-- Placeholder: Ajoutez la route réelle pour la gestion des absences --}}
-                            <div class="menu-item {{ ($currentUrl === '/superviseur/absences') ? 'active' : '' }}">
-                                <a href="/superviseur/absences" class="menu-link"> {{-- Remplacez par route('superviseur.absences.index') si définie --}}
-                                    <span class="menu-text">Gérer les Absences</span>
-                                </a>
-                            </div>
-                        </div>
+                    </div>
+                     <div class="menu-item {{ ($currentUrl === trim(parse_url(route('notes.liste_stagiaires'), PHP_URL_PATH), '/')) ? 'active' : '' }}">
+                        <a href="{{ route('notes.liste_stagiaires') }}" class="menu-link">
+                            <span class="menu-icon"><i class="fa-solid fa-notes-medical"></i></span>
+                            <span class="menu-text">Gestion des Notes</span>
+                        </a>
                     </div>
 
                 {{-- --- Menu pour le Stagiaire --- --}}

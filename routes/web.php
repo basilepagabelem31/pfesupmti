@@ -199,7 +199,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
     //gestion des absences et reunions gere pour le superviseur 
-   Route::middleware(['auth','role:Superviseur'])->group(function(){
+   Route::middleware(['auth','role:Superviseur,Administrateur'])->group(function(){
     Route::get('/reunions', [ReunionController::class, 'index'])->name('reunions.index');
     Route::post('/reunions', [ReunionController::class, 'store'])->name('reunions.store');
     Route::get('/reunions/{id}', [ReunionController::class, 'show'])->name('reunions.show');
@@ -208,7 +208,7 @@ Route::middleware(['auth'])->group(function () {
  
 });
     //gestion des groupes 
-    Route::get('/groupes/{id}/stagiaires', [GroupeController::class, 'getStagiaires'])->name('groupes.stagiaires');
+    Route::get('/groupes/{groupe}/stagiaires',[GroupeController::class, 'stagiairesActifs'])->name('groupes.stagiaires');
 
 
      //Gestion des emails en relation avec la reunion 

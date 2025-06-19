@@ -13,6 +13,7 @@
 </script>
     @include('partial.head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+ 
     
 </head>
 <body class="{{ (!empty($bodyClass)) ? $bodyClass : '' }}">
@@ -94,8 +95,11 @@
 
 
 
-<!-- Juste avant la balise </body> de fermeture dans layout.default -->
+<!-- Juste avant la balise </body> de fermeture dans layout.default 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+
+-->
+
 </body>
 </html>

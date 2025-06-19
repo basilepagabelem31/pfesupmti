@@ -1,15 +1,14 @@
-// Importe les scripts de base de Laravel (par exemple : Bootstrap JS, Axios)
+// Import de base Laravel & Bootstrap
 import './bootstrap';
-
 import * as bootstrap from 'bootstrap';
 import '@fortawesome/fontawesome-free/js/all';
-import '../css/app.css';
 
+// jQuery & Select2
 import $ from 'jquery';
-window.$ = window.jQuery = $; // Rend jQuery disponible globalement pour Select2
+window.$ = window.jQuery = $;
 import 'select2';
-import 'select2/dist/css/select2.css'; // Importe le CSS de Select2
-// Si vous utilisez Alpine.js (souvent avec Laravel Breeze/Jetstream), gardez ceci :
+
+// Si tu utilises Alpine via NPM (option b)
 import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 Alpine.start();

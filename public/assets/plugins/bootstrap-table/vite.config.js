@@ -3,14 +3,14 @@ import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
-   plugins: [
-        laravel({
-            input: [
-                'resources/css/app.css',
-                'resources/js/app.js', // Chemin principal (où tu importes Vue)
-            ],
-            refresh: true,
-        }),
-        vue(),
-    ],
+  plugins: [ laravel({
+    input: ['resources/js/app.js', 'resources/css/app.css'],
+    refresh: true,
+  }) ],
+  resolve: {
+    alias: {
+      // indique à Vite où trouver alpinejs
+      'alpinejs': 'alpinejs/dist/module.esm.js',
+    }
+  }
 });
