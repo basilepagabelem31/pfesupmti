@@ -13,15 +13,25 @@ class NoteController extends Controller
 {
     
     // Liste des stagiaires avec résumé des notes
-    public function listeStagiaires()
-    {
-        $stagiaires = User::whereHas('role', function($q){
+    public function listeStagiaires(Request $request)
+    {   
+        $query = User::whereHas('role', function($q){
             $q->where('nom', 'Stagiaire');
-        })->withCount('notes')->get();
+        })->withCount('notes');
+
+        // Filtre nom/prénom si présent dans la requête
+        if ($request->filled('nom')) {
+            $nom = $request->input('nom');
+            $query->where(function($q) use ($nom) {
+                $q->where('nom', 'like', "%{$nom}%")
+                ->orWhere('prenom', 'like', "%{$nom}%");
+            });
+        }
+
+        $stagiaires = $query->get();
 
         return view('notes.liste_stagiaire', compact('stagiaires'));
     }
-
     // Affiche les notes d'un stagiaire
     public function ficheStagiaire($id)
     {

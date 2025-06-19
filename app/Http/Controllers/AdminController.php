@@ -254,8 +254,8 @@ class AdminController extends Controller
                 $rules['universite'] = 'required|string|max:255';
                 $rules['faculte'] = 'required|string|max:255';
                 $rules['titre_formation'] = 'required|string|max:255';
-                $rules['groupe_id'] = 'nullable|exists:groupes,id';
-                $rules['promotion_id'] = 'nullable|exists:promotions,id';
+                $rules['groupe_id'] = 'required|exists:groupes,id';
+                $rules['promotion_id'] = 'required|exists:promotions,id';
                 $rules['sujet_ids'] = 'nullable|array';
                 $rules['sujet_ids.*'] = 'exists:sujets,id';
             } else {

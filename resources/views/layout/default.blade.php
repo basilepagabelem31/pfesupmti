@@ -12,13 +12,8 @@
     window.APP_ENV = "{{ app()->environment() }}";
 </script>
     @include('partial.head')
-    {{--
-        IMPORTANT : Assurez-vous que la directive @vite est appelée ICI ou DANS partial.head.
-        Elle est cruciale pour charger Alpine.js et votre CSS principal.
-        Exemple : @vite(['resources/css/app.css', 'resources/js/app.js'])
-        Si vous utilisez un CDN pour Tailwind en développement, vous pouvez retirer 'resources/css/app.css' de la liste de @vite.
-        Assurez-vous aussi que Font Awesome est bien inclus dans partial.head.
-    --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
 </head>
 <body class="{{ (!empty($bodyClass)) ? $bodyClass : '' }}">
     <!-- Notification section - Ensure Tailwind CSS classes are used for styling if possible -->
