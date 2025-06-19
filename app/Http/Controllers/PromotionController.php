@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Promotion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; 
+use App\helper\LogHelper; 
 
 class PromotionController extends Controller
 {
@@ -21,6 +23,7 @@ class PromotionController extends Controller
      */
     public function create()
     {
+        // Cette méthode n'a pas besoin de log car elle affiche un formulaire
     }
 
     /**
@@ -28,29 +31,47 @@ class PromotionController extends Controller
      */
     public function store(Request $request)
     {
-       $validated= $request->validate([
-        'titre' => 'required|string|max:225',
-       ]);
-       //archive toutes les autres promotions :oncherche les status active et on les modifie pour 
-       //qu'elles soient tous archive 
-       Promotion::where('status','active')->update(['status'=> 'archive']);
-       //apres on va creer la nouvelle promotion 
-       Promotion::create([
-        'titre'=> $validated['titre'],
-        'status'=> 'active',
-       ]);
+        $validated = $request->validate([
+            'titre' => 'required|string|max:225',
+        ]);
 
-       return redirect()->route('promotions.index')->with('success','Promotion créer avec succès !');
+        $user = Auth::user();
+
+        // Archive toutes les autres promotions actives
+        $oldActivePromotions = Promotion::where('status','active')->get();
+        Promotion::where('status','active')->update(['status'=> 'archive']);
+
+        if ($oldActivePromotions->isNotEmpty()) {
+            $archivedTitles = $oldActivePromotions->pluck('titre')->implode(', ');
+            LogHelper::logAction(
+                'Archivage de promotions',
+                'Le ' . $user->role->nom . ' ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . ') a archivé les promotions actives existantes : ' . $archivedTitles . ', avant de créer une nouvelle promotion active.',
+                $user->id
+            );
+        }
+
+        // Crée la nouvelle promotion
+        $promotion = Promotion::create([
+            'titre'=> $validated['titre'],
+            'status'=> 'active',
+        ]);
+
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA CREATION
+        LogHelper::logAction(
+            'Création de promotion',
+            'Le ' . $user->role->nom . ' ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . ') a créé la promotion "' . $promotion->titre . '" (ID: ' . $promotion->id . ') avec le statut "active".',
+            $user->id
+        );
+
+        return redirect()->route('promotions.index')->with('success','Promotion créer avec succès !');
     }
-
-   
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Promotion $promotion)
     {
-       return view('promotions.edit',compact('promotion'));
+        return view('promotions.edit',compact('promotion'));
     }
 
     /**
@@ -58,16 +79,52 @@ class PromotionController extends Controller
      */
     public function update(Request $request, Promotion $promotion)
     {
-        $validated= $request->validate([
+        $validated = $request->validate([
             'titre'=> 'required|string|max:225',
-            'status'=> 'required|in:active,archive'//le in :active,archive signifie que le champ peut prendre que ses deux valeurs 
+            'status'=> 'required|in:active,archive'
         ]);
 
-        //si on veut active , on archive les autres promotions 
-        if($validated['status']==='active'){
-            Promotion::where('status','active')->where('id','!=','$promotion->id')->update(['status'=>'archive']);
+        $user = Auth::user();
+        $oldPromotionData = $promotion->toArray(); // Capture les données avant la mise à jour
+
+        // Si la promotion est définie sur 'active', archive les autres promotions actives
+        if ($validated['status'] === 'active') {
+            $oldActivePromotions = Promotion::where('status','active')->where('id','!=',$promotion->id)->get();
+            Promotion::where('status','active')->where('id','!=',$promotion->id)->update(['status'=>'archive']);
+
+            if ($oldActivePromotions->isNotEmpty()) {
+                $archivedTitles = $oldActivePromotions->pluck('titre')->implode(', ');
+                LogHelper::logAction(
+                    'Archivage de promotions',
+                    'Le ' . $user->role->nom . ' ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . ') a archivé les promotions existantes : ' . $archivedTitles . ', car la promotion "' . $promotion->titre . '" (ID: ' . $promotion->id . ') a été définie comme active.',
+                    $user->id
+                );
+            }
         }
+
         $promotion->update($validated);
+
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA MODIFICATION
+        $changes = [];
+        foreach ($validated as $key => $value) {
+            if (isset($oldPromotionData[$key]) && $oldPromotionData[$key] != $value) {
+                $changes[] = ucfirst(str_replace('_', ' ', $key)) . ": '" . $oldPromotionData[$key] . "' -> '" . $value . "'";
+            }
+        }
+
+        $message = 'Le ' . $user->role->nom . ' ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . ') a modifié la promotion "' . $promotion->titre . '" (ID: ' . $promotion->id . '). ';
+        if (!empty($changes)) {
+            $message .= 'Changements: ' . implode(', ', $changes) . '.';
+        } else {
+            $message .= 'Aucun changement significatif détecté.';
+        }
+
+        LogHelper::logAction(
+            'Modification de promotion',
+            $message,
+            $user->id
+        );
+
         return redirect()->route('promotions.index')->with('success','Promotion modifier avec succès !');
     }
 
@@ -76,7 +133,21 @@ class PromotionController extends Controller
      */
     public function destroy(Promotion $promotion)
     {
+        $user = Auth::user();
+
+        // Capture les informations de la promotion avant la suppression
+        $deletedPromotionTitle = $promotion->titre;
+        $deletedPromotionId = $promotion->id;
+
         $promotion->delete();
-        return redirect()->route('promotions.index')->with('success','Promotion supprime avec succès !');
+
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA SUPPRESSION
+        LogHelper::logAction(
+            'Suppression de promotion',
+            'Le ' . $user->role->nom . ' ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . ') a supprimé la promotion "' . $deletedPromotionTitle . '" (ID: ' . $deletedPromotionId . ').',
+            $user->id
+        );
+
+        return redirect()->route('promotions.index')->with('success','Promotion supprimée avec succès !');
     }
 }

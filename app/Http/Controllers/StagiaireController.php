@@ -10,6 +10,7 @@ use App\Models\Pays;    // Assurez-vous que Pays est importé
 use App\Models\Ville;   // Assurez-vous que Ville est importé
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\helper\LogHelper; 
 
 class StagiaireController extends Controller
 {
@@ -48,7 +49,7 @@ class StagiaireController extends Controller
             'universite', 'faculte', 'titre_formation', 
         ]);
 
-        $user = User::findOrFail($id);
+    $user = User::findOrFail($id);
 
         // If a new password is provided, hash and update it
         if ($request->filled('new_password')) {
@@ -62,6 +63,46 @@ class StagiaireController extends Controller
         // Save everything in one go
         $user->save();
 
+        // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA MISE A JOUR
+        $loggedInUser = Auth::user();
+        $changes = [];
+
+        // Itérer sur les champs qui peuvent être modifiés et comparer
+        $fieldsToCheck = array_keys($validatedData); // Champs du formulaire validés
+        if ($request->filled('new_password')) {
+            $fieldsToCheck[] = 'password'; // Ajouter le mot de passe pour le log si changé
+        }
+
+        foreach ($fieldsToCheck as $field) {
+            $oldValue = $oldUserAttributes[$field] ?? null;
+            $newValue = $user->{$field};
+
+            // Gérer spécifiquement le changement de mot de passe
+            if ($field === 'password') {
+                if ($request->filled('new_password')) {
+                    $changes[] = "Mot de passe: [changé]";
+                }
+            } else if ($oldValue != $newValue) {
+                // Pour les autres champs, enregistrer l'ancienne et la nouvelle valeur
+                $changes[] = ucfirst(str_replace('_', ' ', $field)) . ": '" . ($oldValue ?? 'vide') . "' -> '" . ($newValue ?? 'vide') . "'";
+            }
+        }
+
+        $message = 'Le ' . $loggedInUser->role->nom . ' ' . $loggedInUser->prenom . ' ' . $loggedInUser->nom . ' (ID: ' . $loggedInUser->id . ') a mis à jour le profil du stagiaire ' . $user->prenom . ' ' . $user->nom . ' (ID: ' . $user->id . '). ';
+        if (!empty($changes)) {
+            $message .= 'Changements: ' . implode(', ', $changes) . '.';
+        } else {
+            $message .= 'Aucun changement significatif détecté.';
+        }
+
+        LogHelper::logAction(
+            'Mise à jour profil stagiaire',
+            $message,
+            $loggedInUser->id
+        );
+        
         return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
     }
+
+    
 }
