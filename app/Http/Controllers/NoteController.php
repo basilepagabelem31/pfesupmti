@@ -9,6 +9,8 @@ use App\Notifications\NoteUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\helper\LogHelper;
+use Illuminate\Support\Str; 
+
 
 class NoteController extends Controller
 {

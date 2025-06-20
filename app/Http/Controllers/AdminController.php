@@ -15,6 +15,7 @@ use Illuminate\Http\Request; // Importez la classe Request
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth; // Importez le facade Auth
+use Illuminate\Support\Str; 
 
 class AdminController extends Controller
 {
@@ -125,81 +126,89 @@ class AdminController extends Controller
     }
 
     public function store(Request $request)
-    {
-        try {
-            $stagiaireRoleId = Role::where('nom', 'Stagiaire')->value('id');
+{
+    try {
+        $stagiaireRoleId = Role::where('nom', 'Stagiaire')->value('id');
 
-            $rules = [
-                "nom"=> "required|string",
-                "prenom" => "required|string",
-                "password" => "required",
-                "email" => "required|email|unique:users",
-                "telephone" => "required|string",
-                "cin" => "required|unique:users|string",
-                "adresse"=> "required|string",
-                "pays_id" =>"required|exists:pays,id",
-                "ville_id" =>"required|exists:villes,id",
-                "role_id" => "required|exists:roles,id",
-                "statut_id" =>"required|exists:statuts,id",
-                'universite' => 'nullable|string|max:255',
-                'faculte' => 'nullable|string|max:255',
-                'titre_formation' => 'nullable|string|max:255',
-                'groupe_id' => 'nullable|exists:groupes,id',
-                'promotion_id' => 'nullable|exists:promotions,id',
-                'sujet_ids' => 'nullable|array',
-                'sujet_ids.*' => 'exists:sujets,id',
-            ];
+        $rules = [
+            "nom"            => "required|string",
+            "prenom"         => "required|string",
+            "password"       => "required",
+            "email"          => "required|email|unique:users",
+            "telephone"      => "required|string",
+            "cin"            => "required|unique:users|string",
+            "adresse"        => "required|string",
+            "pays_id"        => "required|exists:pays,id",
+            "ville_id"       => "required|exists:villes,id",
+            "role_id"        => "required|exists:roles,id",
+            "statut_id"      => "required|exists:statuts,id",
+            'universite'     => 'nullable|string|max:255',
+            'faculte'        => 'nullable|string|max:255',
+            'titre_formation'=> 'nullable|string|max:255',
+            'groupe_id'      => 'nullable|exists:groupes,id',
+            'promotion_id'   => 'nullable|exists:promotions,id',
+            'sujet_ids'      => 'nullable|array',
+            'sujet_ids.*'    => 'exists:sujets,id',
+        ];
 
-            if ($request->input('role_id') == $stagiaireRoleId) {
-                $rules['universite'] = 'required|string|max:255';
-                $rules['faculte'] = 'required|string|max:255';
-                $rules['titre_formation'] = 'required|string|max:255';
-                $rules['groupe_id'] = 'nullable|exists:groupes,id';
-                $rules['promotion_id'] = 'nullable|exists:promotions,id';
-            }
-
-            $validated = $request->validate($rules);
-
-            $validated['password'] = Hash::make($validated['password']);
-            
-            do {
-                $code = Str::upper(Str::random(6));
-            } while (User::where('code', $code)->exists());
-            $validated['code'] = $code;
-
-            $sujetIds = $validated['sujet_ids'] ?? [];
-            unset($validated['sujet_ids']);
-
-            $user = User::create($validated);
-            $admin = User::create($validated);
-
-            // <-- ENREGISTREMENT DU LOG SYSTEME ICI POUR LA CREATION
-            $creator = Auth::user(); // L'utilisateur (Super Admin/Superviseur) qui crée le compte
-            $roleNom = $admin->role ? $admin->role->nom : 'N/A'; // Récupérer le nom du rôle
-
-            LogHelper::logAction(
-                'Création de compte utilisateur',
-                'Le ' . $creator->role->nom . ' ' . $creator->nom . ' ' . $creator->prenom . ' (ID: ' . $creator->id . ') a créé le compte de ' . $roleNom . ' : ' . $admin->prenom . ' ' . $admin->nom . ' (ID: ' . $admin->id . ', Email: ' . $admin->email . ').',
-                Auth::id()
-            );
-
-            if ($user->role_id === $stagiaireRoleId && !empty($sujetIds)) {
-                $user->sujets()->attach($sujetIds);
-            }
-
-            $role = $user->role ? $user->role->nom : null ;
-            if ($role === 'Administrateur'|| $role === 'Superviseur'){
-                return redirect()->route('admin.index')->with('success', 'Admin/Superviseur a été bien créé.');
-            }else {
-                return redirect()->route('admin.users.stagiaires')->with('success', 'Stagiaire a été bien créé.');
-            }
-        } catch (ValidationException $e) {
-            return redirect()->back()
-                ->withInput($request->except('password'))
-                ->withErrors($e->errors())
-                ->with('open_add_modal', true);
+        if ($request->input('role_id') == $stagiaireRoleId) {
+            // champs additionnels obligatoires pour un stagiaire
+            $rules['universite']     = 'required|string|max:255';
+            $rules['faculte']        = 'required|string|max:255';
+            $rules['titre_formation']= 'required|string|max:255';
+            $rules['groupe_id']      = 'nullable|exists:groupes,id';
+            $rules['promotion_id']   = 'nullable|exists:promotions,id';
         }
+
+        $validated = $request->validate($rules);
+        $validated['password'] = Hash::make($validated['password']);
+
+        // génération du code unique
+        do {
+            $code = Str::upper(Str::random(6));
+        } while (User::where('code', $code)->exists());
+        $validated['code'] = $code;
+
+        // détacher les sujet_ids pour la création
+        $sujetIds = $validated['sujet_ids'] ?? [];
+        unset($validated['sujet_ids']);
+
+        // *** Création d'un seul utilisateur ***
+        $user = User::create($validated);
+
+        // Log de la création
+        $creator = Auth::user();
+        $roleNom = $user->role ? $user->role->nom : 'N/A';
+        LogHelper::logAction(
+            'Création de compte utilisateur',
+            'Le ' . $creator->role->nom . ' ' . $creator->nom . ' ' . $creator->prenom .
+            ' (ID: ' . $creator->id . ') a créé le compte de ' . $roleNom .
+            ' : ' . $user->prenom . ' ' . $user->nom .
+            ' (ID: ' . $user->id . ', Email: ' . $user->email . ').',
+            Auth::id()
+        );
+
+        // attacher les sujets si c'est un stagiaire
+        if ($user->role_id === $stagiaireRoleId && !empty($sujetIds)) {
+            $user->sujets()->attach($sujetIds);
+        }
+
+        // redirection selon le rôle
+        $role = $user->role ? $user->role->nom : null;
+        if (in_array($role, ['Administrateur','Superviseur'])) {
+            return redirect()->route('admin.index')->with('success', 'Admin/Superviseur créé avec succès.');
+        } else {
+            return redirect()->route('admin.users.stagiaires')->with('success', 'Stagiaire créé avec succès.');
+        }
+
+    } catch (ValidationException $e) {
+        return redirect()->back()
+            ->withInput($request->except('password'))
+            ->withErrors($e->errors())
+            ->with('open_add_modal', true);
     }
+}
+
 
     public function edit(User $user)
     {

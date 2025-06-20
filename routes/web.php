@@ -20,13 +20,9 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ReunionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Mail;
 
-
-=======
 use App\Http\Controllers\Admin\LogController; 
->>>>>>> origin/log_system
 /*
 |--------------------------------------------------------------------------
 | Web Routes
