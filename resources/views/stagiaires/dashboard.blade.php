@@ -68,7 +68,7 @@
         </div>
 
         {{-- Carte : Mes Absences --}}
-        <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-red-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
+        <!-- <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-red-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
             <div class="p-6 flex flex-col flex-grow">
                 <div class="flex justify-center items-center mb-4">
                     <div class="p-4 rounded-full bg-red-100 text-red-600">
@@ -83,10 +83,10 @@
                     </a>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         {{-- Carte : Mon Sujet --}}
-        <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-yellow-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
+        <!-- <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-yellow-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
             <div class="p-6 flex flex-col flex-grow">
                 <div class="flex justify-center items-center mb-4">
                     <div class="p-4 rounded-full bg-yellow-100 text-yellow-600">
@@ -101,10 +101,10 @@
                     </a>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         {{-- Carte : Mon Groupe --}}
-        <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-orange-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
+        <!-- <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-orange-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
             <div class="p-6 flex flex-col flex-grow">
                 <div class="flex justify-center items-center mb-4">
                     <div class="p-4 rounded-full bg-orange-100 text-orange-600">
@@ -119,7 +119,7 @@
                     </a>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         {{-- Carte : Mes Notes --}}
         <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-blue-gray-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">

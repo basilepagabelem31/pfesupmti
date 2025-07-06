@@ -32,10 +32,10 @@
                             class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     </div>
                     <button type="submit" class="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-semibold rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition">
-                        <i class="fas fa-filter mr-2"></i> 
+                        <i class="fas fa-filter mr-2"></i> Filtrer
                     </button>
                     <a href="{{ route('notes.liste_stagiaires') }}" class="inline-flex items-center px-5 py-2.5 border border-gray-300 text-base font-semibold rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition">
-                        <i class="fas fa-undo mr-2"></i> 
+                        <i class="fas fa-undo mr-2"></i>  Réinitialiser
                     </a>
                 </form>
             </div>
@@ -58,7 +58,7 @@
                             
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <a href="{{ route('notes.fiche_stagiaire', $stagiaire->id) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                                    <i class="fas fa-eye mr-2"></i> Voir les notes
+                                    <i class="fas fa-eye mr-2"></i> 
                                 </a>
                             </td>
                         </tr>

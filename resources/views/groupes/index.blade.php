@@ -71,14 +71,15 @@
                                                 data-nom="{{ $groupe->nom }}"
                                                 data-description="{{ $groupe->description }}"
                                                 >
-                                            <i class="fas fa-edit"></i> Modifier
+                                            <i class="fas fa-edit"></i> 
                                         </button>
 
                                         <form action="{{ route('groupes.destroy', $groupe->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible et impossible si le groupe contient des stagiaires.');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
-                                                <i class="fas fa-trash-alt"></i> Supprimer
+                                                <i class="fas fa-trash-alt"></i> 
+                                               
                                             </button>
                                         </form>
                                     </div>

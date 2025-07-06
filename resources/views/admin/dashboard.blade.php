@@ -59,7 +59,7 @@
                 </div>
                 <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion des Notes</h2>
                 <p class="text-gray-600 mb-4 flex-grow">Ajoutez, modifiez et consultez les notes des stagiaires.</p>
-                <div class="flex justify-center mt-auto">
+                <div class="bg-primary flex justify-center mt-auto">
                     <a href="{{ route('notes.liste_stagiaires') }}" class="inline-flex items-center justify-center px-4 py-2 bg-rose-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <i class="fas fa-scroll mr-2"></i> Gérer les Notes
                     </a>
@@ -76,10 +76,10 @@
                     </div>
                 </div>
                 <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion des Rôles</h2>
-                <p class="text-gray-600 mb-4 flex-grow">Définissez et attribuez les rôles aux utilisateurs.</p>
+                <p class="text-gray-600 mb-4 flex-grow">Visualisez les differents  rôles des utilisateurs.</p>
                 <div class="flex justify-center mt-auto">
                     <a href="{{ route('roles.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-purple-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        <i class="fas fa-cogs mr-2"></i> Gérer les rôles
+                        <i class="fas fa-cogs mr-2"></i> Voir les rôles
                     </a>
                 </div>
             </div>
@@ -195,7 +195,7 @@
         </div>
 
         {{-- Carte : Gestion Géographique --}}
-        <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-cyan-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
+        <!-- <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-cyan-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
             <div class="p-6 flex flex-col flex-grow">
                 <div class="flex justify-center items-center mb-4">
                     <div class="p-4 rounded-full bg-cyan-100 text-cyan-600">
@@ -210,7 +210,7 @@
                     </a>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         {{-- Carte : Réunions & Absences --}}
         <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-fuchsia-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
@@ -220,11 +220,10 @@
                         <i class="fas fa-calendar-check fa-3x"></i>
                     </div>
                 </div>
-                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Réunions & Absences</h2>
-                <p class="text-gray-600 mb-4 flex-grow">Planifiez les réunions et suivez la présence des stagiaires.</p>
+                 <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion Réunions </h2>
+                <center><p class="text-gray-600 mb-4 flex-grow">Planifiez les réunions.</p></center>
                 <div class="flex justify-center mt-auto">
-                    {{-- Assurez-vous que cette route existe --}}
-                    <a href="/admin/reunions" class="inline-flex items-center justify-center px-4 py-2 bg-fuchsia-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <a href="{{ route('reunions.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-fuchsia-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <i class="fas fa-clipboard-list mr-2"></i> Gérer
                     </a>
                 </div>
@@ -240,11 +239,11 @@
                     </div>
                 </div>
                 <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Paramètres & Logs</h2>
-                <p class="text-gray-600 mb-4 flex-grow">Configurez le système et consultez les journaux d'activité.</p>
+                <p class="text-gray-600 mb-4 flex-grow"> Consultez les journaux d'activité.</p>
                 <div class="flex justify-center mt-auto">
                     {{-- Assurez-vous que cette route existe --}}
-                    <a href="/admin/email-config" class="inline-flex items-center justify-center px-4 py-2 bg-gray-700 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        <i class="fas fa-wrench mr-2"></i> Gérer
+                    <a  href="{{route('admin.logs.index')}}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-700 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <i class="fas fa-wrench mr-2"></i> Consulter
                     </a>
                 </div>
             </div>

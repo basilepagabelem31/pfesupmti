@@ -206,6 +206,7 @@
                                             data-user-name="{{ $stagiaire->prenom }} {{ $stagiaire->nom }}">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
+                                       
                                     </div>
                                 </td>
                             </tr>

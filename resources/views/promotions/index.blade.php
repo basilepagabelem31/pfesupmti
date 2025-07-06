@@ -31,6 +31,14 @@
                 </div>
             @endif
 
+            {{-- NOUVEAU: Message d'erreur de session --}}
+            @if (session('error'))
+                <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 flex items-center space-x-3 shadow-md border border-red-200">
+                    <svg class="h-7 w-7 text-red-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                    <span class="font-semibold text-lg">{{ session('error') }}</span>
+                </div>
+            @endif
+
             {{-- Tableau des promotions --}}
             <div class="overflow-x-auto shadow-md rounded-xl border border-gray-200">
                 <table class="min-w-full divide-y divide-gray-200 bg-white">
@@ -60,12 +68,17 @@
                                         <button type="button" class="px-3 py-1.5 rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out"
                                             data-bs-toggle="modal" data-bs-target="#promotionModal"
                                             onclick="openPromotionModal({{ $promotion->id }}, '{{ addslashes($promotion->titre) }}', '{{ $promotion->status }}', '{{ route('promotions.update', $promotion->id) }}')">
-                                            Modifier
+                                      <i class="fas fa-edit"></i>
+
                                         </button>
                                         <form method="POST" action="{{ route('promotions.destroy', $promotion) }}" class="inline-block" onsubmit="return confirm('Voulez-vous vraiment supprimer cette promotion ?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">Supprimer</button>
+                                            <button type="submit" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
+
+
+                                             <i class="fas fa-trash-alt"></i> 
+                                            </button>
                                         </form>
                                     </div>
                                 </td>

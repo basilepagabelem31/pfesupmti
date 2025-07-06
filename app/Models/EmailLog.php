@@ -1,29 +1,42 @@
 <?php
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // Assurez-vous que cette ligne est présente
 
-class EmailLog extends Model // Renommé EmailLog
+class EmailLog extends Model
 {
     use HasFactory;
-   
 
+    protected $table = 'email_logs';
 
-    protected $table = 'email_logs'; // Spécifier le nom de la table si le nom du modèle ne suit pas la convention plurielle
+    // Assurez-vous que 'user_id' est dans le tableau $fillable
+    protected $fillable = ['to_email', 'subject', 'body', 'status', 'error_message', 'email_template_id', 'absence_id', 'user_id']; 
 
-    protected $fillable = ['to_email','subject','body','status','error_message','email_template_id','absence_id','user_id']; // Champs ajustés
-    public function users() { return $this->hasMany(User::class); } // Si un log peut avoir plusieurs users, ou user_id ici.
-                                                                  // L'inverse est plus commun: user a un email_log_id (nullable)
-   
+    /**
+     * Obtenir l'utilisateur auquel appartient ce log d'e-mail.
+     */
+    public function user(): BelongsTo // Renommé 'user' (singulier) car un log appartient à UN utilisateur
+    {
+        return $this->belongsTo(User::class);
+    }
 
-      public function absence()
+    /**
+     * Obtenir l'absence associée à ce log d'e-mail.
+     */
+    public function absence()
     {
         return $this->belongsTo(Absence::class);
     }
 
+    /**
+     * Obtenir le template d'e-mail associé à ce log.
+     */
     public function template()
     {
-        return $this->belongsTo(Email_template::class,'email_template_id');
+        // Si votre modèle est EmailTemplate, assurez-vous de l'importer ou de le référencer correctement.
+        // Par exemple: use App\Models\EmailTemplate;
+        return $this->belongsTo(Email_Template::class, 'email_template_id');
     }
 }

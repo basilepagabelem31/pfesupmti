@@ -90,13 +90,14 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <div class="flex items-center justify-center space-x-2">
                                     <button class="px-3 py-1.5 rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out" data-bs-toggle="modal" data-bs-target="#modal-edit-{{ $admin->id }}">
-                                        Modifier
+                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ route('admin.delete', $admin->id) }}" onsubmit=" return confirm('Voulez-vous vraiment supprimer cet utilisateur ?')" method="post" class="inline-block">
                                         @csrf
                                         @method('delete')
                                         <button type="submit" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
-                                            Supprimer
+                                                      <i class="fas fa-trash-alt"></i>
+
                                         </button>
                                     </form>
                                 </div>

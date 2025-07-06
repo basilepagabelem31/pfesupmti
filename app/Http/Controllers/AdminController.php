@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Log; // <-- Importez le modèle Log
 use App\Models\Pays;
 use App\Models\Role;
 use App\Models\Statut;
 use App\Models\User;
 use App\Models\Ville;
-use App\Models\Groupe;    // Importez le modèle Groupe
-use App\Models\Promotion; // Importez le modèle Promotion
-use App\Models\Sujet;     // Importez le modèle Sujet
-use Illuminate\Http\Request; // Importez la classe Request
+use App\Models\Groupe;
+use App\Models\Promotion;
+use App\Models\Sujet;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -170,6 +171,15 @@ class AdminController extends Controller
                 $user->sujets()->attach($sujetIds);
             }
 
+            // --- Ajout du log de création ---
+            Log::create([
+                'user_id' => Auth::id(), // ID de l'administrateur connecté
+                'action' => 'user_created',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' (ID: {$user->id}, Rôle: {$user->role->nom}) a été créé.",
+                'object_snapshot' => $user->toArray(), // Enregistre l'état de l'utilisateur créé
+            ]);
+            // --- Fin de l'ajout du log ---
+
             $role = $user->role ? $user->role->nom : null ;
             if ($role === 'Administrateur'|| $role === 'Superviseur'){
                 return redirect()->route('admin.index')->with('success', 'Admin/Superviseur a été bien créé.');
@@ -255,7 +265,9 @@ class AdminController extends Controller
                 $rules['faculte'] = 'required|string|max:255';
                 $rules['titre_formation'] = 'required|string|max:255';
                 $rules['groupe_id'] = 'nullable|exists:groupes,id';
+
                 $rules['promotion_id'] = 'nullable|exists:promotions,id';
+
                 $rules['sujet_ids'] = 'nullable|array';
                 $rules['sujet_ids.*'] = 'exists:sujets,id';
             } else {
@@ -268,6 +280,10 @@ class AdminController extends Controller
             }
 
             $validatedData = $request->validate($rules);
+
+            // --- Sauvegarde l'état actuel de l'utilisateur AVANT la mise à jour pour le log ---
+            $oldUserSnapshot = $user->toArray(); 
+            // --- Fin de la sauvegarde de l'état précédent ---
 
             if (!empty($validatedData['password'])) {
                 $validatedData['password'] = Hash::make($validatedData['password']);
@@ -293,6 +309,19 @@ class AdminController extends Controller
             } else {
                 $user->sujets()->detach();
             }
+
+            // --- Ajout du log de mise à jour ---
+            Log::create([
+                'user_id' => Auth::id(), // ID de l'administrateur connecté
+                'action' => 'user_updated',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' (ID: {$user->id}, Rôle: {$user->role->nom}) a été mis à jour.",
+                'object_snapshot' => [
+                    'old' => $oldUserSnapshot,
+                    'new' => $user->fresh()->toArray(), // Récupère le nouvel état après la mise à jour
+                ],
+            ]);
+            // --- Fin de l'ajout du log ---
+
 
             $role = $user->role ? $user->role->nom : null ;
             if ($role === 'Administrateur' || $role === 'Superviseur'){
@@ -327,6 +356,11 @@ class AdminController extends Controller
             return redirect()->back()->with('error', "Impossible de supprimer le dernier compte administrateur.");
         }
 
+        // --- Sauvegarde l'état de l'utilisateur AVANT la suppression pour le log ---
+        $deletedUserSnapshot = $user->toArray();
+        $deletedUserRoleName = $user->role ? $user->role->nom : 'Inconnu';
+        // --- Fin de la sauvegarde de l'état précédent ---
+
         $role = $user->role ? $user->role->nom : null;
 
         if ($user->isStagiaire()) {
@@ -334,6 +368,16 @@ class AdminController extends Controller
         }
 
         $user->delete();
+
+        // --- Ajout du log de suppression ---
+        Log::create([
+            'user_id' => Auth::id(), // ID de l'administrateur connecté
+            'action' => 'user_deleted',
+            'log_message' => "L'utilisateur '{$deletedUserSnapshot['nom']} {$deletedUserSnapshot['prenom']}' (ID: {$deletedUserSnapshot['id']}, Rôle: {$deletedUserRoleName}) a été supprimé.",
+            'object_snapshot' => $deletedUserSnapshot, // Enregistre l'état de l'utilisateur supprimé
+        ]);
+        // --- Fin de l'ajout du log ---
+
 
         if ($role === 'Administrateur' || $role === 'Superviseur') {
             return redirect()->route('admin.index')->with('success', 'Utilisateur (Admin/Superviseur) supprimé avec succès.');
@@ -357,12 +401,7 @@ public function showStagiaireDetails(User $user)
         $user->load([
             'notes',
             'fichiersPossedes',
-            'fichiersTeleverses', // Fichiers téléversés PAR ce stagiaire
-            // Note: `fichiersRecus` n'est pas une relation explicite dans votre modèle User fourni,
-            // mais `fichiersPossedes` (via `id_stagiaire`) couvre généralement les fichiers associés à ce stagiaire,
-            // qu'ils soient téléversés par lui ou pour lui. Si vous avez besoin de distinguer les fichiers
-            // téléversés par un superviseur POUR ce stagiaire, il faudrait une relation spécifique ou filtrer `fichiersPossedes`
-            // par `id_superviseur_televerseur`. Pour l'instant, je m'appuie sur `fichiersPossedes` et `fichiersTeleverses`.
+            'fichiersTeleverses',
             'pays',
             'ville',
             'statut',
@@ -422,6 +461,10 @@ $validatedData = $request->only(['nom', 'prenom', 'email', 'telephone', 'cin', '
 
     $user = User::findOrFail($id);
 
+    // --- Sauvegarde l'état actuel de l'utilisateur AVANT la mise à jour pour le log ---
+    $oldUserSnapshot = $user->toArray();
+    // --- Fin de la sauvegarde de l'état précédent ---
+
 // Si mot de passe renseigné, on le prépare ici
 if ($request->filled('new_password')) {
     $user->password = Hash::make($request->new_password);
@@ -433,9 +476,52 @@ $user->fill($validatedData);
 // Sauvegarde tout en une seule fois
 $user->save();
 
-  
-
+    // --- Ajout du log de mise à jour de profil ---
+    Log::create([
+        'user_id' => Auth::id(), // ID de l'utilisateur connecté (celui qui modifie son profil)
+        'action' => 'profile_updated',
+        'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' (ID: {$user->id}) a mis à jour son propre profil.",
+        'object_snapshot' => [
+            'old' => $oldUserSnapshot,
+            'new' => $user->fresh()->toArray(),
+        ],
+    ]);
+    // --- Fin de l'ajout du log ---
+    
     return redirect()->back()->with('success', 'Profil mis à jour avec succès !');
 }
+
+
+
+public function showLogs(Request $request)
+    {
+        // Récupérer tous les logs, ou paginer si vous en avez beaucoup
+        // On charge aussi l'utilisateur qui a effectué l'action pour l'afficher
+        $logsQuery = Log::with('user');
+
+        // Optionnel : Ajouter des filtres (par utilisateur, par action, par date)
+        if ($request->filled('user_id')) {
+            $logsQuery->where('user_id', $request->input('user_id'));
+        }
+
+        if ($request->filled('action')) {
+            $logsQuery->where('action', $request->input('action'));
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $logsQuery->whereBetween('created_at', [$request->input('start_date') . ' 00:00:00', $request->input('end_date') . ' 23:59:59']);
+        }
+
+
+        $logs = $logsQuery->latest()->paginate(20); // Les logs les plus récents en premier, avec pagination
+
+        // Pour les filtres, vous pourriez vouloir passer les utilisateurs et les types d'actions
+        $usersForFilter = User::select('id', 'nom', 'prenom')->orderBy('nom')->get();
+        // Une liste d'actions uniques si vous voulez un filtre déroulant
+        $actionsForFilter = Log::select('action')->distinct()->pluck('action');
+
+
+        return view('admin.logs.index', compact('logs', 'usersForFilter', 'actionsForFilter'));
+    }
 
 }

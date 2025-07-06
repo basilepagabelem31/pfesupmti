@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -117,6 +118,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Groupes
         Route::resource('groupes', GroupeController::class);
+        Route::get('/groupes/{id}/stagiaires', [GroupeController::class, 'stagiairesActifs'])->name('groupes.stagiairesActifs');
 
         // Sujets
         Route::resource('sujets', SujetController::class);
@@ -142,7 +144,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/lister', [AdminController::class, 'index'])->name('admin.index');
           
             Route::get('/utilisateurs-superviseurs', [AdminController::class, 'index'])->name('admin.users.superviseurs');
-
+            Route::get('/email-logs', [EmailLogController::class, 'index'])->name('admin.email_logs.index');
             // CRUD pour Pays, Villes (gestion complète, pas seulement AJAX), Rôles
             Route::resource('pays', PaysController::class)->except(['show']);
             Route::resource('villes', VilleController::class)->except(['show', 'getVilles']);
@@ -155,7 +157,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:Superviseur')->group(function () {
         Route::get('/superviseur/dashboard', [SuperviseurController::class, 'index'])->name('superviseur.dashboard');
         // Route pour la liste des stagiaires gérés par le superviseur, réutilisant AdminController::indexStagiaire
-        Route::get('/superviseur/stagiaires', [AdminController::class, 'indexStagiaire'])->name('superviseur.stagiaires.index');
+    Route::get('/superviseur/stagiaires', [AdminController::class, 'indexStagiaire'])->name('superviseur.stagiaires.index');
 
         // Les routes promotions, groupes, sujets, et stagiaires/import ont été déplacées
         // dans le groupe 'Administrateur,Superviseur' plus haut pour éviter la duplication.
@@ -177,6 +179,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notes/{id}/edit', [NoteController::class, 'edit'])->name('notes.edit');
     Route::put('/notes/{id}', [NoteController::class, 'update'])->name('notes.update');
     Route::delete('/notes/{id}', [NoteController::class, 'destroy'])->name('notes.destroy');
+
+
+
+    Route::get('/reunions', [ReunionController::class, 'index'])->name('reunions.index');
+    Route::post('/reunions', [ReunionController::class, 'store'])->name('reunions.store');
+    Route::get('/reunions/{id}', [ReunionController::class, 'show'])->name('reunions.show');
+    Route::post('/reunions/{id}/cloture', [ReunionController::class, 'cloturer'])->name('reunions.cloture');
+    Route::post('/reunions/{reunionId}/presence/{stagiaireId}', [ReunionController::class, 'updatePresence'])->name('reunions.updatePresence');
+
+
     });
     //suite pour la gestion des notes 
 Route::middleware(['auth'])->group(function () {
@@ -198,19 +210,18 @@ Route::middleware(['auth'])->group(function () {
 });
 
     //gestion des absences et reunions gere pour le superviseur 
-   Route::middleware(['auth','role:Administrateur,Superviseur'])->group(function(){
-    Route::get('/reunions', [ReunionController::class, 'index'])->name('reunions.index');
-    Route::post('/reunions', [ReunionController::class, 'store'])->name('reunions.store');
-    Route::get('/reunions/{id}', [ReunionController::class, 'show'])->name('reunions.show');
-    Route::post('/reunions/{id}/cloture', [ReunionController::class, 'cloturer'])->name('reunions.cloture');
-    Route::post('/reunions/{reunionId}/presence/{stagiaireId}', [ReunionController::class, 'updatePresence'])->name('reunions.updatePresence');
-    Route::get('/reunion/consecutive-absences/{stagiaire_id}', [ReunionController::class, 'getConsecutiveAbsences']);
+   Route::middleware(['auth','role:Superviseur'])->group(function(){
+    // Route::get('/reunions', [ReunionController::class, 'index'])->name('reunions.index');
+    // Route::post('/reunions', [ReunionController::class, 'store'])->name('reunions.store');
+    // Route::get('/reunions/{id}', [ReunionController::class, 'show'])->name('reunions.show');
+    // Route::post('/reunions/{id}/cloture', [ReunionController::class, 'cloturer'])->name('reunions.cloture');
+    // Route::post('/reunions/{reunionId}/presence/{stagiaireId}', [ReunionController::class, 'updatePresence'])->name('reunions.updatePresence');
  
 });
-    //gestion des groupes pour la reunion et absence 
-   Route::get('/groupes/{groupe}/stagiaires', [GroupeController::class, 'stagiairesActifs'])->name('groupes.stagiaires');
+    //gestion des groupes 
 
-    //Gestion des emails en relation avec la reunion 
+
+     //Gestion des emails en relation avec la reunion 
     Route::middleware(['auth','role:Administrateur'])->name('admin.')->group(function(){
         Route::get('/admin/email-settings', [EmailSettingsController::class, 'index'])->name('email-settings.index');
         Route::post('/admin/email-settings/update', [EmailSettingsController::class, 'update'])->name('email-settings.update');
@@ -218,12 +229,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/email-templates', [EmailTemplateController::class, 'index'])->name('email_templates.index');
         Route::post('/admin/email-templates', [EmailTemplateController::class, 'store'])->name('email_templates.store');
         Route::put('/admin/email-templates/{id}', [EmailTemplateController::class, 'update'])->name('email_templates.update');
+
+        Route::get('/admin/logs', [AdminController::class, 'showLogs'])->name('logs.index');
     });
-
-
-
-
-   
 
     
 

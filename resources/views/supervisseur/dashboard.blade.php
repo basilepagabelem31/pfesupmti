@@ -141,7 +141,7 @@
                         <i class="fas fa-handshake fa-3x"></i>
                     </div>
                 </div>
-                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Demandes de Coéquipiers</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion  Coéquipiers</h2>
                 <p class="text-gray-600 mb-4 flex-grow">Consultez et gérez les demandes de coéquipiers des stagiaires.</p>
                 <div class="flex justify-center mt-auto">
                     <a href="{{ route('demande_coequipiers.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-orange-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition ease-in-out duration-150">
@@ -160,10 +160,10 @@
                         <i class="fas fa-calendar-check fa-3x"></i>
                     </div>
                 </div>
-                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Réunions & Absences</h2>
-                <p class="text-gray-600 mb-4 flex-grow">Planifiez les réunions et suivez la présence des stagiaires.</p>
+                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion Réunions </h2>
+                <center><p class="text-gray-600 mb-4 flex-grow">Planifiez les réunions.</p></center>
                 <div class="flex justify-center mt-auto">
-                    <a href="/superviseur/reunions" class="inline-flex items-center justify-center px-4 py-2 bg-teal-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <a href="{{ route('reunions.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-teal-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <i class="fas fa-clipboard-list mr-2"></i> Gérer
                     </a>
                 </div>
@@ -171,23 +171,7 @@
         </div>
 
         {{-- Carte pour l'aperçu des Notes (Placeholder) --}}
-        <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-blue-gray-100 flex flex-col transform hover:scale-105 transition duration-300 ease-in-out">
-            <div class="p-6 flex flex-col flex-grow">
-                {{-- Icône au-dessus du titre --}}
-                <div class="flex justify-center items-center mb-4">
-                    <div class="p-4 rounded-full bg-blue-gray-100 text-blue-gray-600">
-                        <i class="fas fa-clipboard fa-3x"></i>
-                    </div>
-                </div>
-                <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Gestion des Notes</h2>
-                <p class="text-gray-600 mb-4 flex-grow">Ajoutez et consultez les notes attribuées aux stagiaires.</p>
-                <div class="flex justify-center mt-auto">
-                    <a href="/superviseur/notes" class="inline-flex items-center justify-center px-4 py-2 bg-gray-700 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        <i class="fas fa-edit mr-2"></i> Gérer les notes
-                    </a>
-                </div>
-            </div>
-        </div>
+
 
     </div>
 </div>

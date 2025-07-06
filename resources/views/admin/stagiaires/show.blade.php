@@ -91,7 +91,7 @@
             {{-- Section Coéquipiers --}}
             <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-8 animate-fade-in">
                 <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-users mr-3 text-green-600"></i> Coéquipiers (Même Groupe)
+                    <i class="fas fa-users mr-3 text-green-600"></i> Coéquipiers 
                 </h3>
                 @if ($coequipiers->isEmpty())
                     <div class="bg-blue-50 text-blue-800 p-4 rounded-xl text-center shadow-sm border border-blue-200">

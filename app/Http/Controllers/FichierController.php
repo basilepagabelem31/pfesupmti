@@ -6,9 +6,12 @@ use App\Models\Fichier;
 use App\Models\User;
 use App\Models\Sujet;
 use App\Models\Role;
+use App\Models\Log; // <-- Importez votre modèle Log
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+// Supprimez l'import de la façade Log si vous n'en avez plus besoin, mais souvent utile pour les erreurs inattendues
+use Illuminate\Support\Facades\Log as DefaultLog; // Renommez si vous utilisez aussi la façade pour les erreurs non applicatives
 use Illuminate\Validation\ValidationException;
 
 class FichierController extends Controller
@@ -22,30 +25,38 @@ class FichierController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $sujets = Sujet::all(); // Récupère tous les sujets disponibles pour la modale d'édition
+        $sujets = Sujet::all();
 
-        // Base query for files, eager load relations
         $query = Fichier::with('stagiaire', 'televerseur', 'sujet')->latest();
 
         $currentStagiaire = null;
         $currentTeleverseur = null;
-        $currentSearchQuery = $request->input('search_query', ''); // Initialise la requête de recherche
+        $currentSearchQuery = $request->input('search_query', '');
 
-        $stagiairesFilterList = collect(); // Initialise pour la vue superviseur/admin
-        $televerseursFilterList = collect(); // Initialise pour la vue superviseur/admin
+        $stagiairesFilterList = collect();
+        $televerseursFilterList = collect();
+
+        // Enregistrement du log : Accès à la liste des fichiers
+        Log::create([
+            'user_id' => $user->id,
+            'action' => 'view_files_list',
+            'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a accédé à la liste des fichiers.",
+            'object_snapshot' => [
+                'user_role' => $user->role->nom,
+                'search_query' => $currentSearchQuery,
+                'filter_stagiaire_id' => $request->input('stagiaire_id'),
+                'filter_televerseur_id' => $request->input('televerseur'),
+            ],
+        ]);
 
         if ($user->isStagiaire()) {
-            // Un stagiaire ne voit que ses propres fichiers
             $query->where('id_stagiaire', $user->id);
-            $currentStagiaire = $user; // Le stagiaire actuel est l'utilisateur connecté
+            $currentStagiaire = $user;
 
-            // Pour la vue stagiaire, la liste des téléverseurs inclura ceux qui ont téléversé
-            // des fichiers pour ce stagiaire, y compris le stagiaire lui-même.
             $televerseursFilterList = User::whereHas('fichiersTeleverses', function($q) use ($user) {
                 $q->where('id_stagiaire', $user->id);
             })->orWhere('id', $user->id)->get();
 
-            // Applique le filtre de recherche textuel pour le stagiaire (recherche par nom du téléverseur)
             if (!empty($currentSearchQuery)) {
                 $query->whereHas('televerseur', function ($subQuery) use ($currentSearchQuery) {
                     $subQuery->where('prenom', 'like', '%' . $currentSearchQuery . '%')
@@ -55,24 +66,16 @@ class FichierController extends Controller
 
             $fichiers = $query->get();
 
-            // Retourne la vue spécifique pour les stagiaires
             return view('fichiers.index_stagiaire', compact('fichiers', 'sujets', 'currentStagiaire', 'televerseursFilterList', 'currentSearchQuery'));
 
         } elseif ($user->isSuperviseur() || $user->isAdministrateur()) {
-            // Superviseur/Admin peuvent voir tous les fichiers ou filtrer par stagiaire ou téléverseur
-
-            // Peuple la liste déroulante des stagiaires pour le filtre
-            // Renommé 'nom' en 'prenom' pour le tri
             $stagiairesFilterList = User::whereHas('role', function ($q) {
                 $q->where('nom', 'Stagiaire');
             })->orderBy('prenom')->orderBy('nom')->get();
 
-            // Peuple la liste déroulante des téléverseurs pour le filtre (tous les utilisateurs qui ont téléversé des fichiers)
-            // Renommé 'nom' en 'prenom' pour le tri
             $televerseursFilterList = User::whereHas('fichiersTeleverses')
-                                        ->orderBy('prenom')->orderBy('nom')->get();
+                                         ->orderBy('prenom')->orderBy('nom')->get();
 
-            // Applique le filtre de recherche textuel (nom/prénom du stagiaire ou du téléverseur)
             if (!empty($currentSearchQuery)) {
                 $query->where(function ($q) use ($currentSearchQuery) {
                     $q->whereHas('stagiaire', function ($subQuery) use ($currentSearchQuery) {
@@ -85,8 +88,6 @@ class FichierController extends Controller
                 });
             }
 
-            // Applique le filtre par stagiaire si présent dans la requête
-            // IMPORTANT : Changé 'stagiaire' à 'stagiaire_id' pour correspondre au nom du champ dans la vue
             if ($request->filled('stagiaire_id')) {
                 $stagiaireId = $request->input('stagiaire_id');
                 $stagiaireFiltered = User::find($stagiaireId);
@@ -96,7 +97,6 @@ class FichierController extends Controller
                 }
             }
 
-            // Applique le filtre par téléverseur si présent dans la requête
             if ($request->filled('televerseur')) {
                 $televerseurId = $request->input('televerseur');
                 $televerseurFiltered = User::find($televerseurId);
@@ -108,10 +108,16 @@ class FichierController extends Controller
 
             $fichiers = $query->get();
 
-            // Retourne la vue spécifique pour les superviseurs/administrateurs
             return view('fichiers.index_superviseur', compact('fichiers', 'stagiairesFilterList', 'currentStagiaire', 'sujets', 'televerseursFilterList', 'currentTeleverseur', 'currentSearchQuery'));
         }
 
+        // Enregistrement du log : Accès non autorisé à la liste des fichiers
+        Log::create([
+            'user_id' => $user->id,
+            'action' => 'unauthorized_file_list_access',
+            'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a tenté d'accéder sans autorisation à la liste des fichiers.",
+            'object_snapshot' => ['user_role' => $user->role->nom],
+        ]);
         abort(403, 'Accès non autorisé.');
     }
 
@@ -125,17 +131,33 @@ class FichierController extends Controller
     {
         $user = Auth::user();
         $stagiaires = null;
-        $sujets = Sujet::all(); // Récupère tous les sujets disponibles
+        $sujets = Sujet::all();
+
+        // Enregistrement du log : Accès au formulaire de création de fichier
+        Log::create([
+            'user_id' => $user->id,
+            'action' => 'view_file_create_form',
+            'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a accédé au formulaire de création de fichier.",
+            'object_snapshot' => [
+                'user_role' => $user->role->nom,
+                'target_stagiaire_id' => $stagiaire ? $stagiaire->id : 'N/A'
+            ],
+        ]);
 
         if ($user->isSuperviseur() || $user->isAdministrateur()) {
-            // Le superviseur/admin peut choisir pour quel stagiaire téléverser
             $stagiaires = User::whereHas('role', function ($query) {
                 $query->where('nom', 'Stagiaire');
             })->get();
         } elseif ($user->isStagiaire()) {
-            // Le stagiaire téléverse pour lui-même, pas besoin de choisir de stagiaire
             $stagiaire = $user;
         } else {
+            // Enregistrement du log : Accès non autorisé au formulaire de création de fichier
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'unauthorized_file_create_form_access',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a tenté d'accéder sans autorisation au formulaire de création de fichier.",
+                'object_snapshot' => ['user_role' => $user->role->nom],
+            ]);
             abort(403, 'Accès non autorisé.');
         }
 
@@ -153,51 +175,82 @@ class FichierController extends Controller
         $stagiaireRoleId = Role::where('nom', 'Stagiaire')->value('id');
 
         try {
-            // Validation des données
             $rules = [
                 'nom_fichier' => 'required|string|max:255',
                 'description' => 'nullable|string|max:1000',
                 'fichier' => 'required|file|max:10240', // Max 10MB (10240 KB)
-                'type_fichier' => 'required|string|in:convention,rapport,attestation,autre', // Types définis par CDCH
-                'sujet_id' => 'nullable|exists:sujets,id', // Le sujet est optionnel
+                'type_fichier' => 'required|string|in:convention,rapport,attestation,autre',
+                'sujet_id' => 'nullable|exists:sujets,id',
             ];
 
-            // Si c'est un superviseur/admin qui téléverse, il doit choisir un stagiaire
             if ($user->isSuperviseur() || $user->isAdministrateur()) {
                 $rules['id_stagiaire'] = 'required|exists:users,id';
             }
 
             $validatedData = $request->validate($rules);
 
-            // Déterminer l'ID du stagiaire propriétaire du fichier
             $idStagiaireProprietaire = $user->isStagiaire() ? $user->id : $validatedData['id_stagiaire'];
 
-            // Gérer le téléversement du fichier
-            // Laravel stocke le fichier avec un nom unique et son extension d'origine par défaut
             $path = $request->file('fichier')->store('public/fichiers');
-            $urlFichier = Storage::url($path); // Génère une URL publique
+            $urlFichier = Storage::url($path);
 
-            Fichier::create([
+            $fichier = Fichier::create([
                 'nom_fichier' => $validatedData['nom_fichier'],
                 'description' => $validatedData['description'],
                 'url_fichier' => $urlFichier,
                 'id_stagiaire' => $idStagiaireProprietaire,
-                'id_superviseur_televerseur' => $user->id, // Toujours l'utilisateur connecté
-                // CORRECTION ICI: Si c'est un stagiaire, les permissions sont toujours true.
-                // Si c'est un superviseur/admin, prendre la valeur booléenne de la requête,
-                // qui est false si la case est décochée et donc absente de la requête.
+                'id_superviseur_televerseur' => $user->id,
                 'peut_modifier' => $user->isStagiaire() ? true : $request->boolean('peut_modifier', false),
                 'peut_supprimer' => $user->isStagiaire() ? true : $request->boolean('peut_supprimer', false),
                 'type_fichier' => $validatedData['type_fichier'],
                 'sujet_id' => $validatedData['sujet_id'],
             ]);
 
+            // Enregistrement du log : Fichier téléversé avec succès
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'file_uploaded',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a téléversé le fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}) pour le stagiaire ID: {$idStagiaireProprietaire}.",
+                'object_snapshot' => $fichier->toArray(),
+            ]);
+
             return redirect()->route('fichiers.index')->with('success', 'Fichier téléversé avec succès !');
 
         } catch (ValidationException $e) {
+            // Enregistrement du log : Erreur de validation lors du téléversement
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'file_upload_validation_error',
+                'log_message' => "Erreur de validation lors du téléversement d'un fichier par '{$user->nom} {$user->prenom}' ({$user->role->nom}).",
+                'object_snapshot' => [
+                    'input' => $request->all(),
+                    'errors' => $e->errors(),
+                ],
+            ]);
             return redirect()->back()
                 ->withInput()
                 ->withErrors($e->errors());
+        } catch (\Exception $e) {
+            // Enregistrement du log : Erreur inattendue lors du téléversement
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'file_upload_critical_error',
+                'log_message' => "Erreur critique inattendue lors du téléversement d'un fichier par '{$user->nom} {$user->prenom}' ({$user->role->nom}).",
+                'object_snapshot' => [
+                    'input' => $request->all(),
+                    'exception_message' => $e->getMessage(),
+                    'exception_trace' => $e->getTraceAsString(),
+                ],
+            ]);
+            // Utilisez la façade Log de Laravel pour les erreurs système critiques si vous voulez les séparer
+            DefaultLog::critical('Erreur inattendue lors du téléversement de fichier', [
+                'user_id' => $user->id,
+                'user_role' => $user->role->nom,
+                'input' => $request->all(),
+                'exception_message' => $e->getMessage(),
+                'exception_trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->back()->with('error', 'Une erreur inattendue est survenue lors du téléversement.');
         }
     }
 
@@ -210,15 +263,45 @@ class FichierController extends Controller
     {
         $user = Auth::user();
 
-        // Le stagiaire peut modifier s'il est le propriétaire et que la permission 'peut_modifier' est true
-        // Le superviseur/admin peut modifier tous les fichiers
         if ($user->isStagiaire() && ($fichier->id_stagiaire !== $user->id || !$fichier->peut_modifier)) {
+            // Enregistrement du log : Tentative non autorisée d'accès au formulaire d'édition
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'unauthorized_file_edit_form_access',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a tenté d'accéder sans autorisation au formulaire d'édition du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}).",
+                'object_snapshot' => [
+                    'fichier_id' => $fichier->id,
+                    'fichier_proprietaire_id' => $fichier->id_stagiaire,
+                    'peut_modifier_permission' => $fichier->peut_modifier,
+                ],
+            ]);
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce fichier.');
-        } elseif (!$user->isSuperviseur() && !$user->isAdministrateur() && !$user->isStagiaire()) { // Fallback si le rôle n'est pas défini
+        } elseif (!$user->isSuperviseur() && !$user->isAdministrateur() && !$user->isStagiaire()) {
+            // Enregistrement du log : Accès non autorisé au formulaire d'édition (rôle non défini)
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'unauthorized_file_edit_form_access_unknown_role',
+                'log_message' => "Accès non autorisé au formulaire d'édition du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}) par un utilisateur avec un rôle non défini.",
+                'object_snapshot' => [
+                    'user_id' => $user->id,
+                    'user_role' => $user->role->nom,
+                    'fichier_id' => $fichier->id,
+                ],
+            ]);
             abort(403, 'Accès non autorisé.');
         }
 
-        // Récupérer les sujets pour le formulaire
+        // Enregistrement du log : Accès au formulaire d'édition de fichier
+        Log::create([
+            'user_id' => $user->id,
+            'action' => 'view_file_edit_form',
+            'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a accédé au formulaire d'édition du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}).",
+            'object_snapshot' => [
+                'fichier_id' => $fichier->id,
+                'nom_fichier' => $fichier->nom_fichier,
+            ],
+        ]);
+
         $sujets = Sujet::all();
 
         return view('fichiers.edit', compact('fichier', 'sujets'));
@@ -234,12 +317,31 @@ class FichierController extends Controller
     {
         $user = Auth::user();
 
-        // Vérification des permissions de modification (similaire à la méthode edit)
-        // Les superviseurs/administrateurs peuvent toujours modifier.
-        // Les stagiaires peuvent modifier si c'est leur fichier et qu'ils ont la permission.
         if ($user->isStagiaire() && ($fichier->id_stagiaire !== $user->id || !$fichier->peut_modifier)) {
+            // Enregistrement du log : Tentative non autorisée de mise à jour de fichier
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'unauthorized_file_update_attempt',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a tenté de modifier sans autorisation le fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}).",
+                'object_snapshot' => [
+                    'fichier_id' => $fichier->id,
+                    'fichier_proprietaire_id' => $fichier->id_stagiaire,
+                    'peut_modifier_permission' => $fichier->peut_modifier,
+                ],
+            ]);
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce fichier.');
         } elseif (!$user->isSuperviseur() && !$user->isAdministrateur() && !$user->isStagiaire()) {
+            // Enregistrement du log : Accès non autorisé à la mise à jour (rôle non défini)
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'unauthorized_file_update_attempt_unknown_role',
+                'log_message' => "Accès non autorisé à la mise à jour du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}) par un utilisateur avec un rôle non défini.",
+                'object_snapshot' => [
+                    'user_id' => $user->id,
+                    'user_role' => $user->role->nom,
+                    'fichier_id' => $fichier->id,
+                ],
+            ]);
             abort(403, 'Accès non autorisé.');
         }
 
@@ -249,18 +351,20 @@ class FichierController extends Controller
             $rules = [
                 'nom_fichier' => 'required|string|max:255',
                 'description' => 'nullable|string|max:1000',
-                'fichier' => 'nullable|file|max:10240', // Fichier optionnel lors de la mise à jour
+                'fichier' => 'nullable|file|max:10240',
                 'type_fichier' => 'required|string|in:convention,rapport,attestation,autre',
                 'sujet_id' => 'nullable|exists:sujets,id',
             ];
 
-            // Le superviseur/admin peut modifier les permissions
             if ($user->isSuperviseur() || $user->isAdministrateur()) {
                 $rules['peut_modifier'] = 'boolean';
                 $rules['peut_supprimer'] = 'boolean';
             }
 
             $validatedData = $request->validate($rules);
+
+            // Sauvegarde l'état actuel de l'utilisateur AVANT la mise à jour pour le log
+            $oldFichierSnapshot = $fichier->toArray();
 
             $dataToUpdate = [
                 'nom_fichier' => $validatedData['nom_fichier'],
@@ -269,38 +373,88 @@ class FichierController extends Controller
                 'sujet_id' => $validatedData['sujet_id'],
             ];
 
-            // Si un nouveau fichier est téléversé, mettez à jour le chemin
+            $oldUrlFichier = $fichier->url_fichier;
+
             if ($request->hasFile('fichier')) {
-                // Supprimez l'ancien fichier s'il existe et si ce n'est pas une URL temporaire/erreur
                 if ($fichier->url_fichier && Storage::exists(str_replace('/storage/', 'public/', $fichier->url_fichier))) {
                     Storage::delete(str_replace('/storage/', 'public/', $fichier->url_fichier));
+                    // Log pour la suppression de l'ancien fichier
+                    Log::create([
+                        'user_id' => $user->id,
+                        'action' => 'old_file_deleted_on_update',
+                        'log_message' => "Ancien fichier physique (URL: '{$oldUrlFichier}') supprimé du stockage lors de la mise à jour du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}).",
+                        'object_snapshot' => ['fichier_id' => $fichier->id, 'old_url_fichier' => $oldUrlFichier],
+                    ]);
                 }
                 $path = $request->file('fichier')->store('public/fichiers');
                 $dataToUpdate['url_fichier'] = Storage::url($path);
+                // Log pour le nouveau fichier téléversé
+                Log::create([
+                    'user_id' => $user->id,
+                    'action' => 'new_file_uploaded_on_update',
+                    'log_message' => "Nouveau fichier téléversé (chemin: '{$path}') pour la mise à jour du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}).",
+                    'object_snapshot' => ['fichier_id' => $fichier->id, 'new_path' => $path],
+                ]);
             }
 
-            // Mettez à jour les permissions si l'utilisateur est superviseur/admin
-            // CORRECTION ICI: Utiliser 'boolean' sans valeur par défaut pour prendre la valeur réelle.
             if ($user->isSuperviseur() || $user->isAdministrateur()) {
-                $dataToUpdate['peut_modifier'] = $request->boolean('peut_modifier', false); // Ajouté 'false' comme défaut
-                $dataToUpdate['peut_supprimer'] = $request->boolean('peut_supprimer', false); // Ajouté 'false' comme défaut
-            } else {
-                 // Si c'est un stagiaire, il ne peut pas modifier ses propres permissions, elles sont fixées à 'true' pour ses propres fichiers
-                 // C'est pourquoi ces champs sont cachés dans la vue 'edit' pour les stagiaires.
-                 // Ne pas modifier les permissions si ce n'est pas un superviseur/admin.
-                 // Ou si le stagiaire téléverse ses propres fichiers, les permissions sont toujours true.
-                 // On ne devrait pas arriver ici si un stagiaire essaie de modifier les permissions,
-                 // car les checkboxes ne sont pas affichées pour eux.
+                $dataToUpdate['peut_modifier'] = $request->boolean('peut_modifier', false);
+                $dataToUpdate['peut_supprimer'] = $request->boolean('peut_supprimer', false);
             }
 
             $fichier->update($dataToUpdate);
 
+            // Enregistrement du log : Fichier mis à jour avec succès
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'file_updated',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a mis à jour le fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}).",
+                'object_snapshot' => [
+                    'old' => $oldFichierSnapshot,
+                    'new' => $fichier->fresh()->toArray(),
+                    'changes' => array_diff_assoc($dataToUpdate, $oldFichierSnapshot), // Logique pour les champs modifiés
+                ],
+            ]);
+
             return redirect()->route('fichiers.index')->with('success', 'Fichier mis à jour avec succès !');
 
         } catch (ValidationException $e) {
+            // Enregistrement du log : Erreur de validation lors de la mise à jour
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'file_update_validation_error',
+                'log_message' => "Erreur de validation lors de la mise à jour du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}) par '{$user->nom} {$user->prenom}' ({$user->role->nom}).",
+                'object_snapshot' => [
+                    'fichier_id' => $fichier->id,
+                    'input' => $request->all(),
+                    'errors' => $e->errors(),
+                ],
+            ]);
             return redirect()->back()
                 ->withInput()
                 ->withErrors($e->errors());
+        } catch (\Exception $e) {
+            // Enregistrement du log : Erreur inattendue lors de la mise à jour
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'file_update_critical_error',
+                'log_message' => "Erreur critique inattendue lors de la mise à jour du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}) par '{$user->nom} {$user->prenom}' ({$user->role->nom}).",
+                'object_snapshot' => [
+                    'fichier_id' => $fichier->id,
+                    'input' => $request->all(),
+                    'exception_message' => $e->getMessage(),
+                    'exception_trace' => $e->getTraceAsString(),
+                ],
+            ]);
+            DefaultLog::critical('Erreur inattendue lors de la mise à jour de fichier', [
+                'user_id' => $user->id,
+                'user_role' => $user->role->nom,
+                'fichier_id' => $fichier->id,
+                'input' => $request->all(),
+                'exception_message' => $e->getMessage(),
+                'exception_trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de la mise à jour du fichier.');
         }
     }
 
@@ -313,28 +467,87 @@ class FichierController extends Controller
     {
         $user = Auth::user();
 
-        // Vérification des permissions de suppression
-        // Les superviseurs/administrateurs peuvent toujours supprimer.
-        // Les stagiaires peuvent supprimer si c'est leur fichier et qu'ils ont la permission.
         if ($user->isStagiaire() && ($fichier->id_stagiaire !== $user->id || !$fichier->peut_supprimer)) {
+            // Enregistrement du log : Tentative non autorisée de suppression
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'unauthorized_file_delete_attempt',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a tenté de supprimer sans autorisation le fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}).",
+                'object_snapshot' => [
+                    'fichier_id' => $fichier->id,
+                    'fichier_proprietaire_id' => $fichier->id_stagiaire,
+                    'peut_supprimer_permission' => $fichier->peut_supprimer,
+                ],
+            ]);
             abort(403, 'Vous n\'êtes pas autorisé à supprimer ce fichier.');
         } elseif (!$user->isSuperviseur() && !$user->isAdministrateur() && !$user->isStagiaire()) {
+            // Enregistrement du log : Accès non autorisé à la suppression (rôle non défini)
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'unauthorized_file_delete_attempt_unknown_role',
+                'log_message' => "Accès non autorisé à la suppression du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}) par un utilisateur avec un rôle non défini.",
+                'object_snapshot' => [
+                    'user_id' => $user->id,
+                    'user_role' => $user->role->nom,
+                    'fichier_id' => $fichier->id,
+                ],
+            ]);
             abort(403, 'Accès non autorisé.');
         }
 
         try {
-            // Supprimer le fichier du stockage
+            $oldUrlFichier = $fichier->url_fichier;
+            $fichierId = $fichier->id;
+            $nomFichier = $fichier->nom_fichier;
+            $fichierProprietaireId = $fichier->id_stagiaire;
+
             if ($fichier->url_fichier && Storage::exists(str_replace('/storage/', 'public/', $fichier->url_fichier))) {
                 Storage::delete(str_replace('/storage/', 'public/', $fichier->url_fichier));
+                // Log de suppression du fichier physique
+                Log::create([
+                    'user_id' => $user->id,
+                    'action' => 'file_physical_deleted',
+                    'log_message' => "Fichier physique '{$nomFichier}' (ID: {$fichierId}, URL: '{$oldUrlFichier}') supprimé du stockage par '{$user->nom} {$user->prenom}' ({$user->role->nom}).",
+                    'object_snapshot' => ['fichier_id' => $fichierId, 'url_fichier' => $oldUrlFichier],
+                ]);
             }
 
-            // Supprimer l'entrée de la base de données
             $fichier->delete();
+
+            // Enregistrement du log : Fichier supprimé avec succès
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'file_deleted',
+                'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a supprimé le fichier '{$nomFichier}' (ID: {$fichierId}) appartenant au stagiaire ID: {$fichierProprietaireId}.",
+                'object_snapshot' => [
+                    'fichier_id' => $fichierId,
+                    'nom_fichier' => $nomFichier,
+                    'url_fichier_before_delete' => $oldUrlFichier,
+                    'id_stagiaire_proprietaire' => $fichierProprietaireId,
+                ],
+            ]);
 
             return redirect()->route('fichiers.index')->with('success', 'Fichier supprimé avec succès !');
 
         } catch (\Exception $e) {
-            \Log::error("Erreur lors de la suppression du fichier {$fichier->id}: " . $e->getMessage());
+            // Enregistrement du log : Erreur critique lors de la suppression
+            Log::create([
+                'user_id' => $user->id,
+                'action' => 'file_delete_critical_error',
+                'log_message' => "Erreur critique lors de la suppression du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}) par '{$user->nom} {$user->prenom}' ({$user->role->nom}).",
+                'object_snapshot' => [
+                    'fichier_id' => $fichier->id ?? 'unknown',
+                    'exception_message' => $e->getMessage(),
+                    'exception_trace' => $e->getTraceAsString(),
+                ],
+            ]);
+            DefaultLog::critical('Erreur lors de la suppression du fichier', [
+                'user_id' => $user->id,
+                'user_role' => $user->role->nom,
+                'fichier_id' => $fichier->id ?? 'unknown',
+                'exception_message' => $e->getMessage(),
+                'exception_trace' => $e->getTraceAsString(),
+            ]);
             return redirect()->back()->with('error', 'Une erreur est survenue lors de la suppression du fichier.');
         }
     }
@@ -345,31 +558,57 @@ class FichierController extends Controller
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function download(Fichier $fichier)
-    {
-        $user = Auth::user();
-        // Vérification des permissions de téléchargement
-        // Un stagiaire peut télécharger son propre fichier. Superviseur/Admin peuvent télécharger n'importe quel fichier.
-        if ($user->id !== $fichier->id_stagiaire && !$user->isSuperviseur() && !$user->isAdministrateur()) {
-            abort(403, 'Accès non autorisé au téléchargement de ce fichier.');
-        }
+{
+    $user = Auth::user();
+    
+    // Stocke les infos de l'utilisateur et du fichier pour le log, même en cas d'erreur.
+    $logContext = [
+        'user_id' => $user->id,
+        'user_role' => $user->role->nom,
+        'fichier_id' => $fichier->id,
+        'nom_fichier' => $fichier->nom_fichier, // <--- Use $fichier->nom_fichier directly here
+        'fichier_proprietaire_id' => $fichier->id_stagiaire,
+    ];
 
-        // Le chemin du fichier dans le système de stockage (transforme /storage/ vers public/)
-        $filePath = str_replace('/storage/', 'public/', $fichier->url_fichier);
-
-        if (Storage::exists($filePath)) {
-            // Obtenir l'extension du fichier stocké (ex: 'pdf', 'jpg')
-            $extension = pathinfo(Storage::path($filePath), PATHINFO_EXTENSION);
-            
-            // Construire le nom de fichier pour le téléchargement.
-            // On prend le nom_fichier fourni par l'utilisateur et on ajoute l'extension réelle.
-            // On s'assure que le nom ne contient pas déjà une extension pour éviter les doublons (ex: "rapport.pdf.pdf")
-            $downloadFileName = preg_replace('/\.[^.]+$/', '', $fichier->nom_fichier); // Retire toute extension existante
-            $downloadFileName .= '.' . $extension; // Ajoute l'extension correcte
-
-            // Retourne le fichier pour téléchargement avec le nom corrigé
-            return Storage::download($filePath, $downloadFileName);
-        }
-
-        abort(404, 'Fichier non trouvé.');
+    if ($user->id !== $fichier->id_stagiaire && !$user->isSuperviseur() && !$user->isAdministrateur()) {
+        // Enregistrement du log : Tentative non autorisée de téléchargement
+        Log::create([
+            'user_id' => $user->id,
+            'action' => 'unauthorized_file_download_attempt',
+            'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a tenté de télécharger sans autorisation le fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}).",
+            'object_snapshot' => $logContext,
+        ]);
+        abort(403, 'Accès non autorisé au téléchargement de ce fichier.');
     }
+
+    $filePath = str_replace('/storage/', 'public/', $fichier->url_fichier);
+
+    if (Storage::exists($filePath)) {
+        $extension = pathinfo(Storage::path($filePath), PATHINFO_EXTENSION);
+        $downloadFileName = preg_replace('/\.[^.]+$/', '', $fichier->nom_fichier);
+        $downloadFileName .= '.' . $extension;
+
+        // Enregistrement du log : Fichier téléchargé avec succès
+        Log::create([
+            'user_id' => $user->id,
+            'action' => 'file_downloaded',
+            'log_message' => "L'utilisateur '{$user->nom} {$user->prenom}' ({$user->role->nom}) a téléchargé le fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}, Nom du fichier de téléchargement: '{$downloadFileName}').", // <--- Corrected this line
+            'object_snapshot' => array_merge($logContext, ['download_filename' => $downloadFileName]),
+        ]);
+
+        return Storage::download($filePath, $downloadFileName);
+    }
+
+    // Enregistrement du log : Fichier non trouvé pour le téléchargement
+    Log::create([
+        'user_id' => $user->id,
+        'action' => 'file_download_not_found',
+        'log_message' => "Tentative de téléchargement du fichier '{$fichier->nom_fichier}' (ID: {$fichier->id}) échouée : fichier physique non trouvé.",
+        'object_snapshot' => array_merge($logContext, [
+            'url_fichier_expected' => $fichier->url_fichier,
+            'resolved_path' => $filePath,
+        ]),
+    ]);
+    abort(404, 'Fichier non trouvé.');
+}
 }

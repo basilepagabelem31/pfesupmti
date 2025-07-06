@@ -69,16 +69,16 @@
                                         <button type="button" class="px-3 py-1.5 rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out"
                                             data-bs-toggle="modal" data-bs-target="#sujetModal"
                                             onclick="openSujetModal({{ $sujet->id }}, '{{ addslashes($sujet->titre) }}', `{{ addslashes($sujet->description) }}`, {{ $sujet->promotion_id ?? 'null' }}, {{ $sujet->groupe_id ?? 'null' }}, '{{ route('sujets.update', $sujet->id) }}')">
-                                            <i class="fas fa-edit"></i> Modifier
+                                            <i class="fas fa-edit"></i> 
                                         </button>
                                         <button type="button" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
                                             data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal"
                                             data-sujet-id="{{ $sujet->id }}" data-sujet-titre="{{ addslashes($sujet->titre) }}">
-                                            <i class="fas fa-trash-alt"></i> Supprimer
+                                            <i class="fas fa-trash-alt"></i> 
                                         </button>
                                         <button type="button" class="px-3 py-1.5 rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out" data-bs-toggle="modal" data-bs-target="#inscriptionsModal"
                                             onclick="openInscriptionsModal({{ $sujet->id }}, '{{ addslashes($sujet->titre) }}')">
-                                            <i class="fas fa-users-cog"></i> Gérer les inscriptions
+                                            <i class="fas fa-users-cog"></i> 
                                         </button>
                                     </div>
                                 </td>

@@ -1,6 +1,6 @@
 <!-- BEGIN theme-panel -->
 <div class="theme-panel">
-	<a href="javascript:;" data-click="theme-panel-expand" class="theme-collapse-btn"><i class="fa fa-cog"></i></a>
+
 	<div class="theme-panel-content">
 		<ul class="theme-list clearfix">
 			<li><a href="javascript:;" class="bg-red" data-theme="theme-red" data-click="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Red" data-original-title="" title="">&nbsp;</a></li>
