@@ -68,8 +68,9 @@
                                             {{ ucfirst($fichier->type_fichier) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $fichier->televerseur->prenom }} {{ $fichier->televerseur->nom }}</td>
-                                    <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+    {{ $fichier->televerseur?->prenom }} {{ $fichier->televerseur?->nom }}
+</td>                                    <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                             {{ $fichier->peut_modifier ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             {{ $fichier->peut_modifier ? 'Oui' : 'Non' }}

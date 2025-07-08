@@ -1,6 +1,7 @@
 @extends('layout.default')
 
 @section('content')
+
 <div class="min-h-screen bg-gray-50 flex flex-col items-center p-4 sm:p-6 lg:p-8">
     <div class="max-w-full w-full bg-white rounded-3xl shadow-xl overflow-hidden animate-fade-in md:max-w-7xl">
         <div class="relative p-8 md:p-10 lg:p-12">
@@ -104,8 +105,9 @@
                                     @if (!$currentStagiaire)
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $fichier->stagiaire->prenom }} {{ $fichier->stagiaire->nom }}</td>
                                     @endif
-                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $fichier->televerseur->prenom }} {{ $fichier->televerseur->nom }}</td>
-                                    <!--<td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+    {{ $fichier->televerseur?->prenom }} {{ $fichier->televerseur?->nom }}
+</td>                                    <!--<td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                             {{ $fichier->peut_modifier ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             {{ $fichier->peut_modifier ? 'Oui' : 'Non' }}
@@ -337,56 +339,30 @@
 @endsection
 
 @section('my_js')
+
+
 <script>
-    $(document).ready(function() {
-        // Initialize Select2 for the filter outside the modals
-        $('#filter_televerseur_id').select2();
-
-        // Initialize Select2 for dropdowns in the "Create File" modal when it's shown
-        $('#createFileModal').on('shown.bs.modal', function() {
-            $('#type_fichier_create').select2({
-                dropdownParent: $('#createFileModal')
-            });
-            $('#sujet_id_create').select2({
-                dropdownParent: $('#createFileModal')
-            });
-            $('#id_stagiaire_create').select2({
-                dropdownParent: $('#createFileModal')
-            });
-        });
-
-        // Initialize Select2 for dropdowns in the "Edit File" modal when it's shown
-        $('#editFileModal').on('shown.bs.modal', function() {
-            $('#type_fichier_edit').select2({
-                dropdownParent: $('#editFileModal')
-            });
-            $('#sujet_id_edit').select2({
-                dropdownParent: $('#editFileModal')
-            });
-        });
-
+    document.addEventListener('DOMContentLoaded', function() {
         // Gérer le modal "Modifier le Fichier"
         $('#editFileModal').on('show.bs.modal', function(event) {
-            const button = $(event.relatedTarget);
+            const button = $(event.relatedTarget); // Bouton qui a déclenché le modal
             const fileId = button.data('id');
             const form = $('#editFileForm');
 
             // Réinitialiser les erreurs de validation précédentes
             form.find('.is-invalid').removeClass('is-invalid');
             form.find('.text-red-500.text-sm.mt-1').remove();
-
+            
             // Remplir les champs du formulaire avec les données du fichier
-            form.attr('action', `/fichiers/${fileId}`);
+            form.attr('action', `/fichiers/${fileId}`); // Mise à jour de l'action du formulaire
+
             $('#nom_fichier_edit').val(button.data('nom_fichier'));
             $('#description_edit').val(button.data('description'));
-
-            // Set the value for Select2 dropdowns and trigger change
-            $('#type_fichier_edit').val(button.data('type_fichier')).trigger('change');
-            $('#sujet_id_edit').val(button.data('sujet_id')).trigger('change');
-
-            // Gérer les checkboxes pour les permissions
-            $('#peut_modifier_edit').prop('checked', button.data('peut_modifier') == '1');
-            $('#peut_supprimer_edit').prop('checked', button.data('peut_supprimer') == '1');
+            $('#type_fichier_edit').val(button.data('type_fichier'));
+            $('#sujet_id_edit').val(button.data('sujet_id'));
+            
+            // Les stagiaires ne gèrent pas ces permissions, donc ne les pré-remplissez pas ici.
+            // La visibilité des boutons Modifier/Supprimer est gérée directement dans le Blade par les conditions.
         });
 
         // Gérer le modal "Téléverser un nouveau Fichier"
@@ -395,52 +371,83 @@
             form[0].reset(); // Réinitialiser le formulaire
             form.find('.is-invalid').removeClass('is-invalid');
             form.find('.text-red-500.text-sm.mt-1').remove();
-
-            // Pré-sélectionner le stagiaire si le filtre est actif
-            const currentStagiaireId = "{{ $currentStagiaire ? $currentStagiaire->id : '' }}";
-            if (currentStagiaireId) {
-                $('#id_stagiaire_create').val(currentStagiaireId).trigger('change');
-            } else {
-                // Reset to default option if no current stagiaire is set
-                $('#id_stagiaire_create').val('').trigger('change');
-            }
-
-            // Gérer les checkboxes pour les permissions lors de la création
-            $('#peut_modifier_create').prop('checked', "{{ old('peut_modifier', '1') }}" == '1');
-            $('#peut_supprimer_create').prop('checked', "{{ old('peut_supprimer', '1') }}" == '1');
+            // Pas de pré-sélection de stagiaire ni de checkboxes de permission pour la modale d'ajout stagiaire
         });
 
-        // Gérer le modal de suppression
+        // Gérer le modal "Supprimer le Fichier"
         $('#deleteFileModal').on('show.bs.modal', function(event) {
-            const button = $(event.relatedTarget);
+            const button = $(event.relatedTarget); // Bouton qui a déclenché le modal
             const fileId = button.data('file-id');
             const fileName = button.data('file-name');
-            $('#fileNameToDelete').text(fileName);
-            $('#deleteFileForm').attr('action', `/fichiers/${fileId}`);
+
+            $('#fileNameToDelete').text(fileName); // Affiche le nom du fichier à supprimer
+            const deleteForm = $('#deleteFileForm');
+            deleteForm.attr('action', `/fichiers/${fileId}`); // Définit l'action du formulaire de suppression
         });
+        
+        // Gestion des erreurs de validation après soumission (si la page se recharge avec des erreurs)
+        @if ($errors->any())
+            var openEditModal = false;
+            var openCreateModal = false;
 
-        // Afficher les erreurs de validation spécifiques aux champs du formulaire des modales
-        @foreach ($errors->messages() as $field => $messages)
-            let inputEdit = document.getElementById('{{ $field }}_edit');
-            let inputCreate = document.getElementById('{{ $field }}_create');
-            let openEditModal = $('#editFileModal').hasClass('show');
-            let openCreateModal = $('#createFileModal').hasClass('show');
+            // Check if errors are from edit form (heuristic: presence of _method=PUT and old('id'))
+            @if(old('_method') === 'PUT' && old('id'))
+                openEditModal = true;
+            @endif
 
-            if (inputEdit && openEditModal) {
-                inputEdit.classList.add('is-invalid');
-                let feedbackDiv = document.createElement('div');
-                feedbackDiv.classList.add('text-red-500', 'text-sm', 'mt-1');
-                feedbackDiv.innerHTML = "@foreach ($messages as $message)<p>{{ $message }}</p>@endforeach";
-                inputEdit.parentNode.appendChild(feedbackDiv);
+            // Check if errors are from create form (heuristic: absence of _method=PUT and presence of typical create fields)
+            // For stagiaire, id_stagiaire is hidden, so checking for other fields is more reliable.
+            @if(old('_method') !== 'PUT' && (old('nom_fichier') || old('fichier'))) 
+                openCreateModal = true;
+            @endif
+
+            if (openEditModal) {
+                var editFileModal = new bootstrap.Modal(document.getElementById('editFileModal'));
+                editFileModal.show();
+
+                const form = $('#editFileForm');
+                const fileId = "{{ old('id') }}";
+                
+                if(fileId) {
+                    form.attr('action', `/fichiers/${fileId}`);
+                }
+                
+                $('#nom_fichier_edit').val("{{ old('nom_fichier') }}");
+                $('#description_edit').val("{{ old('description') }}");
+                $('#type_fichier_edit').val("{{ old('type_fichier') }}");
+                $('#sujet_id_edit').val("{{ old('sujet_id') }}");
+
+            } else if (openCreateModal) {
+                var createFileModal = new bootstrap.Modal(document.getElementById('createFileModal'));
+                createFileModal.show();
+
+                const form = $('#createFileForm');
+                $('#nom_fichier_create').val("{{ old('nom_fichier') }}");
+                $('#description_create').val("{{ old('description') }}");
+                $('#type_fichier_create').val("{{ old('type_fichier') }}");
+                $('#sujet_id_create').val("{{ old('sujet_id') }}");
             }
-            if (inputCreate && openCreateModal) {
-                inputCreate.classList.add('is-invalid');
-                let feedbackDiv = document.createElement('div');
-                feedbackDiv.classList.add('text-red-500', 'text-sm', 'mt-1');
-                feedbackDiv.innerHTML = "@foreach ($messages as $message)<p>{{ $message }}</p>@endforeach";
-                inputCreate.parentNode.appendChild(feedbackDiv);
-            }
-        @endforeach
+
+            // Afficher les erreurs de validation spécifiques aux champs du formulaire des modales
+            @foreach ($errors->messages() as $field => $messages)
+                let inputEdit = document.getElementById('{{ $field }}_edit');
+                let inputCreate = document.getElementById('{{ $field }}_create');
+
+                if (inputEdit && openEditModal) {
+                    inputEdit.classList.add('is-invalid');
+                    let feedbackDiv = document.createElement('div');
+                    feedbackDiv.classList.add('text-red-500', 'text-sm', 'mt-1');
+                    feedbackDiv.textContent = '{{ implode(", ", $messages) }}';
+                    inputEdit.parentNode.appendChild(feedbackDiv);
+                } else if (inputCreate && openCreateModal) {
+                    inputCreate.classList.add('is-invalid');
+                    let feedbackDiv = document.createElement('div');
+                    feedbackDiv.classList.add('text-red-500', 'text-sm', 'mt-1');
+                    feedbackDiv.textContent = '{{ implode(", ", $messages) }}';
+                    inputCreate.parentNode.appendChild(feedbackDiv);
+                }
+            @endforeach
+        @endif
     });
 </script>
 @endsection

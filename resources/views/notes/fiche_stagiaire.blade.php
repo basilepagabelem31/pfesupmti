@@ -113,18 +113,25 @@
                         {{-- Actions Modifier/Supprimer (visibles uniquement par le donneur de la note) --}}
                         @if(Auth::id() === $note->donneur_id)
                             <div class="flex-shrink-0 ml-0 sm:ml-4 mt-3 sm:mt-0 flex space-x-2">
-                                <a href="{{ route('notes.edit', $note->id) }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out">
-                                    <i class="fas fa-edit mr-1"></i> Modifier
-                                </a>
-                                <form action="{{ route('notes.destroy', $note->id) }}" method="POST" class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
-                                            onclick="return confirm('Voulez-vous vraiment supprimer cette note ?')">
-                                        <i class="fas fa-trash-alt mr-1"></i> Supprimer
-                                    </button>
-                                </form>
-                            </div>
+  <a href="{{ route('notes.edit', $note->id) }}" 
+   class="inline-flex items-center justify-center w-8 h-8 p-0 rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out">
+    <i class="fas fa-edit"></i> </a>
+
+    <form action="{{ route('notes.destroy', $note->id) }}" method="POST" class="inline-block">
+        @csrf
+        @method('DELETE')
+        <button type="button"
+    class="inline-flex items-center justify-center w-8 h-8 p-0 rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out delete-note-btn"
+    data-bs-toggle="modal"
+    data-bs-target="#deleteConfirmationModal"
+    data-item-id="{{ $note->id }}"
+    data-item-title="la note du {{ optional($note->date)->format('d/m/Y') ?: 'Date non spécifiée' }} ({{ Str::limit($note->libelle ?? '', 20) }})"
+    data-action-type="delete-note"
+    data-form-action="{{ route('notes.destroy', $note->id) }}"
+>
+    <i class="fas fa-trash-alt"></i> </button>
+    </form>
+</div>
                         @endif
                     </div>
                 @endif
@@ -143,4 +150,140 @@
         </div>
     </div>
 </div>
+
+
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-xl shadow-lg border-0">
+            <div class="modal-header bg-gradient-to-r from-red-500 to-red-700 text-white border-b-0 rounded-t-xl p-4">
+                <h5 class="modal-title font-bold text-xl flex items-center" id="deleteConfirmationModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill mr-2"></i> Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close text-white opacity-80" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-6 text-center text-gray-700">
+                <p class="text-lg">
+                    Êtes-vous sûr de vouloir supprimer <span id="itemTitleToDelete" class="font-semibold text-red-600">cet élément</span> ?
+                    <br>
+                    Cette action est irréversible.
+                </p>
+                <form id="dynamicModalForm" method="POST" style="display: none;">
+                    @csrf
+                    </form>
+            </div>
+            <div class="modal-footer flex justify-center bg-gray-50 rounded-b-xl p-4">
+                <button type="button" class="btn px-5 py-2.5 rounded-lg text-gray-700 bg-gray-200 hover:bg-gray-300 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400" data-bs-dismiss="modal">
+                    Annuler
+                </button>
+                <button type="button" id="confirmDeleteButton" class="btn px-5 py-2.5 rounded-lg text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @endsection
+
+
+
+<script>
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+
+    if (deleteConfirmationModal) {
+        deleteConfirmationModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Le bouton qui a déclenché le modal
+
+            const itemId = button.getAttribute('data-item-id');
+            const itemTitle = button.getAttribute('data-item-title');
+            const actionType = button.getAttribute('data-action-type'); // 'cloture-reunion' ou 'delete-note' ou autre
+            const formAction = button.getAttribute('data-form-action'); // Récupère l'action du formulaire
+
+            const modalTitleElement = deleteConfirmationModal.querySelector('.modal-title');
+            const modalBodySpan = deleteConfirmationModal.querySelector('.modal-body #itemTitleToDelete');
+            const confirmButton = deleteConfirmationModal.querySelector('#confirmDeleteButton');
+
+            // --- Configuration du contenu du modal ---
+            if (actionType === 'cloture-reunion') {
+                modalTitleElement.textContent = 'Confirmer la clôture de la réunion';
+                if (modalBodySpan) {
+                    modalBodySpan.innerHTML = `la réunion du <span class="font-semibold text-red-600">${itemTitle}</span>`;
+                }
+                confirmButton.textContent = 'Clôturer la réunion';
+                confirmButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                confirmButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            } else if (actionType === 'delete-note') { // Nouvelle condition pour la suppression de note
+                modalTitleElement.textContent = 'Confirmer la suppression de la note';
+                if (modalBodySpan) {
+                    modalBodySpan.innerHTML = `la note "${itemTitle}"`;
+                }
+                confirmButton.textContent = 'Supprimer la note';
+                confirmButton.classList.remove('bg-blue-600', 'hover:bg-blue-700'); // S'assurer que les couleurs sont rouges pour la suppression
+                confirmButton.classList.add('bg-red-600', 'hover:bg-red-700');
+            }
+            // Ajoutez d'autres `else if` pour d'autres types de suppression (utilisateur, groupe, etc.)
+            else { // Logique par défaut pour les suppressions générales (si vous en avez)
+                modalTitleElement.textContent = 'Confirmer la suppression';
+                if (modalBodySpan) {
+                     modalBodySpan.innerHTML = `"${itemTitle}"`; // Texte par défaut pour la suppression
+                }
+                confirmButton.textContent = 'Supprimer';
+                confirmButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                confirmButton.classList.add('bg-red-600', 'hover:bg-red-700');
+            }
+
+
+            // --- Logique pour gérer le formulaire de soumission dynamique ---
+            let dynamicForm = document.getElementById('dynamicModalForm');
+            if (!dynamicForm) {
+                dynamicForm = document.createElement('form');
+                dynamicForm.setAttribute('id', 'dynamicModalForm');
+                dynamicForm.setAttribute('method', 'POST');
+                dynamicForm.style.display = 'none';
+                document.body.appendChild(dynamicForm);
+
+                const csrfInput = document.createElement('input');
+                csrfInput.setAttribute('type', 'hidden');
+                csrfInput.setAttribute('name', '_token');
+                csrfInput.setAttribute('value', '{{ csrf_token() }}');
+                dynamicForm.appendChild(csrfInput);
+            }
+
+            // Supprime l'ancien input _method si présent
+            let methodInput = dynamicForm.querySelector('input[name="_method"]');
+            if (methodInput) {
+                dynamicForm.removeChild(methodInput);
+            }
+
+            // Définit l'action et la méthode _method selon le type d'action
+            if (actionType === 'cloture-reunion') {
+                dynamicForm.setAttribute('action', `/reunions/${itemId}/cloture`);
+                // Pas de _method='DELETE' pour une requête POST de clôture
+            } else if (formAction) { // Pour toutes les actions de suppression avec data-form-action
+                dynamicForm.setAttribute('action', formAction);
+                methodInput = document.createElement('input');
+                methodInput.setAttribute('type', 'hidden');
+                methodInput.setAttribute('name', '_method');
+                methodInput.setAttribute('value', 'DELETE');
+                dynamicForm.appendChild(methodInput);
+            } else {
+                console.error('Missing data-form-action for delete operation or unhandled actionType.');
+                // Gérer les cas non prévus si nécessaire
+            }
+
+
+            // Attache l'événement click au bouton de confirmation du modal
+            confirmButton.onclick = function () {
+                dynamicForm.submit(); // Soumet le formulaire dynamique
+            };
+        });
+    }
+});
+
+
+</script>

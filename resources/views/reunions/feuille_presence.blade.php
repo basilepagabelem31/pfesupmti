@@ -138,12 +138,26 @@
             {{-- Bouton de clôture de réunion --}}
             <div class="p-6 border-t border-gray-200 flex justify-end bg-gray-50">
                 @if(!$reunion->status) {{-- Afficher le bouton seulement si la réunion n'est pas clôturée --}}
-                    <form action="{{ route('reunions.cloture', $reunion->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir clôturer cette réunion ? ');">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center px-6 py-2.5 rounded-lg bg-red-600 text-white font-semibold shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition ease-in-out duration-150">
-                            <i class="bi bi-x-circle-fill mr-2"></i> Clôturer la réunion
-                        </button>
-                    </form>
+                   <div class="p-6 border-t border-gray-200 flex justify-end bg-gray-50">
+    @if(!$reunion->status) {{-- Afficher le bouton seulement si la réunion n'est pas clôturée --}}
+        {{-- Supprimez l'attribut onsubmit du formulaire --}}
+        <form id="clotureReunionForm" action="{{ route('reunions.cloture', $reunion->id) }}" method="POST">
+            @csrf
+            <button type="button" 
+                class="inline-flex items-center px-6 py-2.5 rounded-lg bg-red-600 text-white font-semibold shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition ease-in-out duration-150"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteConfirmationModal" {{-- Cible le modal de confirmation existant --}}
+                data-item-id="{{ $reunion->id }}"
+                data-item-title="Réunion du {{ $reunion->date->format('d/m/Y') }}" {{-- Nom pour le titre du modal --}}
+                data-action-type="cloture-reunion" {{-- Nouveau data-attribut pour identifier l'action --}}
+            >
+                <i class="bi bi-x-circle-fill mr-2"></i> Clôturer la réunion
+            </button>
+        </form>
+    @else
+        <p class="text-green-600 font-semibold text-lg">Cette réunion est clôturée.</p>
+    @endif
+</div>
                 @else
                     <p class="text-green-600 font-semibold text-lg">Cette réunion est clôturée.</p>
                 @endif
@@ -151,6 +165,41 @@
         </div>
     </div>
 </div>
+
+
+
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-xl shadow-lg border-0">
+            <div class="modal-header bg-gradient-to-r from-red-500 to-red-700 text-white border-b-0 rounded-t-xl p-4">
+                <h5 class="modal-title font-bold text-xl flex items-center" id="deleteConfirmationModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill mr-2"></i> Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close text-white opacity-80" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-6 text-center text-gray-700">
+                <p class="text-lg">
+                    Êtes-vous sûr de vouloir supprimer <span id="itemTitleToDelete" class="font-semibold text-red-600">cet élément</span> ?
+                    <br>
+                    Cette action est irréversible.
+                </p>
+                <form id="dynamicModalForm" method="POST" style="display: none;">
+                    @csrf
+                    </form>
+            </div>
+            <div class="modal-footer flex justify-center bg-gray-50 rounded-b-xl p-4">
+                <button type="button" class="btn px-5 py-2.5 rounded-lg text-gray-700 bg-gray-200 hover:bg-gray-300 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400" data-bs-dismiss="modal">
+                    Annuler
+                </button>
+                <button type="button" id="confirmDeleteButton" class="btn px-5 py-2.5 rounded-lg text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
 
 <script>
     // Mise à jour de présence (statut)
@@ -220,5 +269,108 @@
             alert(error.message || 'Erreur serveur lors de la mise à jour.');
         });
     }
+
+
+
+
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+
+    if (deleteConfirmationModal) {
+        deleteConfirmationModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Le bouton qui a déclenché le modal
+
+            const itemId = button.getAttribute('data-item-id');
+            const itemTitle = button.getAttribute('data-item-title');
+            const actionType = button.getAttribute('data-action-type'); // Récupère le type d'action (e.g., "cloture-reunion")
+
+            const modalTitleElement = deleteConfirmationModal.querySelector('.modal-title');
+            const modalBodySpan = deleteConfirmationModal.querySelector('.modal-body #itemTitleToDelete');
+            const confirmButton = deleteConfirmationModal.querySelector('#confirmDeleteButton');
+
+            // --- Logique pour configurer le contenu du modal ---
+            if (actionType === 'cloture-reunion') {
+                modalTitleElement.textContent = 'Confirmer la clôture de la réunion';
+                if (modalBodySpan) {
+                    modalBodySpan.innerHTML = `la réunion du <span class="font-semibold text-red-600">${itemTitle}</span>`;
+                    // Note: Le texte complet est "Êtes-vous sûr de vouloir clôturer la réunion du [date] ?"
+                    // Le début "Êtes-vous sûr de vouloir clôturer" sera dans le modal body HTML si vous le définissez ainsi.
+                }
+                // Mettre à jour le texte du bouton de confirmation
+                confirmButton.textContent = 'Clôturer la réunion';
+                // Optionnel: Changer la couleur du bouton pour la clôture
+                confirmButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                confirmButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            } else { // Action de suppression par défaut (pour utilisateurs, promotions, groupes, etc.)
+                modalTitleElement.textContent = 'Confirmer la suppression';
+                if (modalBodySpan) {
+                    modalBodySpan.innerHTML = `"<span class="font-semibold text-red-600">${itemTitle}</span>"`;
+                    // Le texte complet est "Êtes-vous sûr de vouloir supprimer [itemTitleToDelete] ?"
+                }
+                // Réinitialiser le texte et la couleur du bouton pour la suppression
+                confirmButton.textContent = 'Supprimer';
+                confirmButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                confirmButton.classList.add('bg-red-600', 'hover:bg-red-700');
+            }
+
+            // --- Logique pour gérer le formulaire de soumission ---
+            let dynamicForm = document.getElementById('dynamicModalForm');
+            if (!dynamicForm) {
+                dynamicForm = document.createElement('form');
+                dynamicForm.setAttribute('id', 'dynamicModalForm');
+                dynamicForm.setAttribute('method', 'POST');
+                dynamicForm.style.display = 'none'; // Cache le formulaire
+                document.body.appendChild(dynamicForm); // Ajoute au body ou à un conteneur approprié
+
+                const csrfInput = document.createElement('input');
+                csrfInput.setAttribute('type', 'hidden');
+                csrfInput.setAttribute('name', '_token');
+                csrfInput.setAttribute('value', '{{ csrf_token() }}');
+                dynamicForm.appendChild(csrfInput);
+            }
+
+            // Supprime l'ancien input _method si présent pour éviter des conflits
+            let methodInput = dynamicForm.querySelector('input[name="_method"]');
+            if (methodInput) {
+                dynamicForm.removeChild(methodInput);
+            }
+
+            if (actionType === 'cloture-reunion') {
+                // Définit l'action du formulaire pour la clôture
+                dynamicForm.setAttribute('action', `/reunions/${itemId}/cloture`); // Route spécifique pour la clôture
+                // Pas besoin de _method='DELETE' pour cette route qui est une POST directe
+            } else {
+                // Pour les suppressions (DELETE), ajoutez l'input _method
+                methodInput = document.createElement('input');
+                methodInput.setAttribute('type', 'hidden');
+                methodInput.setAttribute('name', '_method');
+                methodInput.setAttribute('value', 'DELETE');
+                dynamicForm.appendChild(methodInput);
+
+               
+                const formAction = button.getAttribute('data-form-action');
+                if (formAction) {
+                    dynamicForm.setAttribute('action', formAction);
+                } else {
+                    // Fallback ou message d'erreur si data-form-action n'est pas défini
+                    console.error('Missing data-form-action for delete operation.');
+                    // Vous pouvez avoir une logique par défaut si vous avez des routes de suppression prévisibles
+                    // Par exemple, si toutes les routes de suppression sont /ressource/{id}
+                    // dynamicForm.setAttribute('action', `/${button.getAttribute('data-resource-name')}/${itemId}`);
+                }
+            }
+
+            // Attache l'événement click au bouton de confirmation du modal
+            confirmButton.onclick = function () {
+                dynamicForm.submit(); // Soumet le formulaire dynamique
+            };
+        });
+    }
+});
+
+
 </script>
 @endsection

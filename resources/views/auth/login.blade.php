@@ -71,12 +71,12 @@
                     </label>
 
                     @if (Route::has('password.request'))
-                        <a class="underline text-sm text-blue-600 hover:text-blue-800 rounded-md 
+                        <!-- <a class="underline text-sm text-blue-600 hover:text-blue-800 rounded-md 
                                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
                                   transition duration-150 ease-in-out" 
                            href="{{ route('password.request') }}">
                             {{ __('Mot de passe oublié ?') }}
-                        </a>
+                        </a> -->
                     @endif
                 </div>
 

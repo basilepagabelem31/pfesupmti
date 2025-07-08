@@ -61,6 +61,8 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Adresse</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Pays</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Ville</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Statut</th>
+
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">Rôle</th>
                             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-indigo-800 uppercase tracking-wider">Action</th>
                         </tr>
@@ -78,7 +80,25 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $admin->adresse }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $admin->pays?->nom  }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $admin->ville?->nom }}</td>
+                            
+                            
+                            
+                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        @if($admin->statut?->nom == 'Actif') bg-blue-100 text-blue-800
+                                        @elseif ($admin->statut?->nom == 'Terminé') bg-indigo-100 text-indigo-800
+                                        @elseif($admin->statut?->nom == 'Abandonné') bg-red-100 text-red-800
+                                        @elseif ($admin->statut?->nom == 'Archivé') bg-gray-200 text-gray-700
+                                        @else bg-gray-100 text-gray-800 @endif">
+                                        {{ $admin->statut?->nom }}
+                                    </span>
+                                </td>
+
+                            
+                            
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+
+            
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     @if($admin->role?->nom == 'Administrateur') bg-indigo-100 text-indigo-800
                                     @elseif($admin->role?->nom == 'Superviseur') bg-purple-100 text-purple-800
@@ -87,19 +107,24 @@
                                     {{ $admin->role?->nom }}
                                 </span>
                             </td>
+
+
+
+
+                       
+
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <div class="flex items-center justify-center space-x-2">
                                     <button class="px-3 py-1.5 rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out" data-bs-toggle="modal" data-bs-target="#modal-edit-{{ $admin->id }}">
                                          <i class="fas fa-edit"></i>
                                     </button>
-                                    <form action="{{ route('admin.delete', $admin->id) }}" onsubmit=" return confirm('Voulez-vous vraiment supprimer cet utilisateur ?')" method="post" class="inline-block">
-                                        @csrf
-                                        @method('delete')
-                                        <button type="submit" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
-                                                      <i class="fas fa-trash-alt"></i>
-
-                                        </button>
-                                    </form>
+<button type="button" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
+    data-bs-toggle="modal"
+    data-bs-target="#deleteConfirmationModal"
+    data-item-id="{{ $admin->id }}"
+    data-item-title="{{ $admin->prenom }} {{ $admin->nom }}">
+    <i class="fas fa-trash-alt"></i>
+</button>
                                 </div>
                             </td>
                         </tr>
@@ -122,6 +147,12 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
 
 {{-- Modal Ajouter un Utilisateur --}}
 <div class="modal fade" id="modal-add" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
@@ -450,6 +481,28 @@
         </div>
     </div>
 </div>
+
+
+
+{{--Modale de suppression    --}}
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white rounded-3xl shadow-2xl p-8 md:p-10 border border-gray-200">
+            <div class="modal-header border-b border-gray-100 pb-4 mb-6">
+                <h5 class="modal-title text-2xl font-bold text-gray-900 text-center flex-grow" id="deleteConfirmationModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close text-gray-400 hover:text-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center text-gray-700">
+                Êtes-vous sûr de vouloir supprimer l'utilisateur "<span id="itemTitleToDelete" class="font-semibold text-red-600"></span>" ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer flex justify-center space-x-4 mt-8 border-t border-gray-100 pt-4">
+                <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out" id="confirmDeleteButton">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('my_js')
@@ -617,6 +670,62 @@ document.addEventListener('DOMContentLoaded', function() {
         const deleteForm = $('#deleteUserForm');
         deleteForm.attr('action', `/admin/delete/${userId}`);
     });
+});
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+    if (deleteConfirmationModal) {
+        deleteConfirmationModal.addEventListener('show.bs.modal', function (event) {
+            // Bouton qui a déclenché le modal
+            const button = event.relatedTarget;
+
+            // Récupère les informations de l'élément depuis les attributs data-*
+            const itemId = button.getAttribute('data-item-id');
+            const itemTitle = button.getAttribute('data-item-title');
+
+            // Met à jour le contenu du modal
+            const itemTitleSpan = deleteConfirmationModal.querySelector('#itemTitleToDelete');
+            if (itemTitleSpan) {
+                itemTitleSpan.textContent = itemTitle;
+            }
+
+            // Crée ou met à jour un formulaire de suppression caché dans le modal
+            let deleteForm = deleteConfirmationModal.querySelector('#modalDeleteForm');
+            if (!deleteForm) {
+                deleteForm = document.createElement('form');
+                deleteForm.setAttribute('id', 'modalDeleteForm');
+                deleteForm.setAttribute('method', 'POST');
+                deleteForm.style.display = 'none'; // Cache le formulaire
+                deleteConfirmationModal.querySelector('.modal-body').appendChild(deleteForm);
+
+                const csrfInput = document.createElement('input');
+                csrfInput.setAttribute('type', 'hidden');
+                csrfInput.setAttribute('name', '_token');
+                csrfInput.setAttribute('value', '{{ csrf_token() }}');
+                deleteForm.appendChild(csrfInput);
+
+                const methodInput = document.createElement('input');
+                methodInput.setAttribute('type', 'hidden');
+                methodInput.setAttribute('name', '_method');
+                methodInput.setAttribute('value', 'DELETE');
+                deleteForm.appendChild(methodInput);
+            }
+
+            // Met à jour l'action du formulaire avec l'ID de l'élément
+            // Utilise la route 'admin.delete' que vous avez dans web.php
+            deleteForm.setAttribute('action', `/admin/delete/${itemId}`);
+
+            // Gère le clic sur le bouton "Supprimer" du modal
+            const confirmDeleteButton = deleteConfirmationModal.querySelector('#confirmDeleteButton');
+            if (confirmDeleteButton) {
+                confirmDeleteButton.onclick = function () {
+                    deleteForm.submit(); // Soumet le formulaire de suppression
+                };
+            }
+        });
+    }
 });
 </script>
 @endsection

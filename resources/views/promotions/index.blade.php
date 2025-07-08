@@ -71,15 +71,14 @@
                                       <i class="fas fa-edit"></i>
 
                                         </button>
-                                        <form method="POST" action="{{ route('promotions.destroy', $promotion) }}" class="inline-block" onsubmit="return confirm('Voulez-vous vraiment supprimer cette promotion ?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
+                                     <button type="button" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteConfirmationModal"
+                    data-promotion-id="{{ $promotion->id }}"
+                    data-promotion-title="{{ $promotion->titre }}">
+                    <i class="fas fa-trash-alt"></i>
+                    </button>
 
-
-                                             <i class="fas fa-trash-alt"></i> 
-                                            </button>
-                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -94,6 +93,29 @@
         </div>
     </div>
 </div>
+
+
+
+{{-- Modal Promotion (utilisée pour la suppression) --}}
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white rounded-3xl shadow-2xl p-8 md:p-10 border border-gray-200">
+            <div class="modal-header border-b border-gray-100 pb-4 mb-6">
+                <h5 class="modal-title text-2xl font-bold text-gray-900 text-center flex-grow" id="deleteConfirmationModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close text-gray-400 hover:text-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center text-gray-700">
+                Êtes-vous sûr de vouloir supprimer la promotion "<span id="promotionTitleToDelete" class="font-semibold text-red-600"></span>" ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer flex justify-center space-x-4 mt-8 border-t border-gray-100 pt-4">
+                <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out" id="confirmDeleteButton">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 {{-- Modal Promotion (utilisée pour Ajouter et Modifier) --}}
 <div class="modal fade" id="promotionModal" tabindex="-1" aria-labelledby="promotionModalLabel" aria-hidden="true">
@@ -185,5 +207,63 @@ document.addEventListener('DOMContentLoaded', function () {
         @endforeach
     @endif
 });
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+    if (deleteConfirmationModal) {
+        deleteConfirmationModal.addEventListener('show.bs.modal', function (event) {
+            // Bouton qui a déclenché le modal
+            const button = event.relatedTarget;
+
+            // Récupère les informations de la promotion depuis les attributs data-*
+            const promotionId = button.getAttribute('data-promotion-id');
+            const promotionTitle = button.getAttribute('data-promotion-title');
+
+            // Met à jour le contenu du modal
+            const promotionTitleSpan = deleteConfirmationModal.querySelector('#promotionTitleToDelete');
+            if (promotionTitleSpan) {
+                promotionTitleSpan.textContent = promotionTitle;
+            }
+
+            // Crée ou met à jour un formulaire de suppression caché dans le modal
+            let deleteForm = deleteConfirmationModal.querySelector('#modalDeleteForm');
+            if (!deleteForm) {
+                deleteForm = document.createElement('form');
+                deleteForm.setAttribute('id', 'modalDeleteForm');
+                deleteForm.setAttribute('method', 'POST');
+                deleteForm.style.display = 'none'; // Cache le formulaire
+                deleteConfirmationModal.querySelector('.modal-body').appendChild(deleteForm);
+
+                const csrfInput = document.createElement('input');
+                csrfInput.setAttribute('type', 'hidden');
+                csrfInput.setAttribute('name', '_token');
+                csrfInput.setAttribute('value', '{{ csrf_token() }}');
+                deleteForm.appendChild(csrfInput);
+
+                const methodInput = document.createElement('input');
+                methodInput.setAttribute('type', 'hidden');
+                methodInput.setAttribute('name', '_method');
+                methodInput.setAttribute('value', 'DELETE');
+                deleteForm.appendChild(methodInput);
+            }
+
+            // Met à jour l'action du formulaire avec l'ID de la promotion
+            deleteForm.setAttribute('action', `/promotions/${promotionId}`); // Assurez-vous que cette route correspond à votre `route('promotions.destroy', $promotion)` [cite: 656]
+
+            // Gère le clic sur le bouton "Supprimer" du modal
+            const confirmDeleteButton = deleteConfirmationModal.querySelector('#confirmDeleteButton');
+            if (confirmDeleteButton) {
+                confirmDeleteButton.onclick = function () {
+                    deleteForm.submit(); // Soumet le formulaire de suppression
+                };
+            }
+        });
+    }
+});
+
+
 </script>
 @endsection

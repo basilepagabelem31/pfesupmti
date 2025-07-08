@@ -74,14 +74,13 @@
                                             <i class="fas fa-edit"></i> 
                                         </button>
 
-                                        <form action="{{ route('groupes.destroy', $groupe->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible et impossible si le groupe contient des stagiaires.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
-                                                <i class="fas fa-trash-alt"></i> 
-                                               
-                                            </button>
-                                        </form>
+                                        <button type="button" class="px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
+    data-bs-toggle="modal"
+    data-bs-target="#deleteConfirmationModal"
+    data-item-id="{{ $groupe->id }}"
+    data-item-title="{{ $groupe->nom }}"> {{-- Utilisation du nom du groupe pour l'affichage --}}
+    <i class="fas fa-trash-alt"></i>
+</button>
                                     </div>
                                 </td>
                             </tr>
@@ -136,6 +135,30 @@
         </div>
     </div>
 </div>
+
+
+
+{{-- Modal Supprimer un Groupe --}}
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white rounded-3xl shadow-2xl p-8 md:p-10 border border-gray-200">
+            <div class="modal-header border-b border-gray-100 pb-4 mb-6">
+                <h5 class="modal-title text-2xl font-bold text-gray-900 text-center flex-grow" id="deleteConfirmationModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close text-gray-400 hover:text-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center text-gray-700">
+                Êtes-vous sûr de vouloir supprimer le groupe "<span id="itemTitleToDelete" class="font-semibold text-red-600"></span>" ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer flex justify-center space-x-4 mt-8 border-t border-gray-100 pt-4">
+                <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="py-3 px-4 rounded-lg text-lg font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out" id="confirmDeleteButton">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 {{-- Modal Modifier un Groupe --}}
 <div class="modal fade" id="editGroupeModal" tabindex="-1" aria-labelledby="editGroupeModalLabel" aria-hidden="true">
@@ -263,5 +286,63 @@
             @endforeach
         @endif
     });
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+    if (deleteConfirmationModal) {
+        deleteConfirmationModal.addEventListener('show.bs.modal', function (event) {
+            // Bouton qui a déclenché le modal
+            const button = event.relatedTarget;
+
+            // Récupère les informations de l'élément depuis les attributs data-*
+            const itemId = button.getAttribute('data-item-id');
+            const itemTitle = button.getAttribute('data-item-title');
+
+            // Met à jour le contenu du modal
+            const itemTitleSpan = deleteConfirmationModal.querySelector('#itemTitleToDelete');
+            if (itemTitleSpan) {
+                itemTitleSpan.textContent = itemTitle;
+            }
+
+            // Crée ou met à jour un formulaire de suppression caché dans le modal
+            let deleteForm = deleteConfirmationModal.querySelector('#modalDeleteForm');
+            if (!deleteForm) {
+                deleteForm = document.createElement('form');
+                deleteForm.setAttribute('id', 'modalDeleteForm');
+                deleteForm.setAttribute('method', 'POST');
+                deleteForm.style.display = 'none'; // Cache le formulaire
+                deleteConfirmationModal.querySelector('.modal-body').appendChild(deleteForm);
+
+                const csrfInput = document.createElement('input');
+                csrfInput.setAttribute('type', 'hidden');
+                csrfInput.setAttribute('name', '_token');
+                csrfInput.setAttribute('value', '{{ csrf_token() }}');
+                deleteForm.appendChild(csrfInput);
+
+                const methodInput = document.createElement('input');
+                methodInput.setAttribute('type', 'hidden');
+                methodInput.setAttribute('name', '_method');
+                methodInput.setAttribute('value', 'DELETE');
+                deleteForm.appendChild(methodInput);
+            }
+
+            // Met à jour l'action du formulaire avec l'ID de l'élément
+            // Utilise la route 'groupes.destroy' pour la suppression des groupes
+            deleteForm.setAttribute('action', `/groupes/${itemId}`); // Correspond à la route ressource 'groupes.destroy'
+
+            // Gère le clic sur le bouton "Supprimer" du modal
+            const confirmDeleteButton = deleteConfirmationModal.querySelector('#confirmDeleteButton');
+            if (confirmDeleteButton) {
+                confirmDeleteButton.onclick = function () {
+                    deleteForm.submit(); // Soumet le formulaire de suppression
+                };
+            }
+        });
+    }
+});
+
+
 </script>
 @endsection
