@@ -59,11 +59,4 @@
 </div>
 
 
-
-
-
-@section('my_js')
-
-
-
 @endsection
